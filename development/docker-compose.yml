@@ -3,6 +3,14 @@ services:
   go:
     build: ./go/
     command: bash -c "tail -f /dev/null"
+    volumes:
+      - ../:/root/my_contracts
+    environment:
+      DB_HOST: db
+      DB_NAME: billing
+      DB_USER: postgres
+      DB_PASSWORD: password
+
   db:
     build: ./db/
     ports:
