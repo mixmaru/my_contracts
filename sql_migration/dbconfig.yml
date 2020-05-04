@@ -1,18 +1,18 @@
 test:
   dialect: postgres
-  datasource: host=${DB_HOST} dbname=${DB_NAME} user=${DB_USER} password=${DB_PASSWORD} sslmode=disable
+  datasource: host=${DB_TEST_HOST} dbname=${DB_TEST_NAME} user=${DB_TEST_USER} password=${DB_TEST_PASSWORD} sslmode=disable
   dir: migrations
   table: migrations
 
 development:
   dialect: postgres
-  datasource: host=${DB_HOST} dbname=${DB_NAME} user=${DB_USER} password=${DB_PASSWORD} sslmode=disable
+  datasource: host=${DB_DEVELOPMENT_HOST} dbname=${DB_DEVELOPMENT_NAME} user=${DB_DEVELOPMENT_USER} password=${DB_DEVELOPMENT_PASSWORD} sslmode=disable
   dir: migrations
   table: migrations
 
 production:
   dialect: postgres
-  datasource: host=${DB_HOST} dbname=${DB_NAME} user=${DB_USER} password=${DB_PASSWORD} sslmode=disable
+  datasource: host=${DB_PRODUCTION_HOST} dbname=${DB_PRODUCTION_NAME} user=${DB_PRODUCTION_USER} password=${DB_PRODUCTION_PASSWORD} sslmode=disable
   dir: migrations
   table: migrations
 
