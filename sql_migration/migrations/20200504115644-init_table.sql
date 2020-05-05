@@ -27,7 +27,21 @@ create table users_corporation
     name text not null
 );
 
+create table products
+(
+    id bigserial not null
+        constraint products_pk
+            primary key,
+    name text not null,
+    price int not null
+);
+
+create unique index products_name_uindex
+    on products (name);
+
 -- +migrate Down
+DROP TABLE products;
+
 DROP TABLE users_corporation;
 DROP TABLE users_individual;
 DROP TABLE users;
