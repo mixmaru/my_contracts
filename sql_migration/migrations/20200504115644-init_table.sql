@@ -77,16 +77,19 @@ create table bills
 
 create table bill_details
 (
+    id bigserial not null
+        constraint bill_details_pk
+            primary key,
     bill_id bigint not null
         constraint bill_details_bills_id_fk
             references bills,
     order_num smallint not null,
     contract_update_id bigint not null
         constraint bill_details_contract_updates_id_fk
-            references contract_updates (id),
-    constraint bill_details_pk
-        primary key (bill_id, order_num)
+            references contract_updates
 );
+create unique index bill_details_bill_id_order_num_uindex
+    on bill_details (bill_id, order_num);
 
 
 -- +migrate Down
