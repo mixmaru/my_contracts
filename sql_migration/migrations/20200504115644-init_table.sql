@@ -53,15 +53,18 @@ create table contracts
 
 create table contract_updates
 (
+    id bigserial not null
+        constraint contract_updates_pk
+            primary key,
     contract_id bigint not null
         constraint contract_updates_contracts_id_fk
             references contracts,
     update_num int not null,
     start timestamp not null,
-    "end" timestamp not null,
-    constraint contract_updates_pk
-        unique (contract_id, update_num)
+    "end" timestamp not null
 );
+create unique index contract_updates_contract_id_update_num_uindex
+    on contract_updates (contract_id, update_num);
 
 create table bills
 (
@@ -72,9 +75,22 @@ create table bills
     payment_date date
 );
 
+create table bill_details
+(
+    bill_id bigint not null
+        constraint bill_details_bills_id_fk
+            references bills,
+    order_num smallint not null,
+    contract_update_id bigint not null
+        constraint bill_details_contract_updates_id_fk
+            references contract_updates (id),
+    constraint bill_details_pk
+        primary key (bill_id, order_num)
+);
 
 
 -- +migrate Down
+DROP TABLE bill_details;
 DROP TABLE bills;
 DROP TABLE contract_updates;
 DROP TABLE contracts;
