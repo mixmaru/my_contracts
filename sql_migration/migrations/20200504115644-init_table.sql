@@ -39,7 +39,23 @@ create table products
 create unique index products_name_uindex
     on products (name);
 
+
+create table contracts
+(
+    id bigserial not null
+        constraint contracts_pk
+            primary key,
+    user_id bigint not null
+        constraint contracts_users_id_fk
+            references users,
+    product_id bigint not null
+        constraint contracts_products_id_fk
+            references products
+);
+
 -- +migrate Down
+DROP TABLE contracts;
+
 DROP TABLE products;
 
 DROP TABLE users_corporation;
