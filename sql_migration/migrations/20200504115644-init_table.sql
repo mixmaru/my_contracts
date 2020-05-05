@@ -35,10 +35,8 @@ create table products
     name text not null,
     price int not null
 );
-
 create unique index products_name_uindex
     on products (name);
-
 
 create table contracts
 (
@@ -65,13 +63,22 @@ create table contract_updates
         unique (contract_id, update_num)
 );
 
+create table bills
+(
+    id bigserial not null
+        constraint bills_pk
+            primary key,
+    billing_date date not null,
+    payment_date date
+);
+
+
 
 -- +migrate Down
+DROP TABLE bills;
 DROP TABLE contract_updates;
 DROP TABLE contracts;
-
 DROP TABLE products;
-
 DROP TABLE users_corporation;
 DROP TABLE users_individual;
 DROP TABLE users;
