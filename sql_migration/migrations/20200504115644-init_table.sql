@@ -53,7 +53,21 @@ create table contracts
             references products
 );
 
+create table contract_updates
+(
+    contract_id bigint not null
+        constraint contract_updates_contracts_id_fk
+            references contracts,
+    update_num int not null,
+    start timestamp not null,
+    "end" timestamp not null,
+    constraint contract_updates_pk
+        unique (contract_id, update_num)
+);
+
+
 -- +migrate Down
+DROP TABLE contract_updates;
 DROP TABLE contracts;
 
 DROP TABLE products;
