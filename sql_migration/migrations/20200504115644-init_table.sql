@@ -91,8 +91,21 @@ create table bill_details
 create unique index bill_details_bill_id_order_num_uindex
     on bill_details (bill_id, order_num);
 
+create table discounts
+(
+    id bigserial not null
+        constraint discounts_pk
+            primary key,
+    discount_type smallint not null,
+    amount decimal not null,
+    condition text not null,
+    condition_values json not null,
+    activate_from timestamp not null,
+    activate_to timestamp not null
+);
 
 -- +migrate Down
+DROP TABLE discounts;
 DROP TABLE bill_details;
 DROP TABLE bills;
 DROP TABLE contract_updates;
