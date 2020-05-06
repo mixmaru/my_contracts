@@ -140,7 +140,18 @@ create table discount_contracts
             references contracts
 );
 
+create table discount_applies
+(
+    id bigserial not null
+        constraint discount_applies_pk
+            primary key,
+    discount_id bigint not null
+        constraint discount_applies_discounts_id_fk
+            references discounts
+);
+
 -- +migrate Down
+DROP TABLE discount_applies;
 DROP TABLE discount_contracts;
 DROP TABLE discount_products;
 DROP TABLE discount_individual;
