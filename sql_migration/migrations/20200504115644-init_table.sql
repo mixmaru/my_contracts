@@ -116,7 +116,20 @@ create table discount_individual
             references users
 );
 
+create table discount_products
+(
+    discount_id bigint
+        constraint discount_products_pk
+            primary key
+        constraint discount_products_discounts_id_fk
+            references discounts,
+    product_id int
+        constraint discount_products_products_id_fk
+            references products
+);
+
 -- +migrate Down
+DROP TABLE discount_products;
 DROP TABLE discount_individual;
 DROP TABLE discounts;
 DROP TABLE bill_details;
