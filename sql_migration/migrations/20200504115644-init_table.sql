@@ -118,17 +118,30 @@ create table discount_individual
 
 create table discount_products
 (
-    discount_id bigint
+    discount_id bigint not null
         constraint discount_products_pk
             primary key
         constraint discount_products_discounts_id_fk
             references discounts,
-    product_id int
+    product_id int not null
         constraint discount_products_products_id_fk
             references products
 );
 
+create table discount_contracts
+(
+    discount_id bigint not null
+        constraint discount_contracts_pk
+            primary key
+        constraint discount_contracts_discounts_id_fk
+            references discounts,
+    contract_id bigint not null
+        constraint discount_contracts_contracts_id_fk
+            references contracts
+);
+
 -- +migrate Down
+DROP TABLE discount_contracts;
 DROP TABLE discount_products;
 DROP TABLE discount_individual;
 DROP TABLE discounts;
