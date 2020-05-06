@@ -162,7 +162,20 @@ create table discount_apply_bills
             references bills
 );
 
+create table discount_apply_contract_updates
+(
+    discount_id bigint not null
+        constraint discount_apply_contract_updates_pk
+            primary key
+        constraint discount_apply_contract_updates_discounts_id_fk
+            references discounts,
+    contract_update_id bigint not null
+        constraint discount_apply_contract_updates_contract_updates_id_fk
+            references contract_updates
+);
+
 -- +migrate Down
+DROP TABLE discount_apply_contract_updates;
 DROP TABLE discount_apply_bills;
 DROP TABLE discount_applies;
 DROP TABLE discount_contracts;
