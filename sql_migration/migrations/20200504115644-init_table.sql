@@ -29,7 +29,7 @@ create table users_corporation
 
 create table products
 (
-    id bigserial not null
+    id serial not null
         constraint products_pk
             primary key,
     name text not null,
@@ -46,7 +46,7 @@ create table contracts
     user_id bigint not null
         constraint contracts_users_id_fk
             references users,
-    product_id bigint not null
+    product_id int not null
         constraint contracts_products_id_fk
             references products
 );
