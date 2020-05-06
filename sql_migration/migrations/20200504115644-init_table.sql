@@ -4,7 +4,9 @@ create table users
 (
     id serial not null
         constraint users_pk
-            primary key
+            primary key,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 create table "users_individual"
@@ -14,7 +16,9 @@ create table "users_individual"
             primary key
         constraint users_individual_users_id_fk
             references users (id),
-    name text not null
+    name text not null,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 create table users_corporation
@@ -24,7 +28,9 @@ create table users_corporation
             primary key
         constraint users_corporation_users_id_fk
             references users (id),
-    name text not null
+    name text not null,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 create table products
@@ -33,7 +39,9 @@ create table products
         constraint products_pk
             primary key,
     name text not null,
-    price decimal not null
+    price decimal not null,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 create unique index products_name_uindex
     on products (name);
@@ -48,7 +56,9 @@ create table contracts
             references users,
     product_id int not null
         constraint contracts_products_id_fk
-            references products
+            references products,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 create table contract_updates
@@ -61,7 +71,9 @@ create table contract_updates
             references contracts,
     update_num int not null,
     valid_from timestamp not null,
-    valid_to timestamp not null
+    valid_to timestamp not null,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 create unique index contract_updates_contract_id_update_num_uindex
     on contract_updates (contract_id, update_num);
@@ -72,7 +84,9 @@ create table bills
         constraint bills_pk
             primary key,
     billing_date date not null,
-    payment_date date
+    payment_date date,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 create table bill_details
@@ -86,7 +100,9 @@ create table bill_details
     order_num smallint not null,
     contract_update_id bigint not null
         constraint bill_details_contract_updates_id_fk
-            references contract_updates
+            references contract_updates,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 create unique index bill_details_bill_id_order_num_uindex
     on bill_details (bill_id, order_num);
@@ -101,7 +117,9 @@ create table discounts
     condition text not null,
     condition_values json not null,
     activate_from timestamp not null,
-    activate_to timestamp not null
+    activate_to timestamp not null,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 create table discount_individual
@@ -113,7 +131,9 @@ create table discount_individual
             references discounts,
     user_id int not null
         constraint discount_individual_users_id_fk
-            references users
+            references users,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 create table discount_products
@@ -125,7 +145,9 @@ create table discount_products
             references discounts,
     product_id int not null
         constraint discount_products_products_id_fk
-            references products
+            references products,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 create table discount_contracts
@@ -137,7 +159,9 @@ create table discount_contracts
             references discounts,
     contract_id int not null
         constraint discount_contracts_contracts_id_fk
-            references contracts
+            references contracts,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 create table discount_applies
@@ -147,7 +171,9 @@ create table discount_applies
             primary key,
     discount_id int not null
         constraint discount_applies_discounts_id_fk
-            references discounts
+            references discounts,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 create table discount_apply_bills
@@ -159,7 +185,9 @@ create table discount_apply_bills
             references discount_applies,
     bill_id bigint not null
         constraint discount_apply_bills_bills_id_fk
-            references bills
+            references bills,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 create table discount_apply_contract_updates
@@ -171,7 +199,9 @@ create table discount_apply_contract_updates
             references discount_applies,
     contract_update_id bigint not null
         constraint discount_apply_contract_updates_contract_updates_id_fk
-            references contract_updates
+            references contract_updates,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 
 -- +migrate Down
