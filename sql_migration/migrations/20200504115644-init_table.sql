@@ -152,11 +152,11 @@ create table discount_applies
 
 create table discount_apply_bills
 (
-    discount_id bigint not null
+    discount_apply_id int not null
         constraint discount_apply_bills_pk
             primary key
-        constraint discount_apply_bills_discounts_id_fk
-            references discounts,
+        constraint discount_apply_bills_discount_applies_id_fk
+            references discount_applies,
     bill_id bigint not null
         constraint discount_apply_bills_bills_id_fk
             references bills
@@ -164,11 +164,11 @@ create table discount_apply_bills
 
 create table discount_apply_contract_updates
 (
-    discount_id bigint not null
+    discount_apply_id int not null
         constraint discount_apply_contract_updates_pk
             primary key
-        constraint discount_apply_contract_updates_discounts_id_fk
-            references discounts,
+        constraint discount_apply_contract_updates_discount_applies_id_fk
+            references discount_applies,
     contract_update_id bigint not null
         constraint discount_apply_contract_updates_contract_updates_id_fk
             references contract_updates
