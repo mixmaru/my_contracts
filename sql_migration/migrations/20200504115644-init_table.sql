@@ -104,7 +104,20 @@ create table discounts
     activate_to timestamp not null
 );
 
+create table discount_individual
+(
+    discount_id bigint not null
+        constraint discount_individual_pk
+            primary key
+        constraint discount_individual_discounts_id_fk
+            references discounts,
+    user_id bigint not null
+        constraint discount_individual_users_id_fk
+            references users
+);
+
 -- +migrate Down
+DROP TABLE discount_individual;
 DROP TABLE discounts;
 DROP TABLE bill_details;
 DROP TABLE bills;
