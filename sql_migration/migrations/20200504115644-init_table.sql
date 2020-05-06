@@ -84,7 +84,7 @@ create table bills
         constraint bills_pk
             primary key,
     billing_date date not null,
-    payment_date date,
+    payment_confirmed_at timestamp,
     created_at timestamp not null,
     updated_at timestamp not null
 );
