@@ -1,6 +1,6 @@
 package user
 
-import "./values"
+import "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
 
 type IUser interface {
 	GetId() values.IdInt
