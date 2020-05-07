@@ -13,6 +13,10 @@ func (u *UserIndividual) GetName() Name {
 	return u.name
 }
 
+func (u *UserIndividual) SetName(name Name) {
+	u.name = name
+}
+
 ////// 値オブジェクト定義
 type Name struct {
 	value string

@@ -4,6 +4,7 @@ import "./values"
 
 type IUser interface {
 	GetId() values.IdInt
+	SetId(id values.IdInt)
 }
 
 type User struct {
@@ -14,4 +15,8 @@ type User struct {
 
 func (u *User) GetId() values.IdInt {
 	return u.id
+}
+
+func (u *User) SetId(id values.IdInt) {
+	u.id = id
 }
