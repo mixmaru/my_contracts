@@ -4,7 +4,6 @@ import "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/comm
 
 type IUser interface {
 	Id() common_values.IdInt
-	SetId(id common_values.IdInt)
 }
 
 type User struct {
@@ -15,8 +14,4 @@ type User struct {
 
 func (u *User) Id() common_values.IdInt {
 	return u.id
-}
-
-func (u *User) SetId(id common_values.IdInt) {
-	u.id = id
 }

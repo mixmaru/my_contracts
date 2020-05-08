@@ -4,30 +4,15 @@ import "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/comm
 
 type UserIndividual struct {
 	User
-	name      Name
+	name      common_values.Name
 	createdAt common_values.CreatedAt
 	updatedAt common_values.UpdatedAt
 }
 
-func (u *UserIndividual) Name() Name {
+func (u *UserIndividual) Name() common_values.Name {
 	return u.name
 }
 
-func (u *UserIndividual) SetName(name Name) {
+func (u *UserIndividual) SetName(name common_values.Name) {
 	u.name = name
-}
-
-////// 値オブジェクト定義
-type Name struct {
-	value string
-}
-
-func NewName(name string) Name {
-	return Name{
-		value: name,
-	}
-}
-
-func (n *Name) Value() string {
-	return n.value
 }
