@@ -1,6 +1,7 @@
-package user
+package user_individual
 
 import (
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user_individual/values"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -9,8 +10,8 @@ import (
 func TestUserIndividual_Instantiate(t *testing.T) {
 	// インスタンス化
 	userIndividual := &UserIndividual{}
-	userIndividual.SetName(NewName("顧客太郎"))
+	userIndividual.SetName(values.NewName("顧客太郎"))
 
 	// テスト
-	assert.Equal(t, NewName("顧客太郎"), userIndividual.Name())
+	assert.Equal(t, values.NewName("顧客太郎"), userIndividual.Name())
 }

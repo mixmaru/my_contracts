@@ -1,60 +1,19 @@
 package user
 
 import (
-	"time"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
 )
 
 type IUser interface {
-	Id() IdInt
+	Id() values.Id
 }
 
-//////// エンティティ定義 ///////////
 type User struct {
-	id        IdInt
-	createdAt CreatedAt
-	updatedAt UpdatedAt
+	id        values.Id
+	createdAt values.CreatedAt
+	updatedAt values.UpdatedAt
 }
 
-func (u *User) Id() IdInt {
+func (u *User) Id() values.Id {
 	return u.id
-}
-
-//////// 値オブジェクト定義 ///////////
-type IdInt struct {
-	value int
-}
-
-func NewIdInt(id int) IdInt {
-	return IdInt{
-		value: id,
-	}
-}
-func (i *IdInt) Value() int {
-	return i.value
-}
-
-type CreatedAt struct {
-	value time.Time
-}
-
-func NewCreatedAt(time time.Time) CreatedAt {
-	return CreatedAt{
-		value: time,
-	}
-}
-func (c *CreatedAt) Value() time.Time {
-	return c.value
-}
-
-type UpdatedAt struct {
-	value time.Time
-}
-
-func NewUpdatedAt(time time.Time) UpdatedAt {
-	return UpdatedAt{
-		value: time,
-	}
-}
-func (c *UpdatedAt) Value() time.Time {
-	return c.value
 }
