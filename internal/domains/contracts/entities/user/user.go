@@ -1,22 +1,22 @@
 package user
 
-import "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
+import "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/common_values"
 
 type IUser interface {
-	Id() values.IdInt
-	SetId(id values.IdInt)
+	Id() common_values.IdInt
+	SetId(id common_values.IdInt)
 }
 
 type User struct {
-	id        values.IdInt
-	createdAt values.CreatedAt
-	updatedAt values.UpdatedAt
+	id        common_values.IdInt
+	createdAt common_values.CreatedAt
+	updatedAt common_values.UpdatedAt
 }
 
-func (u *User) Id() values.IdInt {
+func (u *User) Id() common_values.IdInt {
 	return u.id
 }
 
-func (u *User) SetId(id values.IdInt) {
+func (u *User) SetId(id common_values.IdInt) {
 	u.id = id
 }

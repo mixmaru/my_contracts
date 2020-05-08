@@ -1,4 +1,4 @@
-package values
+package common_values
 
 type IdInt struct {
 	value int

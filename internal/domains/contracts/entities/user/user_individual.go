@@ -1,12 +1,12 @@
 package user
 
-import "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
+import "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/common_values"
 
 type UserIndividual struct {
 	User
 	name      Name
-	createdAt values.CreatedAt
-	updatedAt values.UpdatedAt
+	createdAt common_values.CreatedAt
+	updatedAt common_values.UpdatedAt
 }
 
 func (u *UserIndividual) Name() Name {
@@ -28,6 +28,6 @@ func NewName(name string) Name {
 	}
 }
 
-func (n *Name) GetValue() string {
+func (n *Name) Value() string {
 	return n.value
 }

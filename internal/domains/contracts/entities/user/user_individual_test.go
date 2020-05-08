@@ -2,18 +2,18 @@ package user
 
 import (
 	"fmt"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/common_values"
 	"testing"
 )
 
 func TestUserIndividual_Test222(t *testing.T) {
 	userIndividual := &UserIndividual{}
-	userIndividual.SetId(values.NewIdInt(1))
+	userIndividual.SetId(common_values.NewIdInt(1))
 	userIndividual.SetName(NewName("何がしかの名前"))
 
 	testArray := []IUser{
 		&User{
-			id: values.NewIdInt(1),
+			id: common_values.NewIdInt(1),
 		},
 		userIndividual,
 	}
