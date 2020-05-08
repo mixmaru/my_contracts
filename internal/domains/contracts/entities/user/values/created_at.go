@@ -12,6 +12,6 @@ func NewCreatedAt(time time.Time) CreatedAt {
 	}
 }
 
-func (c *CreatedAt) GetValue() time.Time {
+func (c *CreatedAt) Value() time.Time {
 	return c.value
 }

@@ -3,7 +3,7 @@ package user
 import "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
 
 type IUser interface {
-	GetId() values.IdInt
+	Id() values.IdInt
 	SetId(id values.IdInt)
 }
 
@@ -13,7 +13,7 @@ type User struct {
 	updatedAt values.UpdatedAt
 }
 
-func (u *User) GetId() values.IdInt {
+func (u *User) Id() values.IdInt {
 	return u.id
 }
 

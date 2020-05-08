@@ -1,15 +1,15 @@
 package values
 
 type IdInt struct {
-	id int
+	value int
 }
 
-func NewIdInt(Id int) IdInt {
+func NewIdInt(id int) IdInt {
 	return IdInt{
-		id: Id,
+		value: id,
 	}
 }
 
-func (i *IdInt) Id() int {
-	return i.id
+func (i *IdInt) Value() int {
+	return i.value
 }

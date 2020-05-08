@@ -12,6 +12,6 @@ func NewUpdatedAt(time time.Time) UpdatedAt {
 	}
 }
 
-func (c *UpdatedAt) GetValue() time.Time {
+func (c *UpdatedAt) Value() time.Time {
 	return c.value
 }

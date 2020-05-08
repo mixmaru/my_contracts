@@ -9,7 +9,7 @@ type UserIndividual struct {
 	updatedAt values.UpdatedAt
 }
 
-func (u *UserIndividual) GetName() Name {
+func (u *UserIndividual) Name() Name {
 	return u.name
 }
 
