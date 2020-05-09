@@ -18,7 +18,7 @@ func NewUserIndividual() *UserIndividual {
 
 func LoadUserIndividual(data *structures.UserIndividualView) *UserIndividual {
 	userIndividual := NewUserIndividual()
-	userIndividual.id = 1
+	userIndividual.id = data.Id
 	userIndividual.name = data.Name
 	userIndividual.createdAt = data.CreatedAt
 	userIndividual.updatedAt = data.UpdatedAt

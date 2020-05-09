@@ -4,6 +4,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestUser_InitDb(t *testing.T) {
@@ -16,58 +17,32 @@ func TestUser_Save(t *testing.T) {
 	db, err := InitDb()
 	assert.NoError(t, err)
 	repo := Repository{}
-	user := &user.UserIndividual{}
+	user := user.NewUserIndividual()
 	user.SetName("個人太郎")
 
 	// 実行
 	err = repo.Save(user, db)
-
-	// test
-	// とりあえずエラーでなければokとする
 	assert.NoError(t, err)
+
+	// idが0ではない。db登録されたidとcreatedAtとupdatedAtが入ってる
+	assert.NotEqual(t, 0, user.Id())
+	assert.NotEqual(t, time.Time{}, user.CreatedAt())
+	assert.NotEqual(t, time.Time{}, user.UpdatedAt())
 }
 
-//func TestUser_test(t *testing.T) {
-//	db := initDb()
-//	user := &Repository{}
-//	user.CreatedAt = time.Now()
-//	user.UpdatedAt = time.Now()
-//	err := db.Insert(user)
-//	if err != nil {
-//		assert.Failf(t, "%+v", err.Error())
-//	}
-//
-//	loadUser := &Repository{}
-//	err = db.SelectOne(loadUser, "SELECT * FROM users WHERE id = $1", user.Id)
-//	if err != nil {
-//		assert.Failf(t, "%+v", err.Error())
-//	}
-//
-//}
-//
-//func initDb() *gorp.DbMap {
-//	// connect to db using standard Go database/sql API
-//	// use whatever database/sql driver you wish
-//	db, err := sql.Open("postgres", "user=postgres dbname=my_contracts_development password=password sslmode=disable")
-//	checkErr(err, "sql.Open failed")
-//
-//	// construct a gorp DbMap
-//	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
-//
-//	// add a table, setting the table name to 'posts' and
-//	// specifying that the Id property is an auto incrementing PK
-//	dbmap.AddTableWithName(Repository{}, "users").SetKeys(true, "Id")
-//
-//	// create the table. in a production system you'd generally
-//	// use a migration tool, or create the tables via scripts
-//	//err = dbmap.CreateTablesIfNotExists()
-//	//checkErr(err, "Create tables failed")
-//
-//	return dbmap
-//}
-//
-//func checkErr(err error, msg string) {
-//	if err != nil {
-//		log.Fatalln(msg, err)
-//	}
-//}
+func TestUser_GetUserIndividualById(t *testing.T) {
+	//　事前にデータ登録
+	db, err := InitDb()
+	assert.NoError(t, err)
+	repo := Repository{}
+	user := user.NewUserIndividual()
+	user.SetName("個人太郎")
+	err = repo.Save(user, db)
+	assert.NoError(t, err)
+
+	// idで取得する
+	result, err := repo.GetUserIndividualById(user.Id(), db)
+	assert.NoError(t, err)
+	assert.Equal(t, result.Id(), user.Id())
+	assert.Equal(t, result.Name(), user.Name())
+}
