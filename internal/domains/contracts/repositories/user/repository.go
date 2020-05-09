@@ -7,6 +7,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user/structures"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
+	"time"
 )
 
 type Repository struct {
@@ -26,11 +27,35 @@ func InitDb() (*gorp.DbMap, error) {
 	// add a table, setting the table name to 'posts' and
 	// specifying that the Id property is an auto incrementing PK
 	dbmap.AddTableWithName(structures.User{}, "users").SetKeys(true, "Id")
+	dbmap.AddTableWithName(structures.UserIndividual{}, "users_individual")
 
 	return dbmap, nil
-
 }
 
-func (r *Repository) Save(individual user_individual.UserIndividual, sqlExecutor gorp.SqlExecutor) error {
+func (r *Repository) Save(individual *user_individual.UserIndividual, sqlExecutor gorp.SqlExecutor) error {
+	// エンティティからリポジトリ用構造体に値をセットし直す
+	// もしくはエンティティが吐き出すようにしてもいいかも。あとで考える
+	now := time.Now()
+
+	user := &structures.User{}
+	user.CreatedAt = now
+	user.UpdatedAt = now
+
+	err := sqlExecutor.Insert(user)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// individualを保存
+	u_individual := &structures.UserIndividual{}
+	u_individual.UserId = user.Id
+	u_individual.Name = individual.Name()
+	u_individual.UpdatedAt = now
+	u_individual.CreatedAt = now
+
+	err = sqlExecutor.Insert(u_individual)
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	return nil
 }
