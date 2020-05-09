@@ -2,9 +2,9 @@ package user
 
 import (
 	"database/sql"
-	"github.com/coopernurse/gorp"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/gorp.v2"
 	"log"
 	"testing"
 	"time"
