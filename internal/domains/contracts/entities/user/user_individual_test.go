@@ -8,9 +8,9 @@ import (
 )
 
 // UserIndividualのインスタンス化をテスト
-func TestUserIndividual_Instantiate(t *testing.T) {
+func TestUserIndividual_NewIndividual(t *testing.T) {
 	// インスタンス化
-	userIndividual := &UserIndividual{}
+	userIndividual := NewUserIndividual()
 	userIndividual.SetName("顧客太郎")
 
 	// テスト
