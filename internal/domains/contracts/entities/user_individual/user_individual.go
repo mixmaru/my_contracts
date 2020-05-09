@@ -2,20 +2,20 @@ package user_individual
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user_individual/values"
+	"time"
 )
 
 type UserIndividual struct {
 	user.User
-	name      values.Name
-	createdAt values.CreatedAt
-	updatedAt values.UpdatedAt
+	name      string
+	createdAt time.Time
+	updatedAt time.Time
 }
 
-func (u *UserIndividual) Name() values.Name {
+func (u *UserIndividual) Name() string {
 	return u.name
 }
 
-func (u *UserIndividual) SetName(name values.Name) {
+func (u *UserIndividual) SetName(name string) {
 	u.name = name
 }

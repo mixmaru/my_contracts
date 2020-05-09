@@ -1,19 +1,19 @@
 package user
 
 import (
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
+	"time"
 )
 
 type IUser interface {
-	Id() values.Id
+	Id() int
 }
 
 type User struct {
-	id        values.Id
-	createdAt values.CreatedAt
-	updatedAt values.UpdatedAt
+	id        int
+	createdAt time.Time
+	updatedAt time.Time
 }
 
-func (u *User) Id() values.Id {
+func (u *User) Id() int {
 	return u.id
 }
