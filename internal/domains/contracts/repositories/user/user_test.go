@@ -19,6 +19,13 @@ func TestUser_test(t *testing.T) {
 	if err != nil {
 		assert.Failf(t, "%+v", err.Error())
 	}
+
+	loadUser := &User{}
+	err = db.SelectOne(loadUser, "SELECT * FROM users WHERE id = $1", user.Id)
+	if err != nil {
+		assert.Failf(t, "%+v", err.Error())
+	}
+
 }
 
 //var err error
