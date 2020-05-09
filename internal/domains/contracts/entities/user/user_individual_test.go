@@ -22,10 +22,12 @@ func TestUserIndividual_LoadUserIndividual(t *testing.T) {
 	data.Id = 1
 	data.Name = "個人太郎"
 	data.CreatedAt = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+	data.UpdatedAt = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	result := LoadUserIndividual(data)
 
 	assert.Equal(t, 1, result.Id())
 	assert.Equal(t, data.Name, result.Name())
-	assert.Equal(t, data.CreatedAt, result.createdAt)
+	assert.Equal(t, data.CreatedAt, result.CreatedAt())
+	assert.Equal(t, data.UpdatedAt, result.UpdatedAt())
 }
