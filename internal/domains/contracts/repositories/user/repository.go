@@ -3,7 +3,7 @@ package user
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user_individual"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user/structures"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
@@ -32,7 +32,7 @@ func InitDb() (*gorp.DbMap, error) {
 	return dbmap, nil
 }
 
-func (r *Repository) Save(individual *user_individual.UserIndividual, sqlExecutor gorp.SqlExecutor) error {
+func (r *Repository) Save(individual *user.UserIndividual, sqlExecutor gorp.SqlExecutor) error {
 	// エンティティからリポジトリ用構造体に値をセットし直す
 	// もしくはエンティティが吐き出すようにしてもいいかも。あとで考える
 	now := time.Now()

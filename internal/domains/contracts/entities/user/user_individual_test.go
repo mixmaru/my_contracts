@@ -1,4 +1,4 @@
-package user_individual
+package user
 
 import (
 	"github.com/stretchr/testify/assert"

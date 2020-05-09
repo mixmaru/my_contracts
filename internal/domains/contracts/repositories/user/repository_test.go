@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user_individual"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -16,7 +16,7 @@ func TestUser_Save(t *testing.T) {
 	db, err := InitDb()
 	assert.NoError(t, err)
 	repo := Repository{}
-	user := &user_individual.UserIndividual{}
+	user := &user.UserIndividual{}
 	user.SetName("個人太郎")
 
 	// 実行

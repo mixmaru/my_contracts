@@ -1,12 +1,11 @@
-package user_corporation
+package user
 
 import (
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	"time"
 )
 
 type UserCorporation struct {
-	user.User
+	User
 	contactPersonName string //担当者名
 	presidentName     string //社長名
 	createdAt         time.Time

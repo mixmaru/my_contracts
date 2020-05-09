@@ -1,12 +1,11 @@
-package user_individual
+package user
 
 import (
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	"time"
 )
 
 type UserIndividual struct {
-	user.User
+	User
 	name      string
 	createdAt time.Time
 	updatedAt time.Time
