@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user/structures"
+	"time"
 )
 
 type UserIndividual struct {
@@ -16,21 +16,22 @@ func NewUserIndividual() *UserIndividual {
 	}
 }
 
-func LoadUserIndividual(data *structures.UserIndividualView) *UserIndividual {
+func NewUserIndividualWithData(id int, name string, createdAt time.Time, updatedAt time.Time) *UserIndividual {
 	userIndividual := NewUserIndividual()
-	userIndividual.id = data.Id
-	userIndividual.name = data.Name
-	userIndividual.createdAt = data.CreatedAt
-	userIndividual.updatedAt = data.UpdatedAt
+	userIndividual.id = id
+	userIndividual.name = name
+	userIndividual.createdAt = createdAt
+	userIndividual.updatedAt = updatedAt
 
 	return userIndividual
 }
 
-func (u *UserIndividual) LoadUserIndividual(data *structures.UserIndividualView) {
-	u.id = data.Id
-	u.name = data.Name
-	u.createdAt = data.CreatedAt
-	u.updatedAt = data.UpdatedAt
+// 保持データをセットし直す
+func (u *UserIndividual) LoadData(id int, name string, createdAt time.Time, updatedAt time.Time) {
+	u.id = id
+	u.name = name
+	u.createdAt = createdAt
+	u.updatedAt = updatedAt
 }
 
 func (u *UserIndividual) Name() string {

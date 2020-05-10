@@ -64,7 +64,7 @@ func (r *Repository) Save(userEntity *user.UserIndividual, executor gorp.SqlExec
 	if err != nil {
 		return err
 	}
-	userEntity.LoadUserIndividual(userDbData)
+	userEntity.LoadData(userDbData)
 
 	return nil
 }
@@ -77,7 +77,7 @@ func (r *Repository) GetUserIndividualById(id int, sqlExecutor gorp.SqlExecutor)
 	}
 
 	// entityに詰める
-	userEntity := user.LoadUserIndividual(userData)
+	userEntity := user.NewUserIndividualWithData(userData)
 	return userEntity, nil
 }
 
