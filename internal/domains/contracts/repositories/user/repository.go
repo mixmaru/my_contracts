@@ -58,10 +58,13 @@ func (r *Repository) Save(individual *user.UserIndividual, sqlExecutor gorp.SqlE
 		return errors.WithStack(err)
 	}
 
-	// dbに保存されたidとcreatedAtとupdatedAtをセットしておく
-	individual.SetId(user.Id)
-	individual.SetCreatedAt(user.CreatedAt)
-	individual.SetUpdatedAt(user.UpdatedAt)
+	// dbから再読込してentityに詰め直す
+	userData, err := r.getUserIndividualViewById(user.Id, sqlExecutor)
+	if err != nil {
+		return err
+	}
+	individual.LoadUserIndividual(userData)
+
 	return nil
 }
 

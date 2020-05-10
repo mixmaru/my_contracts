@@ -26,6 +26,13 @@ func LoadUserIndividual(data *structures.UserIndividualView) *UserIndividual {
 	return userIndividual
 }
 
+func (u *UserIndividual) LoadUserIndividual(data *structures.UserIndividualView) {
+	u.id = data.Id
+	u.name = data.Name
+	u.createdAt = data.CreatedAt
+	u.updatedAt = data.UpdatedAt
+}
+
 func (u *UserIndividual) Name() string {
 	return u.name
 }
