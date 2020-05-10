@@ -48,13 +48,12 @@ func (r *Repository) Save(userEntity *user.UserIndividual, executor gorp.SqlExec
 	}
 
 	// individualを保存
-	uIndividual := &structures.UserIndividual{}
-	uIndividual.UserId = user.Id
-	uIndividual.Name = userEntity.Name()
-	uIndividual.UpdatedAt = now
-	uIndividual.CreatedAt = now
+	userIndividualDbMap := structures.LoadUserIndividual(userEntity)
+	userIndividualDbMap.UserId = user.Id
+	userIndividualDbMap.CreatedAt = now
+	userIndividualDbMap.UpdatedAt = now
 
-	err = executor.Insert(uIndividual)
+	err = executor.Insert(userIndividualDbMap)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -64,7 +63,12 @@ func (r *Repository) Save(userEntity *user.UserIndividual, executor gorp.SqlExec
 	if err != nil {
 		return err
 	}
-	userEntity.LoadData(userDbData)
+	userEntity.LoadData(
+		userDbData.Id,
+		userDbData.Name,
+		userDbData.CreatedAt,
+		userDbData.UpdatedAt,
+	)
 
 	return nil
 }
@@ -77,7 +81,12 @@ func (r *Repository) GetUserIndividualById(id int, sqlExecutor gorp.SqlExecutor)
 	}
 
 	// entityに詰める
-	userEntity := user.NewUserIndividualWithData(userData)
+	userEntity := user.NewUserIndividualWithData(
+		userData.Id,
+		userData.Name,
+		userData.CreatedAt,
+		userData.UpdatedAt,
+	)
 	return userEntity, nil
 }
 
