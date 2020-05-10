@@ -66,8 +66,21 @@ func (r *Repository) Save(individual *user.UserIndividual, sqlExecutor gorp.SqlE
 }
 
 func (r *Repository) GetUserIndividualById(id int, sqlExecutor gorp.SqlExecutor) (*user.UserIndividual, error) {
+	// dbからデータ取得
+	userData, err := r.getUserIndividualViewById(id, sqlExecutor)
+	if err != nil {
+		return nil, err
+	}
+
+	// entityに詰める
+	userEntity := user.LoadUserIndividual(userData)
+	return userEntity, nil
+}
+
+// dbからid指定で個人顧客情報を取得する
+func (r *Repository) getUserIndividualViewById(id int, executor gorp.SqlExecutor) (*structures.UserIndividualView, error) {
 	data := &structures.UserIndividualView{}
-	err := sqlExecutor.SelectOne(
+	err := executor.SelectOne(
 		data,
 		"SELECT u.id, ui.name, u.created_at, u.updated_at FROM users u "+
 			"inner join users_individual ui on u.id = ui.user_id "+
@@ -78,6 +91,5 @@ func (r *Repository) GetUserIndividualById(id int, sqlExecutor gorp.SqlExecutor)
 		return nil, errors.WithStack(err)
 	}
 
-	retData := user.LoadUserIndividual(data)
-	return retData, nil
+	return data, nil
 }
