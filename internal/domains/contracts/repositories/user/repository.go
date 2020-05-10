@@ -32,16 +32,17 @@ func InitDb() (*gorp.DbMap, error) {
 	return dbmap, nil
 }
 
-func (r *Repository) Save(individual *user.UserIndividual, sqlExecutor gorp.SqlExecutor) error {
+func (r *Repository) Save(userEntity *user.UserIndividual, executor gorp.SqlExecutor) error {
 	// エンティティからリポジトリ用構造体に値をセットし直す
 	// もしくはエンティティが吐き出すようにしてもいいかも。あとで考える
+	// db用構造体オブジェクトがentityを読み込む用にする。
 	now := time.Now()
 
 	user := &structures.User{}
 	user.CreatedAt = now
 	user.UpdatedAt = now
 
-	err := sqlExecutor.Insert(user)
+	err := executor.Insert(user)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -49,21 +50,21 @@ func (r *Repository) Save(individual *user.UserIndividual, sqlExecutor gorp.SqlE
 	// individualを保存
 	uIndividual := &structures.UserIndividual{}
 	uIndividual.UserId = user.Id
-	uIndividual.Name = individual.Name()
+	uIndividual.Name = userEntity.Name()
 	uIndividual.UpdatedAt = now
 	uIndividual.CreatedAt = now
 
-	err = sqlExecutor.Insert(uIndividual)
+	err = executor.Insert(uIndividual)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
 	// dbから再読込してentityに詰め直す
-	userData, err := r.getUserIndividualViewById(user.Id, sqlExecutor)
+	userDbData, err := r.getUserIndividualViewById(user.Id, executor)
 	if err != nil {
 		return err
 	}
-	individual.LoadUserIndividual(userData)
+	userEntity.LoadUserIndividual(userDbData)
 
 	return nil
 }
