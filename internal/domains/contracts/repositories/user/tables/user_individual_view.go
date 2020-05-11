@@ -1,6 +1,6 @@
-package db_maps
+package tables
 
 type UserIndividualView struct {
-	UserDbMap
+	UserRecord
 	Name string
 }

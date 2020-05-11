@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/lib/pq"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user/db_maps"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user/tables"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
 	"time"
@@ -26,8 +26,8 @@ func InitDb() (*gorp.DbMap, error) {
 
 	// add a table, setting the table name to 'posts' and
 	// specifying that the Id property is an auto incrementing PK
-	dbmap.AddTableWithName(db_maps.UserDbMap{}, "users").SetKeys(true, "Id")
-	dbmap.AddTableWithName(db_maps.UserIndividual{}, "users_individual")
+	dbmap.AddTableWithName(tables.UserRecord{}, "users").SetKeys(true, "Id")
+	dbmap.AddTableWithName(tables.UserIndividualRecord{}, "users_individual")
 
 	return dbmap, nil
 }
@@ -38,7 +38,7 @@ func (r *Repository) Save(userEntity *user.UserIndividualEntity, executor gorp.S
 	// db用構造体オブジェクトがentityを読み込む用にする。
 	now := time.Now()
 
-	user := db_maps.NewUserFromUserIndividualEntity(userEntity)
+	user := tables.NewUserRecordFromUserIndividualEntity(userEntity)
 	user.CreatedAt = now
 	user.UpdatedAt = now
 
@@ -48,7 +48,7 @@ func (r *Repository) Save(userEntity *user.UserIndividualEntity, executor gorp.S
 	}
 
 	// individualを保存
-	userIndividualDbMap := db_maps.NewUserIndividualFromUserIndividual(userEntity)
+	userIndividualDbMap := tables.NewUserIndividualRecordFromUserIndividualEntity(userEntity)
 	userIndividualDbMap.UserId = user.Id
 	userIndividualDbMap.CreatedAt = now
 	userIndividualDbMap.UpdatedAt = now
@@ -91,8 +91,8 @@ func (r *Repository) GetUserIndividualById(id int, sqlExecutor gorp.SqlExecutor)
 }
 
 // dbからid指定で個人顧客情報を取得する
-func (r *Repository) getUserIndividualViewById(id int, executor gorp.SqlExecutor) (*db_maps.UserIndividualView, error) {
-	data := &db_maps.UserIndividualView{}
+func (r *Repository) getUserIndividualViewById(id int, executor gorp.SqlExecutor) (*tables.UserIndividualView, error) {
+	data := &tables.UserIndividualView{}
 	err := executor.SelectOne(
 		data,
 		"SELECT u.id, ui.name, u.created_at, u.updated_at FROM users u "+

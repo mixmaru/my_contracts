@@ -1,4 +1,4 @@
-package db_maps
+package tables
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
@@ -15,8 +15,8 @@ func TestUser_LoadUserIndividual(t *testing.T) {
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
 
-	user := NewUserFromUserIndividualEntity(userEntity)
-	expect := &UserDbMap{
+	user := NewUserRecordFromUserIndividualEntity(userEntity)
+	expect := &UserRecord{
 		Id:        1,
 		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
