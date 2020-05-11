@@ -38,7 +38,7 @@ func (r *Repository) Save(userEntity *user.UserIndividual, executor gorp.SqlExec
 	// db用構造体オブジェクトがentityを読み込む用にする。
 	now := time.Now()
 
-	user := &structures.User{}
+	user := structures.NewUserFromUserIndividualEntity(userEntity)
 	user.CreatedAt = now
 	user.UpdatedAt = now
 
