@@ -9,7 +9,7 @@ import (
 // UserIndividualのインスタンス化をテスト
 func TestUserIndividual_NewIndividual(t *testing.T) {
 	// インスタンス化
-	userIndividual := NewUserIndividual()
+	userIndividual := NewUserIndividualEntity()
 	userIndividual.SetName("顧客太郎")
 
 	// テスト
@@ -18,7 +18,7 @@ func TestUserIndividual_NewIndividual(t *testing.T) {
 
 // 個人顧客Entityの初期化と共にデータロードするやつ
 func TestUserIndividual_Static_LoadUserIndividual(t *testing.T) {
-	result := NewUserIndividualWithData(
+	result := NewUserIndividualEntityWithData(
 		1,
 		"個人太郎",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -33,7 +33,7 @@ func TestUserIndividual_Static_LoadUserIndividual(t *testing.T) {
 
 // インスタンス化された個人顧客Entityに対してデータロードするやつ
 func TestUserIndividual_LoadUserIndividual(t *testing.T) {
-	userIndividual := NewUserIndividual()
+	userIndividual := NewUserIndividualEntity()
 	userIndividual.LoadData(
 		1,
 		"個人太郎",

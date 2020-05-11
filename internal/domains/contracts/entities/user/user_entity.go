@@ -4,26 +4,26 @@ import (
 	"time"
 )
 
-type IUser interface {
+type IUserEntity interface {
 	Id() int
 	CreatedAt() time.Time
 	UpdatedAt() time.Time
 }
 
-type User struct {
+type UserEntity struct {
 	id        int
 	createdAt time.Time
 	updatedAt time.Time
 }
 
-func (u *User) Id() int {
+func (u *UserEntity) Id() int {
 	return u.id
 }
 
-func (u *User) CreatedAt() time.Time {
+func (u *UserEntity) CreatedAt() time.Time {
 	return u.createdAt
 }
 
-func (u *User) UpdatedAt() time.Time {
+func (u *UserEntity) UpdatedAt() time.Time {
 	return u.updatedAt
 }

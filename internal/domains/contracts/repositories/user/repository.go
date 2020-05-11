@@ -32,7 +32,7 @@ func InitDb() (*gorp.DbMap, error) {
 	return dbmap, nil
 }
 
-func (r *Repository) Save(userEntity *user.UserIndividual, executor gorp.SqlExecutor) error {
+func (r *Repository) Save(userEntity *user.UserIndividualEntity, executor gorp.SqlExecutor) error {
 	// エンティティからリポジトリ用構造体に値をセットし直す
 	// もしくはエンティティが吐き出すようにしてもいいかも。あとで考える
 	// db用構造体オブジェクトがentityを読み込む用にする。
@@ -73,7 +73,7 @@ func (r *Repository) Save(userEntity *user.UserIndividual, executor gorp.SqlExec
 	return nil
 }
 
-func (r *Repository) GetUserIndividualById(id int, sqlExecutor gorp.SqlExecutor) (*user.UserIndividual, error) {
+func (r *Repository) GetUserIndividualById(id int, sqlExecutor gorp.SqlExecutor) (*user.UserIndividualEntity, error) {
 	// dbからデータ取得
 	userData, err := r.getUserIndividualViewById(id, sqlExecutor)
 	if err != nil {
@@ -81,7 +81,7 @@ func (r *Repository) GetUserIndividualById(id int, sqlExecutor gorp.SqlExecutor)
 	}
 
 	// entityに詰める
-	userEntity := user.NewUserIndividualWithData(
+	userEntity := user.NewUserIndividualEntityWithData(
 		userData.Id,
 		userData.Name,
 		userData.CreatedAt,

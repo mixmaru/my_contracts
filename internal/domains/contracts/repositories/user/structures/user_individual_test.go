@@ -9,7 +9,7 @@ import (
 
 func TestUserIndividual_LoadUserIndividual(t *testing.T) {
 	// entity用意
-	entity := user.NewUserIndividualWithData(
+	entity := user.NewUserIndividualEntityWithData(
 		1,
 		"担当太郎",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),

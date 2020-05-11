@@ -8,7 +8,7 @@ import (
 )
 
 func TestUser_LoadUserIndividual(t *testing.T) {
-	userEntity := user.NewUserIndividualWithData(
+	userEntity := user.NewUserIndividualEntityWithData(
 		1,
 		"個人たろう",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),

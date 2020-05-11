@@ -17,7 +17,7 @@ func TestUser_Save(t *testing.T) {
 	db, err := InitDb()
 	assert.NoError(t, err)
 	repo := Repository{}
-	user := user.NewUserIndividual()
+	user := user.NewUserIndividualEntity()
 	user.SetName("個人太郎")
 
 	// 実行
@@ -35,7 +35,7 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 	db, err := InitDb()
 	assert.NoError(t, err)
 	repo := Repository{}
-	user := user.NewUserIndividual()
+	user := user.NewUserIndividualEntity()
 	user.SetName("個人太郎")
 	err = repo.Save(user, db)
 	assert.NoError(t, err)

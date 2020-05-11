@@ -11,8 +11,8 @@ type User struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-// UserIndividual Entityからデータを読み込んでUser(DBマッピング用)を作成する
-func NewUserFromUserIndividualEntity(userIndividual *user.UserIndividual) *User {
+// UserIndividualEntity Entityからデータを読み込んでUser(DBマッピング用)を作成する
+func NewUserFromUserIndividualEntity(userIndividual *user.UserIndividualEntity) *User {
 	return &User{
 		Id:        userIndividual.Id(),
 		CreatedAt: userIndividual.CreatedAt(),

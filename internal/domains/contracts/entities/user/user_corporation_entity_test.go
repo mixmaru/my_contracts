@@ -6,9 +6,9 @@ import (
 )
 
 // UserCorporationのインスタンス化をテスト
-func TestUserCorporation_Instantiate(t *testing.T) {
+func TestUserCorporationEntity_Instantiate(t *testing.T) {
 	// インスタンス化
-	user := &UserCorporation{}
+	user := &UserCorporationEntity{}
 	user.SetContactPersonName("担当太郎")
 	user.SetPresidentName("社長太郎")
 
