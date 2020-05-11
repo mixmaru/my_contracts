@@ -49,3 +49,22 @@ func TestUserCorporationEntity_NewUserCorporationEntityWithData(t *testing.T) {
 	assert.Equal(t, time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), user.CreatedAt())
 	assert.Equal(t, time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), user.UpdatedAt())
 }
+
+func TestUserCorporationEntity_LoadData(t *testing.T) {
+	// インスタンス化
+	user := NewUserCorporationEntity()
+	user.LoadData(
+		1,
+		"担当太郎",
+		"社長次郎",
+		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+	)
+
+	// テスト
+	assert.Equal(t, 1, user.Id())
+	assert.Equal(t, "担当太郎", user.ContactPersonName())
+	assert.Equal(t, "社長次郎", user.PresidentName())
+	assert.Equal(t, time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), user.CreatedAt())
+	assert.Equal(t, time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), user.UpdatedAt())
+}

@@ -26,6 +26,15 @@ func NewUserCorporationEntityWithData(id int, contractPersonName, presidentName 
 	return user
 }
 
+// 保持データをセットし直す
+func (u *UserCorporationEntity) LoadData(id int, contractPersonName, presidentName string, createdAt, updatedAt time.Time) {
+	u.id = id
+	u.SetContactPersonName(contractPersonName)
+	u.SetPresidentName(presidentName)
+	u.createdAt = createdAt
+	u.updatedAt = updatedAt
+}
+
 func (u *UserCorporationEntity) SetContactPersonName(name string) {
 	u.contactPersonName = name
 }
