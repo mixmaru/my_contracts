@@ -48,7 +48,7 @@ func (r *Repository) Save(userEntity *user.UserIndividual, executor gorp.SqlExec
 	}
 
 	// individualを保存
-	userIndividualDbMap := structures.LoadUserIndividual(userEntity)
+	userIndividualDbMap := structures.NewUserIndividualFromUserIndividual(userEntity)
 	userIndividualDbMap.UserId = user.Id
 	userIndividualDbMap.CreatedAt = now
 	userIndividualDbMap.UpdatedAt = now

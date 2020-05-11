@@ -17,7 +17,7 @@ func TestUserIndividual_LoadUserIndividual(t *testing.T) {
 	)
 
 	// 実行
-	resultData := LoadUserIndividual(entity)
+	resultData := NewUserIndividualFromUserIndividual(entity)
 
 	expect := &UserIndividual{
 		UserId:    1,
