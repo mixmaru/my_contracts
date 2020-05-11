@@ -1,4 +1,4 @@
-package structures
+package db_maps
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
