@@ -5,11 +5,17 @@ import (
 )
 
 type UserCorporationEntity struct {
-	UserEntity
+	*UserEntity
 	contactPersonName string //担当者名
 	presidentName     string //社長名
 	createdAt         time.Time
 	updatedAt         time.Time
+}
+
+func NewUserCorporationEntity() *UserCorporationEntity {
+	return &UserCorporationEntity{
+		UserEntity: &UserEntity{},
+	}
 }
 
 func (u *UserCorporationEntity) SetContactPersonName(name string) {
