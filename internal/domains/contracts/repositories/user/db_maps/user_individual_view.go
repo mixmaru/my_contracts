@@ -1,6 +1,6 @@
 package db_maps
 
 type UserIndividualView struct {
-	User
+	UserDbMap
 	Name string
 }

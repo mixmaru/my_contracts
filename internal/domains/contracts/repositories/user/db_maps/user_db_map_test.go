@@ -16,7 +16,7 @@ func TestUser_LoadUserIndividual(t *testing.T) {
 	)
 
 	user := NewUserFromUserIndividualEntity(userEntity)
-	expect := &User{
+	expect := &UserDbMap{
 		Id:        1,
 		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),

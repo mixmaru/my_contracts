@@ -26,7 +26,7 @@ func InitDb() (*gorp.DbMap, error) {
 
 	// add a table, setting the table name to 'posts' and
 	// specifying that the Id property is an auto incrementing PK
-	dbmap.AddTableWithName(db_maps.User{}, "users").SetKeys(true, "Id")
+	dbmap.AddTableWithName(db_maps.UserDbMap{}, "users").SetKeys(true, "Id")
 	dbmap.AddTableWithName(db_maps.UserIndividual{}, "users_individual")
 
 	return dbmap, nil
