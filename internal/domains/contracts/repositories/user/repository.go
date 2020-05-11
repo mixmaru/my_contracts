@@ -32,7 +32,8 @@ func InitDb() (*gorp.DbMap, error) {
 	return dbmap, nil
 }
 
-func (r *Repository) Save(userEntity *user.UserIndividualEntity, executor gorp.SqlExecutor) error {
+// 個人顧客エンティティを保存する
+func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, executor gorp.SqlExecutor) error {
 	// エンティティからリポジトリ用構造体に値をセットし直す
 	// もしくはエンティティが吐き出すようにしてもいいかも。あとで考える
 	// db用構造体オブジェクトがentityを読み込む用にする。

@@ -12,7 +12,7 @@ func TestUser_InitDb(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestUser_Save(t *testing.T) {
+func TestUser_SaveUserIndividual(t *testing.T) {
 	// 事前準備
 	db, err := InitDb()
 	assert.NoError(t, err)
@@ -21,7 +21,7 @@ func TestUser_Save(t *testing.T) {
 	user.SetName("個人太郎")
 
 	// 実行
-	err = repo.Save(user, db)
+	err = repo.SaveUserIndividual(user, db)
 	assert.NoError(t, err)
 
 	// idが0ではない。db登録されたidとcreatedAtとupdatedAtが入ってる
@@ -37,7 +37,7 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 	repo := Repository{}
 	user := user.NewUserIndividualEntity()
 	user.SetName("個人太郎")
-	err = repo.Save(user, db)
+	err = repo.SaveUserIndividual(user, db)
 	assert.NoError(t, err)
 
 	// idで取得する
