@@ -136,6 +136,46 @@ func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity,
 		return errors.WithStack(err)
 	}
 
-	// todo 再読込する
+	// 再読込する
+	data := &tables.UserCorporationView{}
+	err = executor.SelectOne(
+		data,
+		"SELECT u.id, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at "+
+			"FROM users u "+
+			"inner join users_corporation uc on u.id = uc.user_id "+
+			"WHERE id = $1",
+		userRecord.Id,
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	userEntity.LoadData(data.Id, data.ContactPersonName, data.PresidentName, data.CreatedAt, data.UpdatedAt)
 	return nil
+}
+
+// dbからid指定で法人顧客情報を取得する
+func (r *Repository) getUserCorporationViewById(id int, executor gorp.SqlExecutor) (*user.UserCorporationEntity, error) {
+	data := &tables.UserCorporationView{}
+	err := executor.SelectOne(
+		data,
+		"SELECT u.id, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at "+
+			"FROM users u "+
+			"inner join users_corporation uc on u.id = uc.user_id "+
+			"WHERE id = $1",
+		id,
+	)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	entity := user.NewUserCorporationEntityWithData(
+		data.Id,
+		data.ContactPersonName,
+		data.PresidentName,
+		data.CreatedAt,
+		data.UpdatedAt,
+	)
+
+	return entity, nil
 }

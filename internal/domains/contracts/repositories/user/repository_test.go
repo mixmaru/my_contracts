@@ -64,5 +64,35 @@ func TestUser_SaveUserCorporation(t *testing.T) {
 	err = repo.SaveUserCorporation(user, db)
 	assert.NoError(t, err)
 
-	// todo: データ取得して内容確認する
+	// データ取得して内容確認する
+	result, err := repo.getUserCorporationViewById(user.Id(), db)
+	assert.NoError(t, err)
+
+	assert.Equal(t, user.Id(), result.Id())
+	assert.Equal(t, "担当太郎", result.ContactPersonName())
+	assert.Equal(t, "社長次郎", result.PresidentName())
+	assert.NotEqual(t, time.Time{}, result.CreatedAt())
+	assert.NotEqual(t, time.Time{}, result.UpdatedAt())
+}
+
+func TestUser_getUserCorporationViewById(t *testing.T) {
+	db, err := InitDb()
+	assert.NoError(t, err)
+
+	//　事前にデータ登録
+	repo := &Repository{}
+	user := user.NewUserCorporationEntity()
+	user.SetContactPersonName("担当太郎")
+	user.SetPresidentName("社長次郎")
+	err = repo.SaveUserCorporation(user, db)
+	assert.NoError(t, err)
+
+	// idで取得する
+	result, err := repo.getUserCorporationViewById(user.Id(), db)
+	assert.NoError(t, err)
+	assert.Equal(t, result.Id(), user.Id())
+	assert.Equal(t, "担当太郎", user.ContactPersonName())
+	assert.Equal(t, "社長次郎", user.PresidentName())
+	assert.NotEqual(t, time.Time{}, user.CreatedAt())
+	assert.NotEqual(t, time.Time{}, user.UpdatedAt())
 }
