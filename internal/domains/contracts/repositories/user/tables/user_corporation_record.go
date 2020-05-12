@@ -7,7 +7,7 @@ import (
 
 type UserCorporationRecord struct {
 	UserId            int       `db:"user_id"`
-	ContactParsonName string    `db:"contact_parson_name"`
+	ContactParsonName string    `db:"contact_person_name"`
 	PresidentName     string    `db:"president_name"`
 	CreatedAt         time.Time `db:"created_at"`
 	UpdatedAt         time.Time `db:"updated_at"`

@@ -28,6 +28,7 @@ func InitDb() (*gorp.DbMap, error) {
 	// specifying that the Id property is an auto incrementing PK
 	dbmap.AddTableWithName(tables.UserRecord{}, "users").SetKeys(true, "Id")
 	dbmap.AddTableWithName(tables.UserIndividualRecord{}, "users_individual")
+	dbmap.AddTableWithName(tables.UserCorporationRecord{}, "users_corporation")
 
 	return dbmap, nil
 }
@@ -106,4 +107,35 @@ func (r *Repository) getUserIndividualViewById(id int, executor gorp.SqlExecutor
 	}
 
 	return data, nil
+}
+
+// 法人顧客エンティティを保存する
+func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity, executor gorp.SqlExecutor) error {
+	now := time.Now()
+
+	// userRecord作成
+	userRecord := tables.NewUserRecordFromUserCorporationEntity(userEntity)
+	userRecord.CreatedAt = now
+	userRecord.UpdatedAt = now
+
+	// 保存
+	err := executor.Insert(userRecord)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// userCorporationRecord作成
+	userCorporationRecord := tables.NewUserCorporationRecordFromUserCorporationEntity(userEntity)
+	userCorporationRecord.UserId = userRecord.Id
+	userCorporationRecord.CreatedAt = now
+	userCorporationRecord.UpdatedAt = now
+
+	// 保存
+	err = executor.Insert(userCorporationRecord)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// todo 再読込する
+	return nil
 }

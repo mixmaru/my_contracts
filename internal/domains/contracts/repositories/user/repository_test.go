@@ -34,7 +34,7 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 	//　事前にデータ登録
 	db, err := InitDb()
 	assert.NoError(t, err)
-	repo := Repository{}
+	repo := &Repository{}
 	user := user.NewUserIndividualEntity()
 	user.SetName("個人太郎")
 	err = repo.SaveUserIndividual(user, db)
@@ -45,4 +45,24 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, result.Id(), user.Id())
 	assert.Equal(t, result.Name(), user.Name())
+}
+
+func TestUser_SaveUserCorporation(t *testing.T) {
+	// entity作成
+	user := user.NewUserCorporationEntity()
+	user.SetContactPersonName("担当太郎")
+	user.SetPresidentName("社長次郎")
+
+	// db接続用意
+	db, err := InitDb()
+	assert.NoError(t, err)
+
+	// repository用意
+	repo := &Repository{}
+
+	// 保存実行
+	err = repo.SaveUserCorporation(user, db)
+	assert.NoError(t, err)
+
+	// todo: データ取得して内容確認する
 }
