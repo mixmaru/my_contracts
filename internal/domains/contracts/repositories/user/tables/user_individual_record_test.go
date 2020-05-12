@@ -13,7 +13,7 @@ func TestUserIndividual_LoadUserIndividual(t *testing.T) {
 		1,
 		"担当太郎",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
 
 	// 実行
@@ -23,7 +23,7 @@ func TestUserIndividual_LoadUserIndividual(t *testing.T) {
 		UserId:    1,
 		Name:      "担当太郎",
 		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 
 	// テスト
