@@ -3,6 +3,7 @@ package user
 import (
 	_ "github.com/lib/pq"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user/tables"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
@@ -14,6 +15,13 @@ type Repository struct {
 
 // 個人顧客エンティティを保存する
 func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, executor gorp.SqlExecutor) error {
+	// db接続
+	conn, err := db_connection.GetConnection()
+	if err != nil {
+		return err
+	}
+	defer conn.Db.Close()
+
 	// エンティティからリポジトリ用構造体に値をセットし直す
 	now := time.Now()
 
@@ -21,7 +29,7 @@ func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, e
 	user.CreatedAt = now
 	user.UpdatedAt = now
 
-	err := executor.Insert(user)
+	err = conn.Insert(user)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -32,13 +40,13 @@ func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, e
 	userIndividualDbMap.CreatedAt = now
 	userIndividualDbMap.UpdatedAt = now
 
-	err = executor.Insert(userIndividualDbMap)
+	err = conn.Insert(userIndividualDbMap)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
 	// dbから再読込してentityに詰め直す
-	userDbData, err := r.getUserIndividualViewById(user.Id, executor)
+	userDbData, err := r.getUserIndividualViewById(user.Id, conn)
 	if err != nil {
 		return err
 	}
@@ -88,6 +96,13 @@ func (r *Repository) getUserIndividualViewById(id int, executor gorp.SqlExecutor
 
 // 法人顧客エンティティを保存する
 func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity, executor gorp.SqlExecutor) error {
+	// db接続
+	conn, err := db_connection.GetConnection()
+	if err != nil {
+		return err
+	}
+	defer conn.Db.Close()
+
 	now := time.Now()
 
 	// userRecord作成
@@ -96,7 +111,7 @@ func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity,
 	userRecord.UpdatedAt = now
 
 	// 保存
-	err := executor.Insert(userRecord)
+	err = conn.Insert(userRecord)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -108,13 +123,13 @@ func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity,
 	userCorporationRecord.UpdatedAt = now
 
 	// 保存
-	err = executor.Insert(userCorporationRecord)
+	err = conn.Insert(userCorporationRecord)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
 	// 再読込する
-	data, err := r.getUserCorporationViewById(userRecord.Id, executor)
+	data, err := r.getUserCorporationViewById(userRecord.Id, conn)
 	if err != nil {
 		return errors.WithStack(err)
 	}
