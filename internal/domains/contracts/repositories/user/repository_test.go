@@ -13,6 +13,56 @@ func TestUser_InitDb(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// トランザクションが正しく動作しているかテスト
+func TestUser_Transaction(t *testing.T) {
+	// db接続
+	dbMap, err := InitDb()
+	assert.NoError(t, err)
+	defer dbMap.Db.Close()
+
+	t.Run("コミットするとデータ保存されている", func(t *testing.T) {
+		// transaction開始
+		tran, err := dbMap.Begin()
+		assert.NoError(t, err)
+
+		//データ保存
+		user := user.NewUserIndividualEntity()
+		user.SetName("個人太郎")
+		repo := Repository{}
+		err = repo.SaveUserIndividual(user, tran)
+		assert.NoError(t, err)
+
+		// コミット
+		err = tran.Commit()
+		assert.NoError(t, err)
+
+		// データ取得できる
+		_, err = repo.GetUserIndividualById(user.Id(), dbMap)
+		assert.NoError(t, err) // sql: no rows in result set エラーが起こらなければ、データが保存されている
+	})
+
+	t.Run("ロールバックするとデータ保存されていない", func(t *testing.T) {
+		// transaction開始
+		tran, err := dbMap.Begin()
+		assert.NoError(t, err)
+
+		//データ保存
+		user := user.NewUserIndividualEntity()
+		user.SetName("個人太郎")
+		repo := Repository{}
+		err = repo.SaveUserIndividual(user, tran)
+		assert.NoError(t, err)
+
+		// ロールバック
+		err = tran.Rollback()
+		assert.NoError(t, err)
+
+		// データ取得できない
+		_, err = repo.GetUserIndividualById(user.Id(), dbMap)
+		assert.Error(t, err) // sql: no rows in result set エラーが起こる
+	})
+}
+
 func TestUser_SaveUserIndividual(t *testing.T) {
 	// db接続
 	dbMap, err := InitDb()
