@@ -8,20 +8,23 @@ import (
 )
 
 func TestUser_InitDb(t *testing.T) {
-	_, err := InitDb()
+	dbMap, err := InitDb()
+	defer dbMap.Db.Close()
 	assert.NoError(t, err)
 }
 
 func TestUser_SaveUserIndividual(t *testing.T) {
 	// 事前準備
-	db, err := InitDb()
+	dbMap, err := InitDb()
+	defer dbMap.Db.Close()
+
 	assert.NoError(t, err)
 	repo := Repository{}
 	user := user.NewUserIndividualEntity()
 	user.SetName("個人太郎")
 
 	// 実行
-	err = repo.SaveUserIndividual(user, db)
+	err = repo.SaveUserIndividual(user, dbMap)
 	assert.NoError(t, err)
 
 	// idが0ではない。db登録されたidとcreatedAtとupdatedAtが入ってる
@@ -32,16 +35,18 @@ func TestUser_SaveUserIndividual(t *testing.T) {
 
 func TestUser_GetUserIndividualById(t *testing.T) {
 	//　事前にデータ登録
-	db, err := InitDb()
+	dbMap, err := InitDb()
+	defer dbMap.Db.Close()
+
 	assert.NoError(t, err)
 	repo := &Repository{}
 	user := user.NewUserIndividualEntity()
 	user.SetName("個人太郎")
-	err = repo.SaveUserIndividual(user, db)
+	err = repo.SaveUserIndividual(user, dbMap)
 	assert.NoError(t, err)
 
 	// idで取得する
-	result, err := repo.GetUserIndividualById(user.Id(), db)
+	result, err := repo.GetUserIndividualById(user.Id(), dbMap)
 	assert.NoError(t, err)
 	assert.Equal(t, result.Id(), user.Id())
 	assert.Equal(t, result.Name(), user.Name())
@@ -54,18 +59,19 @@ func TestUser_SaveUserCorporation(t *testing.T) {
 	user.SetPresidentName("社長次郎")
 
 	// db接続用意
-	db, err := InitDb()
+	dbMap, err := InitDb()
+	defer dbMap.Db.Close()
 	assert.NoError(t, err)
 
 	// repository用意
 	repo := &Repository{}
 
 	// 保存実行
-	err = repo.SaveUserCorporation(user, db)
+	err = repo.SaveUserCorporation(user, dbMap)
 	assert.NoError(t, err)
 
 	// データ取得して内容確認する
-	result, err := repo.getUserCorporationEntityById(user.Id(), db)
+	result, err := repo.getUserCorporationEntityById(user.Id(), dbMap)
 	assert.NoError(t, err)
 
 	assert.Equal(t, user.Id(), result.Id())
@@ -76,7 +82,8 @@ func TestUser_SaveUserCorporation(t *testing.T) {
 }
 
 func TestUser_getUserCorporationViewById(t *testing.T) {
-	db, err := InitDb()
+	dbMap, err := InitDb()
+	defer dbMap.Db.Close()
 	assert.NoError(t, err)
 
 	//　事前にデータ登録
@@ -84,11 +91,11 @@ func TestUser_getUserCorporationViewById(t *testing.T) {
 	user := user.NewUserCorporationEntity()
 	user.SetContactPersonName("担当太郎")
 	user.SetPresidentName("社長次郎")
-	err = repo.SaveUserCorporation(user, db)
+	err = repo.SaveUserCorporation(user, dbMap)
 	assert.NoError(t, err)
 
 	// idで取得する
-	result, err := repo.getUserCorporationEntityById(user.Id(), db)
+	result, err := repo.getUserCorporationEntityById(user.Id(), dbMap)
 	assert.NoError(t, err)
 	assert.Equal(t, result.Id(), user.Id())
 	assert.Equal(t, "担当太郎", user.ContactPersonName())
