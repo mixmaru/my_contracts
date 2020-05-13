@@ -2,11 +2,42 @@ package db_connection
 
 import (
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/gorp.v2"
 	"testing"
 )
 
 func TestDbConnection_GetConnection(t *testing.T) {
-	dbMap, err := GetConnection()
-	assert.NoError(t, err)
-	defer dbMap.Db.Close()
+
+	t.Run("トランザクションが渡されなかった場合 nilが渡された場合 dbMapが返る", func(t *testing.T) {
+		conn, err := GetConnection(nil)
+		assert.NoError(t, err)
+		assert.IsType(t, &gorp.DbMap{}, conn)
+	})
+
+	t.Run("トランザクションが渡された場合 トランザクションが返る", func(t *testing.T) {
+		// トランザクション取得
+		conn1, err := GetConnection(nil)
+		assert.NoError(t, err)
+		dbMap, ok := conn1.(*gorp.DbMap)
+		assert.True(t, ok)
+		tran, err := dbMap.Begin()
+		assert.NoError(t, err)
+
+		// トランザクションを渡す
+		conn2, err := GetConnection(tran)
+		assert.NoError(t, err)
+
+		assert.IsType(t, &gorp.Transaction{}, conn2)
+
+	})
+}
+
+func TestDbConnection_Close(t *testing.T) {
+	t.Run("トランザクションが渡されなかった場合。nilが渡された場合。dbMapをcloseする", func(t *testing.T) {
+
+	})
+
+	t.Run("トランザクションが渡された場合。dbMapをcloseする", func(t *testing.T) {
+
+	})
 }
