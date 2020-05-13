@@ -2,21 +2,16 @@ package user
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
-func TestUser_InitDb(t *testing.T) {
-	dbMap, err := InitDb()
-	defer dbMap.Db.Close()
-	assert.NoError(t, err)
-}
-
 // トランザクションが正しく動作しているかテスト
 func TestUser_Transaction(t *testing.T) {
 	// db接続
-	dbMap, err := InitDb()
+	dbMap, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 
@@ -65,7 +60,7 @@ func TestUser_Transaction(t *testing.T) {
 
 func TestUser_SaveUserIndividual(t *testing.T) {
 	// db接続
-	dbMap, err := InitDb()
+	dbMap, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 
@@ -81,7 +76,7 @@ func TestUser_SaveUserIndividual(t *testing.T) {
 
 func TestUser_GetUserIndividualById(t *testing.T) {
 	// db接続
-	dbMap, err := InitDb()
+	dbMap, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 
@@ -101,7 +96,7 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 
 func TestUser_SaveUserCorporation(t *testing.T) {
 	// db接続
-	dbMap, err := InitDb()
+	dbMap, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 
@@ -118,7 +113,7 @@ func TestUser_SaveUserCorporation(t *testing.T) {
 
 func TestUser_getUserCorporationViewById(t *testing.T) {
 	// db接続
-	dbMap, err := InitDb()
+	dbMap, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 
