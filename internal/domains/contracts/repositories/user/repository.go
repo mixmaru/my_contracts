@@ -137,15 +137,7 @@ func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity,
 	}
 
 	// 再読込する
-	data := &tables.UserCorporationView{}
-	err = executor.SelectOne(
-		data,
-		"SELECT u.id, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at "+
-			"FROM users u "+
-			"inner join users_corporation uc on u.id = uc.user_id "+
-			"WHERE id = $1",
-		userRecord.Id,
-	)
+	data, err := r.getUserCorporationViewById(userRecord.Id, executor)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -155,16 +147,8 @@ func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity,
 }
 
 // dbからid指定で法人顧客情報を取得する
-func (r *Repository) getUserCorporationViewById(id int, executor gorp.SqlExecutor) (*user.UserCorporationEntity, error) {
-	data := &tables.UserCorporationView{}
-	err := executor.SelectOne(
-		data,
-		"SELECT u.id, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at "+
-			"FROM users u "+
-			"inner join users_corporation uc on u.id = uc.user_id "+
-			"WHERE id = $1",
-		id,
-	)
+func (r *Repository) getUserCorporationEntityById(id int, executor gorp.SqlExecutor) (*user.UserCorporationEntity, error) {
+	data, err := r.getUserCorporationViewById(id, executor)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -178,4 +162,18 @@ func (r *Repository) getUserCorporationViewById(id int, executor gorp.SqlExecuto
 	)
 
 	return entity, nil
+}
+
+// dbからid指定で法人顧客情報を取得する
+func (r *Repository) getUserCorporationViewById(id int, executor gorp.SqlExecutor) (*tables.UserCorporationView, error) {
+	data := &tables.UserCorporationView{}
+	sql := "SELECT u.id, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at " +
+		"FROM users u " +
+		"inner join users_corporation uc on u.id = uc.user_id " +
+		"WHERE id = $1"
+	err := executor.SelectOne(data, sql, id)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return data, nil
 }

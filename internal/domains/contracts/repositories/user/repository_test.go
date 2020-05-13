@@ -65,7 +65,7 @@ func TestUser_SaveUserCorporation(t *testing.T) {
 	assert.NoError(t, err)
 
 	// データ取得して内容確認する
-	result, err := repo.getUserCorporationViewById(user.Id(), db)
+	result, err := repo.getUserCorporationEntityById(user.Id(), db)
 	assert.NoError(t, err)
 
 	assert.Equal(t, user.Id(), result.Id())
@@ -88,7 +88,7 @@ func TestUser_getUserCorporationViewById(t *testing.T) {
 	assert.NoError(t, err)
 
 	// idで取得する
-	result, err := repo.getUserCorporationViewById(user.Id(), db)
+	result, err := repo.getUserCorporationEntityById(user.Id(), db)
 	assert.NoError(t, err)
 	assert.Equal(t, result.Id(), user.Id())
 	assert.Equal(t, "担当太郎", user.ContactPersonName())
