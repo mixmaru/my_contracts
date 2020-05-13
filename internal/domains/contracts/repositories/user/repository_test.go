@@ -32,7 +32,7 @@ func TestUser_Transaction(t *testing.T) {
 		assert.NoError(t, err)
 
 		// データ取得できる
-		_, err = repo.GetUserIndividualById(user.Id(), dbMap)
+		_, err = repo.GetUserIndividualById(user.Id(), nil)
 		assert.NoError(t, err) // sql: no rows in result set エラーが起こらなければ、データが保存されている
 	})
 
@@ -53,7 +53,7 @@ func TestUser_Transaction(t *testing.T) {
 		assert.NoError(t, err)
 
 		// データ取得できない
-		_, err = repo.GetUserIndividualById(user.Id(), dbMap)
+		_, err = repo.GetUserIndividualById(user.Id(), nil)
 		assert.Error(t, err) // sql: no rows in result set エラーが起こる
 	})
 }
@@ -70,7 +70,7 @@ func TestUser_SaveUserIndividual(t *testing.T) {
 
 	// 実行
 	repo := Repository{}
-	err = repo.SaveUserIndividual(user, dbMap)
+	err = repo.SaveUserIndividual(user, nil)
 	assert.NoError(t, err)
 }
 
@@ -84,11 +84,11 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 	user := user.NewUserIndividualEntity()
 	user.SetName("個人太郎")
 	repo := &Repository{}
-	err = repo.SaveUserIndividual(user, dbMap)
+	err = repo.SaveUserIndividual(user, nil)
 	assert.NoError(t, err)
 
 	// idで取得して検証
-	result, err := repo.GetUserIndividualById(user.Id(), dbMap)
+	result, err := repo.GetUserIndividualById(user.Id(), nil)
 	assert.NoError(t, err)
 	assert.Equal(t, result.Id(), user.Id())
 	assert.Equal(t, result.Name(), user.Name())
@@ -107,7 +107,7 @@ func TestUser_SaveUserCorporation(t *testing.T) {
 
 	// 保存実行
 	repo := &Repository{}
-	err = repo.SaveUserCorporation(user, dbMap)
+	err = repo.SaveUserCorporation(user, nil)
 	assert.NoError(t, err)
 }
 
@@ -122,7 +122,7 @@ func TestUser_getUserCorporationViewById(t *testing.T) {
 	user.SetContactPersonName("担当太郎")
 	user.SetPresidentName("社長次郎")
 	repo := &Repository{}
-	err = repo.SaveUserCorporation(user, dbMap)
+	err = repo.SaveUserCorporation(user, nil)
 	assert.NoError(t, err)
 
 	// idで取得する
