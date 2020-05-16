@@ -9,28 +9,33 @@ import (
 	"gopkg.in/gorp.v2"
 )
 
+// gorpのdbMapを作成する
+func GetConnection() (*gorp.DbMap, error) {
+	// connect to db using standard Go database/sql API
+	// use whatever database/sql driver you wish
+	db, err := sql.Open("postgres", "user=postgres dbname=my_contracts_development password=password sslmode=disable")
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	// construct a gorp DbMap
+	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
+
+	// add a table, setting the table name to 'posts' and
+	// specifying that the Id property is an auto incrementing PK
+	dbmap.AddTableWithName(tables.UserRecord{}, "users").SetKeys(true, "Id")
+	dbmap.AddTableWithName(tables.UserIndividualRecord{}, "users_individual")
+	dbmap.AddTableWithName(tables.UserCorporationRecord{}, "users_corporation")
+
+	return dbmap, nil
+}
+
 // executorがトランザクションだったらそれをそのまま返す。
 // executorがnilだったら、dbConnectionを返す。
 // ※repository内で、いちいちそれがトランザクションなのか、dbConnectionを取得しないと行けないのかの条件分岐を書く必要性を無くすために用意した
 func GetConnectionIfNotTransaction(executor gorp.SqlExecutor) (gorp.SqlExecutor, error) {
 	if executor == nil {
-		// connect to db using standard Go database/sql API
-		// use whatever database/sql driver you wish
-		db, err := sql.Open("postgres", "user=postgres dbname=my_contracts_development password=password sslmode=disable")
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-
-		// construct a gorp DbMap
-		dbmap := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
-
-		// add a table, setting the table name to 'posts' and
-		// specifying that the Id property is an auto incrementing PK
-		dbmap.AddTableWithName(tables.UserRecord{}, "users").SetKeys(true, "Id")
-		dbmap.AddTableWithName(tables.UserIndividualRecord{}, "users_individual")
-		dbmap.AddTableWithName(tables.UserCorporationRecord{}, "users_corporation")
-
-		return dbmap, nil
+		return GetConnection()
 	}
 
 	tran, ok := executor.(*gorp.Transaction)
