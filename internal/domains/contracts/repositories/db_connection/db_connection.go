@@ -7,6 +7,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user/tables"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
+	"os"
 	"reflect"
 )
 
@@ -14,7 +15,11 @@ import (
 func GetConnection() (*gorp.DbMap, error) {
 	// connect to db using standard Go database/sql API
 	// use whatever database/sql driver you wish
-	db, err := sql.Open("postgres", "user=postgres dbname=my_contracts_development password=password sslmode=disable")
+	connectionStr, err := getConnectionString("development")
+	if err != nil {
+		return nil, err
+	}
+	db, err := sql.Open("postgres", connectionStr)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -29,6 +34,21 @@ func GetConnection() (*gorp.DbMap, error) {
 	dbmap.AddTableWithName(tables.UserCorporationRecord{}, "users_corporation")
 
 	return dbmap, nil
+}
+
+// 実行モード（test, development, production）を渡すと、適したdb接続文字列を返す
+func getConnectionString(executeMode string) (string, error) {
+	switch executeMode {
+	case "test":
+		return fmt.Sprintf("host=%v user=%v dbname=%v password=%v sslmode=disable", os.Getenv("DB_TEST_HOST"), os.Getenv("DB_TEST_USER"), os.Getenv("DB_TEST_NAME"), os.Getenv("DB_TEST_PASSWORD")), nil
+	case "development":
+		return fmt.Sprintf("host=%v user=%v dbname=%v password=%v sslmode=disable", os.Getenv("DB_DEVELOPMENT_HOST"), os.Getenv("DB_DEVELOPMENT_USER"), os.Getenv("DB_DEVELOPMENT_NAME"), os.Getenv("DB_DEVELOPMENT_PASSWORD")), nil
+	case "production":
+		return fmt.Sprintf("host=%v user=%v dbname=%v password=%v sslmode=disable", os.Getenv("DB_PRODUCTION_HOST"), os.Getenv("DB_PRODUCTION_USER"), os.Getenv("DB_PRODUCTION_NAME"), os.Getenv("DB_PRODUCTION_PASSWORD")), nil
+	default:
+		return "", errors.New(fmt.Sprintf("考慮されてない値が渡されました。executeMode: %+v", executeMode))
+	}
+
 }
 
 // executorがトランザクションだったらそれをそのまま返す。
