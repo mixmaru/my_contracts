@@ -22,7 +22,7 @@ func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, t
 		conn = transaction
 	} else {
 		// なければ、db接続を取得する
-		dbMap, err := db_connection.GetConnection()
+		dbMap, err := db_connection.GetConnectionIfNotTransaction()
 		if err != nil {
 			return err
 		}
@@ -76,7 +76,7 @@ func (r *Repository) GetUserIndividualById(id int, transaction *gorp.Transaction
 		conn = transaction
 	} else {
 		// なければ、db接続を取得する
-		dbMap, err := db_connection.GetConnection()
+		dbMap, err := db_connection.GetConnectionIfNotTransaction()
 		if err != nil {
 			return nil, err
 		}
@@ -126,7 +126,7 @@ func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity,
 		conn = transaction
 	} else {
 		// なければ、db接続を取得する
-		dbMap, err := db_connection.GetConnection()
+		dbMap, err := db_connection.GetConnectionIfNotTransaction()
 		if err != nil {
 			return err
 		}

@@ -9,7 +9,10 @@ import (
 	"gopkg.in/gorp.v2"
 )
 
-func GetConnection(executor gorp.SqlExecutor) (gorp.SqlExecutor, error) {
+// executorがトランザクションだったらそれをそのまま返す。
+// executorがnilだったら、dbConnectionを返す。
+// ※repository内で、いちいちそれがトランザクションなのか、dbConnectionを取得しないと行けないのかの条件分岐を書く必要性を無くすために用意した
+func GetConnectionIfNotTransaction(executor gorp.SqlExecutor) (gorp.SqlExecutor, error) {
 	if executor == nil {
 		// connect to db using standard Go database/sql API
 		// use whatever database/sql driver you wish
@@ -36,4 +39,21 @@ func GetConnection(executor gorp.SqlExecutor) (gorp.SqlExecutor, error) {
 	}
 
 	return nil, errors.New(fmt.Sprintf("GetConnectionに失敗しました。executorが考慮外 executor: %+v", executor))
+}
+
+func CloseConnectionIfNotTransaction(executor gorp.SqlExecutor) error {
+	// dbMapが渡されたらそれをcloseする
+	dbMap, ok := executor.(*gorp.DbMap)
+	if ok {
+		dbMap.Db.Close()
+		return nil
+	}
+
+	// transactionが渡されたら、なにもしない。（トランザクション管理は上位でおこなっているため）
+	_, ok = executor.(*gorp.Transaction)
+	if ok {
+		return nil
+	}
+
+	return errors.New(fmt.Sprintf("CloseConnectionに失敗しました。executorが考慮外 executor: %+v", executor))
 }

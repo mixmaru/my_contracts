@@ -9,14 +9,14 @@ import (
 func TestDbConnection_GetConnection(t *testing.T) {
 
 	t.Run("トランザクションが渡されなかった場合 nilが渡された場合 dbMapが返る", func(t *testing.T) {
-		conn, err := GetConnection(nil)
+		conn, err := GetConnectionIfNotTransaction(nil)
 		assert.NoError(t, err)
 		assert.IsType(t, &gorp.DbMap{}, conn)
 	})
 
 	t.Run("トランザクションが渡された場合 トランザクションが返る", func(t *testing.T) {
 		// トランザクション取得
-		conn1, err := GetConnection(nil)
+		conn1, err := GetConnectionIfNotTransaction(nil)
 		assert.NoError(t, err)
 		dbMap, ok := conn1.(*gorp.DbMap)
 		assert.True(t, ok)
@@ -24,7 +24,7 @@ func TestDbConnection_GetConnection(t *testing.T) {
 		assert.NoError(t, err)
 
 		// トランザクションを渡す
-		conn2, err := GetConnection(tran)
+		conn2, err := GetConnectionIfNotTransaction(tran)
 		assert.NoError(t, err)
 
 		assert.IsType(t, &gorp.Transaction{}, conn2)
@@ -33,11 +33,19 @@ func TestDbConnection_GetConnection(t *testing.T) {
 }
 
 func TestDbConnection_Close(t *testing.T) {
-	t.Run("トランザクションが渡されなかった場合。nilが渡された場合。dbMapをcloseする", func(t *testing.T) {
-
+	t.Run("dbMapが渡された場合dbMapをcloseする", func(t *testing.T) {
+		// dbConnection取得
+		conn, err := GetConnectionIfNotTransaction(nil)
+		assert.NoError(t, err)
+		err = CloseConnectionIfNotTransaction(conn)
+		assert.NoError(t, err)
 	})
 
-	t.Run("トランザクションが渡された場合。dbMapをcloseする", func(t *testing.T) {
+	t.Run("トランザクションが渡された場合何もしない", func(t *testing.T) {
+		conn, err := GetConnectionIfNotTransaction(nil)
+		assert.NoError(t, err)
+		err = CloseConnectionIfNotTransaction(conn)
+		assert.NoError(t, err)
 
 	})
 }

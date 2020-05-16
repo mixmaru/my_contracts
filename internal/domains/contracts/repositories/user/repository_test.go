@@ -11,7 +11,7 @@ import (
 // トランザクションが正しく動作しているかテスト
 func TestUser_Transaction(t *testing.T) {
 	// db接続
-	dbMap, err := db_connection.GetConnection()
+	dbMap, err := db_connection.GetConnectionIfNotTransaction()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 
@@ -60,7 +60,7 @@ func TestUser_Transaction(t *testing.T) {
 
 func TestUser_SaveUserIndividual(t *testing.T) {
 	// db接続
-	dbMap, err := db_connection.GetConnection()
+	dbMap, err := db_connection.GetConnectionIfNotTransaction()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 
@@ -76,7 +76,7 @@ func TestUser_SaveUserIndividual(t *testing.T) {
 
 func TestUser_GetUserIndividualById(t *testing.T) {
 	// db接続
-	dbMap, err := db_connection.GetConnection()
+	dbMap, err := db_connection.GetConnectionIfNotTransaction()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 
@@ -96,7 +96,7 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 
 func TestUser_SaveUserCorporation(t *testing.T) {
 	// db接続
-	dbMap, err := db_connection.GetConnection()
+	dbMap, err := db_connection.GetConnectionIfNotTransaction()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 
@@ -113,7 +113,7 @@ func TestUser_SaveUserCorporation(t *testing.T) {
 
 func TestUser_getUserCorporationViewById(t *testing.T) {
 	// db接続
-	dbMap, err := db_connection.GetConnection()
+	dbMap, err := db_connection.GetConnectionIfNotTransaction()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 
