@@ -1,6 +1,7 @@
 package db_connection
 
 import (
+	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
 	"os"
@@ -83,19 +84,19 @@ func TestDbConnection_getConnectionString(t *testing.T) {
 	os.Setenv("DB_PRODUCTION_PASSWORD", "prod_pass")
 
 	t.Run("testの時", func(t *testing.T) {
-		str, err := getConnectionString("test")
+		str, err := getConnectionString(utils.Test)
 		assert.NoError(t, err)
 		assert.Equal(t, "host=test_host user=test_user dbname=test_name password=test_pass sslmode=disable", str)
 	})
 
 	t.Run("developmentの時", func(t *testing.T) {
-		str, err := getConnectionString("development")
+		str, err := getConnectionString(utils.Development)
 		assert.NoError(t, err)
 		assert.Equal(t, "host=dev_host user=dev_user dbname=dev_name password=dev_pass sslmode=disable", str)
 	})
 
 	t.Run("productionの時", func(t *testing.T) {
-		str, err := getConnectionString("production")
+		str, err := getConnectionString(utils.Production)
 		assert.NoError(t, err)
 		assert.Equal(t, "host=prod_host user=prod_user dbname=prod_name password=prod_pass sslmode=disable", str)
 	})

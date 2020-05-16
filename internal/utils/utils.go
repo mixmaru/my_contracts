@@ -30,7 +30,7 @@ func GetExecuteMode() (string, error) {
 			return Development, nil
 		}
 	default:
-		return "", errors.New(fmt.Sprintf("環境変数MY_CONTRACTS_EXECUTE_MODEが考慮外 MY_CONTRACTS_EXECUTE_MODE: %+v", executeModeEnv))
+		return NotDefined, errors.New(fmt.Sprintf("環境変数MY_CONTRACTS_EXECUTE_MODEが考慮外 MY_CONTRACTS_EXECUTE_MODE: %+v", executeModeEnv))
 	}
 }
 

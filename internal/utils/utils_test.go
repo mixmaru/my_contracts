@@ -25,6 +25,12 @@ func TestUtils_GetExecuteMode(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, Production, mode)
 	})
+	t.Run("環境変数が意味不明指定", func(t *testing.T) {
+		os.Setenv("MY_CONTRACTS_EXECUTE_MODE", "aaafdsafdsa")
+		mode, err := GetExecuteMode()
+		assert.Error(t, err)
+		assert.Equal(t, NotDefined, mode)
+	})
 	t.Run("環境変数が未指定の時", func(t *testing.T) {
 		t.Run("go test 実行では testになる", func(t *testing.T) {
 			os.Unsetenv("MY_CONTRACTS_EXECUTE_MODE")
