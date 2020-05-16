@@ -7,6 +7,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user/tables"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
+	"reflect"
 )
 
 // gorpのdbMapを作成する
@@ -34,7 +35,7 @@ func GetConnection() (*gorp.DbMap, error) {
 // executorがnilだったら、dbConnectionを返す。
 // ※repository内で、いちいちそれがトランザクションなのか、dbConnectionを取得しないと行けないのかの条件分岐を書く必要性を無くすために用意した
 func GetConnectionIfNotTransaction(executor gorp.SqlExecutor) (gorp.SqlExecutor, error) {
-	if executor == nil {
+	if executor == nil || reflect.ValueOf(executor).IsNil() {
 		return GetConnection()
 	}
 
@@ -46,6 +47,9 @@ func GetConnectionIfNotTransaction(executor gorp.SqlExecutor) (gorp.SqlExecutor,
 	return nil, errors.New(fmt.Sprintf("GetConnectionに失敗しました。executorが考慮外 executor: %+v", executor))
 }
 
+// executorがDbMapだったらCloseする
+// executorがトランザクションだったらなにもしない
+// ※repository内で、いちいちそれがトランザクションなのか、DbMapなのかを判断してClose処理のための条件分岐を書く必要性を無くすために用意した
 func CloseConnectionIfNotTransaction(executor gorp.SqlExecutor) error {
 	// dbMapが渡されたらそれをcloseする
 	dbMap, ok := executor.(*gorp.DbMap)

@@ -11,7 +11,7 @@ import (
 // トランザクションが正しく動作しているかテスト
 func TestUser_Transaction(t *testing.T) {
 	// db接続
-	dbMap, err := db_connection.GetConnectionIfNotTransaction()
+	dbMap, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 
@@ -59,32 +59,22 @@ func TestUser_Transaction(t *testing.T) {
 }
 
 func TestUser_SaveUserIndividual(t *testing.T) {
-	// db接続
-	dbMap, err := db_connection.GetConnectionIfNotTransaction()
-	assert.NoError(t, err)
-	defer dbMap.Db.Close()
-
 	// 登録用データ作成
 	user := user.NewUserIndividualEntity()
 	user.SetName("個人太郎")
 
 	// 実行
 	repo := Repository{}
-	err = repo.SaveUserIndividual(user, nil)
+	err := repo.SaveUserIndividual(user, nil)
 	assert.NoError(t, err)
 }
 
 func TestUser_GetUserIndividualById(t *testing.T) {
-	// db接続
-	dbMap, err := db_connection.GetConnectionIfNotTransaction()
-	assert.NoError(t, err)
-	defer dbMap.Db.Close()
-
 	//　事前にデータ登録する
 	user := user.NewUserIndividualEntity()
 	user.SetName("個人太郎")
 	repo := &Repository{}
-	err = repo.SaveUserIndividual(user, nil)
+	err := repo.SaveUserIndividual(user, nil)
 	assert.NoError(t, err)
 
 	// idで取得して検証
@@ -95,11 +85,6 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 }
 
 func TestUser_SaveUserCorporation(t *testing.T) {
-	// db接続
-	dbMap, err := db_connection.GetConnectionIfNotTransaction()
-	assert.NoError(t, err)
-	defer dbMap.Db.Close()
-
 	// 保存するデータ作成
 	user := user.NewUserCorporationEntity()
 	user.SetContactPersonName("担当太郎")
@@ -107,13 +92,13 @@ func TestUser_SaveUserCorporation(t *testing.T) {
 
 	// 保存実行
 	repo := &Repository{}
-	err = repo.SaveUserCorporation(user, nil)
+	err := repo.SaveUserCorporation(user, nil)
 	assert.NoError(t, err)
 }
 
 func TestUser_getUserCorporationViewById(t *testing.T) {
 	// db接続
-	dbMap, err := db_connection.GetConnectionIfNotTransaction()
+	dbMap, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 	defer dbMap.Db.Close()
 

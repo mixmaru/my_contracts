@@ -16,19 +16,11 @@ type Repository struct {
 // 個人顧客エンティティを保存する
 func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, transaction *gorp.Transaction) error {
 	// db接続。
-	var conn gorp.SqlExecutor
-	if transaction != nil {
-		// トランザクションが渡されていればそれを使う
-		conn = transaction
-	} else {
-		// なければ、db接続を取得する
-		dbMap, err := db_connection.GetConnectionIfNotTransaction()
-		if err != nil {
-			return err
-		}
-		defer dbMap.Db.Close()
-		conn = dbMap
+	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
+	if err != nil {
+		return err
 	}
+	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// エンティティからリポジトリ用構造体に値をセットし直す
 	now := time.Now()
@@ -37,7 +29,7 @@ func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, t
 	user.CreatedAt = now
 	user.UpdatedAt = now
 
-	err := conn.Insert(user)
+	err = conn.Insert(user)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -70,19 +62,11 @@ func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, t
 
 func (r *Repository) GetUserIndividualById(id int, transaction *gorp.Transaction) (*user.UserIndividualEntity, error) {
 	// db接続。
-	var conn gorp.SqlExecutor
-	if transaction != nil {
-		// トランザクションが渡されていればそれを使う
-		conn = transaction
-	} else {
-		// なければ、db接続を取得する
-		dbMap, err := db_connection.GetConnectionIfNotTransaction()
-		if err != nil {
-			return nil, err
-		}
-		defer dbMap.Db.Close()
-		conn = dbMap
+	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
+	if err != nil {
+		return nil, err
 	}
+	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// dbからデータ取得
 	userData, err := r.getUserIndividualViewById(id, conn)
@@ -120,19 +104,11 @@ func (r *Repository) getUserIndividualViewById(id int, executor gorp.SqlExecutor
 // 法人顧客エンティティを保存する
 func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity, transaction *gorp.Transaction) error {
 	// db接続。
-	var conn gorp.SqlExecutor
-	if transaction != nil {
-		// トランザクションが渡されていればそれを使う
-		conn = transaction
-	} else {
-		// なければ、db接続を取得する
-		dbMap, err := db_connection.GetConnectionIfNotTransaction()
-		if err != nil {
-			return err
-		}
-		defer dbMap.Db.Close()
-		conn = dbMap
+	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
+	if err != nil {
+		return err
 	}
+	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	now := time.Now()
 
@@ -142,7 +118,7 @@ func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity,
 	userRecord.UpdatedAt = now
 
 	// 保存
-	err := conn.Insert(userRecord)
+	err = conn.Insert(userRecord)
 	if err != nil {
 		return errors.WithStack(err)
 	}
