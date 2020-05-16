@@ -39,13 +39,29 @@ func TestDbConnection_Close(t *testing.T) {
 		assert.NoError(t, err)
 		err = CloseConnectionIfNotTransaction(conn)
 		assert.NoError(t, err)
+
+		// 接続しようとしたらエラーになるはず
+		dbMap, ok := conn.(*gorp.DbMap)
+		assert.True(t, ok)
+		err = dbMap.Db.Ping()
+		assert.Error(t, err)
 	})
 
 	t.Run("トランザクションが渡された場合何もしない", func(t *testing.T) {
+		// トランザクションを作成
 		conn, err := GetConnectionIfNotTransaction(nil)
 		assert.NoError(t, err)
-		err = CloseConnectionIfNotTransaction(conn)
+		dbMap, ok := conn.(*gorp.DbMap)
+		assert.True(t, ok)
+		tran, err := dbMap.Begin()
 		assert.NoError(t, err)
 
+		// 実行
+		err = CloseConnectionIfNotTransaction(tran)
+		assert.NoError(t, err)
+
+		// 接続できるはず
+		_, err = tran.Query("select count(*) from users")
+		assert.NoError(t, err)
 	})
 }
