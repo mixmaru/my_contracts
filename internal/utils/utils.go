@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"flag"
 	"fmt"
 	"github.com/pkg/errors"
 	"os"
@@ -23,8 +24,20 @@ func GetExecuteMode() (string, error) {
 	case "production":
 		return Production, nil
 	case "":
-		return Development, nil
+		if isGoTest() {
+			return Test, nil
+		} else {
+			return Development, nil
+		}
 	default:
 		return "", errors.New(fmt.Sprintf("環境変数MY_CONTRACTS_EXECUTE_MODEが考慮外 MY_CONTRACTS_EXECUTE_MODE: %+v", executeModeEnv))
+	}
+}
+
+func isGoTest() bool {
+	if flag.Lookup("test.v") != nil {
+		return true
+	} else {
+		return false
 	}
 }

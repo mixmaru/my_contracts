@@ -32,13 +32,12 @@ func TestUtils_GetExecuteMode(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, Test, mode)
 		})
-		t.Run("go run 実行ではdevelopmentになる", func(t *testing.T) {
-			// go testでは検証できないのでスキップ
-			t.Skip()
-			os.Unsetenv("MY_CONTRACTS_EXECUTE_MODE")
-			mode, err := GetExecuteMode()
-			assert.NoError(t, err)
-			assert.Equal(t, Development, mode)
-		})
+		// go testでは検証できないのでスキップ
+		//t.Run("go run 実行ではdevelopmentになる", func(t *testing.T) {
+		//	os.Unsetenv("MY_CONTRACTS_EXECUTE_MODE")
+		//	mode, err := GetExecuteMode()
+		//	assert.NoError(t, err)
+		//	assert.Equal(t, Development, mode)
+		//})
 	})
 }
