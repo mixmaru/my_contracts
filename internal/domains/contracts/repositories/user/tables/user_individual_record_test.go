@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestUserIndividual_LoadUserIndividual(t *testing.T) {
+func TestUserIndividualRecord_NewUserIndividualRecordFromUserIndividualEntity(t *testing.T) {
 	// entity用意
 	entity := user.NewUserIndividualEntityWithData(
 		1,
@@ -28,4 +28,32 @@ func TestUserIndividual_LoadUserIndividual(t *testing.T) {
 
 	// テスト
 	assert.Equal(t, expect, resultData)
+}
+
+func TestUserIndividualRecord_PreInsert(t *testing.T) {
+	// entity用意
+	newUser := UserIndividualRecord{
+		UserId: 0,
+		Name:   "担当太郎",
+	}
+
+	err := newUser.PreInsert(nil)
+	assert.NoError(t, err)
+
+	assert.NotEqual(t, time.Time{}, newUser.CreatedAt)
+	assert.NotEqual(t, time.Time{}, newUser.UpdatedAt)
+}
+
+func TestUserIndividualRecord_PreUpdate(t *testing.T) {
+	// entity用意
+	newUser := UserIndividualRecord{
+		UserId: 0,
+		Name:   "担当太郎",
+	}
+
+	err := newUser.PreUpdate(nil)
+	assert.NoError(t, err)
+
+	assert.Equal(t, time.Time{}, newUser.CreatedAt)
+	assert.NotEqual(t, time.Time{}, newUser.UpdatedAt)
 }
