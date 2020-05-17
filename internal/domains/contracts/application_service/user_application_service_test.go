@@ -1,12 +1,18 @@
 package application_service
 
 import (
+	"github.com/golang/mock/gomock"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestUserApplication_NewUserApplicationService(t *testing.T) {
 	// リポジトリモックを用意する
-	userApp := NewUserApplicationService()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
+
+	userApp := NewUserApplicationService(userRepositoryMock)
 	assert.IsType(t, &UserApplicationService{}, userApp)
 }
