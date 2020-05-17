@@ -16,3 +16,17 @@ func TestUserApplication_NewUserApplicationService(t *testing.T) {
 	userApp := NewUserApplicationService(userRepositoryMock)
 	assert.IsType(t, &UserApplicationService{}, userApp)
 }
+
+func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
+	// リポジトリモックを用意する
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
+
+	userApp := NewUserApplicationService(userRepositoryMock)
+
+	userId, err := userApp.RegisterUserIndividual("個人太郎")
+	assert.NoError(t, err)
+	assert.NotEqual(t, 0, userId)
+
+}

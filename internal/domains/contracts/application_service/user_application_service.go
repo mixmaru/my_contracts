@@ -11,3 +11,9 @@ func NewUserApplicationService(userRepository interfaces.IUserRepository) *UserA
 		userRepository: userRepository,
 	}
 }
+
+// 個人顧客を新規登録する
+// 成功時、userIDを返却する
+func (s *UserApplicationService) RegisterUserIndividual(name string) (int, error) {
+	return 0, nil
+}
