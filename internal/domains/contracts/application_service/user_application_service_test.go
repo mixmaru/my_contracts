@@ -6,6 +6,7 @@ import (
 	user_repository "github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestUserApplication_NewUserApplicationService(t *testing.T) {
@@ -18,6 +19,7 @@ func TestUserApplication_NewUserApplicationService(t *testing.T) {
 	assert.IsType(t, &UserApplicationService{}, userApp)
 }
 
+// 個人顧客情報の登録とデータ取得のテスト
 func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 	// インスタンス化
 	userApp := NewUserApplicationService(&user_repository.Repository{})
@@ -26,5 +28,12 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEqual(t, 0, userId)
 
-	// todo: IDでuser情報を取得してチェックする
+	// IDでuser情報を取得してチェックする
+	user, err := userApp.GetUserIndividual(userId)
+	assert.NoError(t, err)
+	assert.Equal(t, userId, user.Id())
+	assert.Equal(t, "個人太郎", user.Name())
+	assert.NotEqual(t, time.Time{}, user.CreatedAt())
+	assert.NotEqual(t, time.Time{}, user.UpdatedAt())
+
 }

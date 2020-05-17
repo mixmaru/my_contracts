@@ -32,7 +32,10 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (int, error
 	tran, err := dbMap.Begin()
 
 	// リポジトリ使って保存
-	s.userRepository.SaveUserIndividual(userEntity, tran)
+	err = s.userRepository.SaveUserIndividual(userEntity, tran)
+	if err != nil {
+		return 0, err
+	}
 
 	// コミット
 	err = tran.Commit()
@@ -40,4 +43,14 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (int, error
 		return 0, err
 	}
 	return userEntity.Id(), nil
+}
+
+// 個人顧客情報を取得する
+// 成功時、userIDを返却する
+func (s *UserApplicationService) GetUserIndividual(userId int) (*user.UserIndividualEntity, error) {
+	user, err := s.userRepository.GetUserIndividualById(userId, nil)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
