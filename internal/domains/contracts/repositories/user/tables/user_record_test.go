@@ -43,3 +43,29 @@ func TestUser_NewUserRecordFromUserCorporationEntity(t *testing.T) {
 
 	assert.Equal(t, expect, user)
 }
+
+func TestUserRecord_PreInsert(t *testing.T) {
+	// entity用意
+	newUser := UserRecord{
+		Id: 0,
+	}
+
+	err := newUser.PreInsert(nil)
+	assert.NoError(t, err)
+
+	assert.NotEqual(t, time.Time{}, newUser.CreatedAt)
+	assert.NotEqual(t, time.Time{}, newUser.UpdatedAt)
+}
+
+func TestUserRecord_PreUpdate(t *testing.T) {
+	// entity用意
+	newUser := UserRecord{
+		Id: 0,
+	}
+
+	err := newUser.PreUpdate(nil)
+	assert.NoError(t, err)
+
+	assert.Equal(t, time.Time{}, newUser.CreatedAt)
+	assert.NotEqual(t, time.Time{}, newUser.UpdatedAt)
+}
