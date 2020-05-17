@@ -31,9 +31,9 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 	// IDでuser情報を取得してチェックする
 	user, err := userApp.GetUserIndividual(userId)
 	assert.NoError(t, err)
-	assert.Equal(t, userId, user.Id())
-	assert.Equal(t, "個人太郎", user.Name())
-	assert.NotEqual(t, time.Time{}, user.CreatedAt())
-	assert.NotEqual(t, time.Time{}, user.UpdatedAt())
+	assert.Equal(t, userId, user.Id)
+	assert.Equal(t, "個人太郎", user.Name)
+	assert.NotEqual(t, time.Time{}, user.CreatedAt)
+	assert.NotEqual(t, time.Time{}, user.UpdatedAt)
 
 }
