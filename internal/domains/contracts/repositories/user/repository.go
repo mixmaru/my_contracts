@@ -13,11 +13,11 @@ type Repository struct {
 }
 
 // 個人顧客エンティティを保存する
-func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, transaction *gorp.Transaction) error {
+func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, transaction *gorp.Transaction) (*user.UserIndividualEntity, error) {
 	// db接続。
 	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
@@ -26,7 +26,7 @@ func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, t
 
 	err = conn.Insert(user)
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
 	// individualを保存
@@ -35,13 +35,13 @@ func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, t
 
 	err = conn.Insert(userIndividualDbMap)
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
 	// dbから再読込してentityに詰め直す
 	userDbData, err := r.getUserIndividualViewById(user.Id, conn)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	userEntity.LoadData(
 		userDbData.Id,
@@ -50,7 +50,7 @@ func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, t
 		userDbData.UpdatedAt,
 	)
 
-	return nil
+	return userEntity, nil
 }
 
 func (r *Repository) GetUserIndividualById(id int, transaction *gorp.Transaction) (*user.UserIndividualEntity, error) {
@@ -95,11 +95,11 @@ func (r *Repository) getUserIndividualViewById(id int, executor gorp.SqlExecutor
 }
 
 // 法人顧客エンティティを保存する
-func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity, transaction *gorp.Transaction) error {
+func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity, transaction *gorp.Transaction) (*user.UserCorporationEntity, error) {
 	// db接続。
 	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
@@ -109,7 +109,7 @@ func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity,
 	// 保存
 	err = conn.Insert(userRecord)
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
 	// userCorporationRecord作成
@@ -119,17 +119,17 @@ func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity,
 	// 保存
 	err = conn.Insert(userCorporationRecord)
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
 	// 再読込する
 	data, err := r.getUserCorporationViewById(userRecord.Id, conn)
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
 	userEntity.LoadData(data.Id, data.ContactPersonName, data.PresidentName, data.CreatedAt, data.UpdatedAt)
-	return nil
+	return userEntity, nil
 }
 
 // dbからid指定で法人顧客情報を取得する

@@ -33,7 +33,7 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (int, error
 	tran, err := dbMap.Begin()
 
 	// リポジトリ使って保存
-	err = s.userRepository.SaveUserIndividual(userEntity, tran)
+	userEntity, err = s.userRepository.SaveUserIndividual(userEntity, tran)
 	if err != nil {
 		return 0, err
 	}
