@@ -5,6 +5,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
+	"github.com/pkg/errors"
 )
 
 type UserApplicationService struct {
@@ -31,6 +32,9 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (int, error
 	}
 	defer dbMap.Db.Close()
 	tran, err := dbMap.Begin()
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
 
 	// リポジトリ使って保存
 	userEntity, err = s.userRepository.SaveUserIndividual(userEntity, tran)
