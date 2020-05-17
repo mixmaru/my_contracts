@@ -7,7 +7,6 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user/tables"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
-	"time"
 )
 
 type Repository struct {
@@ -23,11 +22,7 @@ func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, t
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// エンティティからリポジトリ用構造体に値をセットし直す
-	now := time.Now()
-
 	user := tables.NewUserRecordFromUserIndividualEntity(userEntity)
-	user.CreatedAt = now
-	user.UpdatedAt = now
 
 	err = conn.Insert(user)
 	if err != nil {
@@ -37,8 +32,6 @@ func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, t
 	// individualを保存
 	userIndividualDbMap := tables.NewUserIndividualRecordFromUserIndividualEntity(userEntity)
 	userIndividualDbMap.UserId = user.Id
-	userIndividualDbMap.CreatedAt = now
-	userIndividualDbMap.UpdatedAt = now
 
 	err = conn.Insert(userIndividualDbMap)
 	if err != nil {
@@ -110,12 +103,8 @@ func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity,
 	}
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
-	now := time.Now()
-
 	// userRecord作成
 	userRecord := tables.NewUserRecordFromUserCorporationEntity(userEntity)
-	userRecord.CreatedAt = now
-	userRecord.UpdatedAt = now
 
 	// 保存
 	err = conn.Insert(userRecord)
@@ -126,8 +115,6 @@ func (r *Repository) SaveUserCorporation(userEntity *user.UserCorporationEntity,
 	// userCorporationRecord作成
 	userCorporationRecord := tables.NewUserCorporationRecordFromUserCorporationEntity(userEntity)
 	userCorporationRecord.UserId = userRecord.Id
-	userCorporationRecord.CreatedAt = now
-	userCorporationRecord.UpdatedAt = now
 
 	// 保存
 	err = conn.Insert(userCorporationRecord)

@@ -82,6 +82,8 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, result.Id(), user.Id())
 	assert.Equal(t, result.Name(), user.Name())
+	assert.NotEqual(t, time.Time{}, user.CreatedAt())
+	assert.NotEqual(t, time.Time{}, user.UpdatedAt())
 }
 
 func TestUser_SaveUserCorporation(t *testing.T) {
