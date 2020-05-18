@@ -6,6 +6,7 @@ import (
 	user2 "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	user_repository "github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/gorp.v2"
 	"testing"
 	"time"
 )
@@ -18,20 +19,24 @@ func TestUserApplication_NewUserApplicationService(t *testing.T) {
 
 // 個人顧客情報の登録とデータ取得のテスト
 func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
-	// モックリポジトリ作成
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	now := time.Now()
-
+	// リポジトリのSaveUserIndividual()が受け取る引数を用意
 	saveUserEntity := user2.NewUserIndividualEntity()
 	saveUserEntity.SetName("個人太郎")
 
+	now := time.Now()
 	returnUserEntity := user2.NewUserIndividualEntity()
 	returnUserEntity.LoadData(1, "個人太郎", now, now)
 
+	// モックリポジトリ作成
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 	userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
-	userRepositoryMock.EXPECT().SaveUserIndividual(saveUserEntity, gomock.Any()).Return(returnUserEntity, nil).Times(1)
+	userRepositoryMock.EXPECT().
+		SaveUserIndividual(
+			saveUserEntity,
+			gomock.AssignableToTypeOf(&gorp.Transaction{}),
+		).Return(returnUserEntity, nil).
+		Times(1)
 
 	// インスタンス化
 	userApp := NewUserApplicationService(userRepositoryMock)
