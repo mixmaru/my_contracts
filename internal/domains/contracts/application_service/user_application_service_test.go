@@ -1,8 +1,12 @@
 package application_service
 
 import (
+	"github.com/golang/mock/gomock"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
+	user2 "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	user_repository "github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/gorp.v2"
 	"testing"
 	"time"
 )
@@ -15,19 +19,32 @@ func TestUserApplication_NewUserApplicationService(t *testing.T) {
 
 // 個人顧客情報の登録とデータ取得のテスト
 func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
+	// リポジトリのSaveUserIndividual()が受け取る引数を用意
+	saveUserEntity := user2.NewUserIndividualEntity()
+	saveUserEntity.SetName("個人太郎")
+
+	now := time.Now()
+	returnUserEntity := user2.NewUserIndividualEntity()
+	returnUserEntity.LoadData(1, "個人太郎", now, now)
+
+	// モックリポジトリ作成
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
+	userRepositoryMock.EXPECT().
+		SaveUserIndividual(
+			saveUserEntity,
+			gomock.AssignableToTypeOf(&gorp.Transaction{}),
+		).Return(returnUserEntity, nil).
+		Times(1)
+
 	// インスタンス化
-	userApp := NewUserApplicationService(&user_repository.Repository{})
+	userApp := NewUserApplicationService(userRepositoryMock)
 
-	userId, err := userApp.RegisterUserIndividual("個人太郎")
+	registerdUser, err := userApp.RegisterUserIndividual("個人太郎")
 	assert.NoError(t, err)
-	assert.NotEqual(t, 0, userId)
-
-	// IDでuser情報を取得してチェックする
-	user, err := userApp.GetUserIndividual(userId)
-	assert.NoError(t, err)
-	assert.Equal(t, userId, user.Id)
-	assert.Equal(t, "個人太郎", user.Name)
-	assert.NotEqual(t, time.Time{}, user.CreatedAt)
-	assert.NotEqual(t, time.Time{}, user.UpdatedAt)
-
+	assert.Equal(t, 1, registerdUser.Id)
+	assert.Equal(t, "個人太郎", registerdUser.Name)
+	assert.Equal(t, now, registerdUser.CreatedAt)
+	assert.Equal(t, now, registerdUser.UpdatedAt)
 }

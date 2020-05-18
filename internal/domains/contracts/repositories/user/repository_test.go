@@ -24,7 +24,7 @@ func TestUser_Transaction(t *testing.T) {
 		user := user.NewUserIndividualEntity()
 		user.SetName("個人太郎")
 		repo := Repository{}
-		err = repo.SaveUserIndividual(user, tran)
+		user, err = repo.SaveUserIndividual(user, tran)
 		assert.NoError(t, err)
 
 		// コミット
@@ -45,7 +45,7 @@ func TestUser_Transaction(t *testing.T) {
 		user := user.NewUserIndividualEntity()
 		user.SetName("個人太郎")
 		repo := Repository{}
-		err = repo.SaveUserIndividual(user, tran)
+		user, err = repo.SaveUserIndividual(user, tran)
 		assert.NoError(t, err)
 
 		// ロールバック
@@ -65,7 +65,7 @@ func TestUser_SaveUserIndividual(t *testing.T) {
 
 	// 実行
 	repo := Repository{}
-	err := repo.SaveUserIndividual(user, nil)
+	user, err := repo.SaveUserIndividual(user, nil)
 	assert.NoError(t, err)
 }
 
@@ -74,7 +74,7 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 	user := user.NewUserIndividualEntity()
 	user.SetName("個人太郎")
 	repo := &Repository{}
-	err := repo.SaveUserIndividual(user, nil)
+	user, err := repo.SaveUserIndividual(user, nil)
 	assert.NoError(t, err)
 
 	// idで取得して検証
@@ -94,7 +94,7 @@ func TestUser_SaveUserCorporation(t *testing.T) {
 
 	// 保存実行
 	repo := &Repository{}
-	err := repo.SaveUserCorporation(user, nil)
+	user, err := repo.SaveUserCorporation(user, nil)
 	assert.NoError(t, err)
 }
 
@@ -109,7 +109,7 @@ func TestUser_getUserCorporationViewById(t *testing.T) {
 	user.SetContactPersonName("担当太郎")
 	user.SetPresidentName("社長次郎")
 	repo := &Repository{}
-	err = repo.SaveUserCorporation(user, nil)
+	user, err = repo.SaveUserCorporation(user, nil)
 	assert.NoError(t, err)
 
 	// idで取得する

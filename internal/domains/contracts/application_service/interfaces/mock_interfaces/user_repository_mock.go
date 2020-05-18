@@ -35,11 +35,12 @@ func (m *MockIUserRepository) EXPECT() *MockIUserRepositoryMockRecorder {
 }
 
 // SaveUserIndividual mocks base method.
-func (m *MockIUserRepository) SaveUserIndividual(userEntity *user.UserIndividualEntity, transaction *gorp.Transaction) error {
+func (m *MockIUserRepository) SaveUserIndividual(userEntity *user.UserIndividualEntity, transaction *gorp.Transaction) (*user.UserIndividualEntity, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveUserIndividual", userEntity, transaction)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*user.UserIndividualEntity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // SaveUserIndividual indicates an expected call of SaveUserIndividual.
@@ -64,11 +65,12 @@ func (mr *MockIUserRepositoryMockRecorder) GetUserIndividualById(id, transaction
 }
 
 // SaveUserCorporation mocks base method.
-func (m *MockIUserRepository) SaveUserCorporation(userEntity *user.UserCorporationEntity, transaction *gorp.Transaction) error {
+func (m *MockIUserRepository) SaveUserCorporation(userEntity *user.UserCorporationEntity, transaction *gorp.Transaction) (*user.UserCorporationEntity, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveUserCorporation", userEntity, transaction)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*user.UserCorporationEntity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // SaveUserCorporation indicates an expected call of SaveUserCorporation.

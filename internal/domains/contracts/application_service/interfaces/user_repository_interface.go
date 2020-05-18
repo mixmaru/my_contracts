@@ -6,8 +6,8 @@ import (
 )
 
 type IUserRepository interface {
-	SaveUserIndividual(userEntity *user.UserIndividualEntity, transaction *gorp.Transaction) error
+	SaveUserIndividual(userEntity *user.UserIndividualEntity, transaction *gorp.Transaction) (*user.UserIndividualEntity, error)
 	GetUserIndividualById(id int, transaction *gorp.Transaction) (*user.UserIndividualEntity, error)
 
-	SaveUserCorporation(userEntity *user.UserCorporationEntity, transaction *gorp.Transaction) error
+	SaveUserCorporation(userEntity *user.UserCorporationEntity, transaction *gorp.Transaction) (*user.UserCorporationEntity, error)
 }
