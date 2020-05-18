@@ -41,32 +41,10 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 	// インスタンス化
 	userApp := NewUserApplicationService(userRepositoryMock)
 
-	userId, err := userApp.RegisterUserIndividual("個人太郎")
+	registerdUser, err := userApp.RegisterUserIndividual("個人太郎")
 	assert.NoError(t, err)
-	assert.Equal(t, 1, userId)
-
-	// IDでuser情報を取得してチェックする
-	//user, err := userApp.GetUserIndividual(userId)
-	//assert.NoError(t, err)
-	//assert.Equal(t, userId, user.Id)
-	//assert.Equal(t, "個人太郎", user.Name)
-	//assert.NotEqual(t, time.Time{}, user.CreatedAt)
-	//assert.NotEqual(t, time.Time{}, user.UpdatedAt)
-
+	assert.Equal(t, 1, registerdUser.Id)
+	assert.Equal(t, "個人太郎", registerdUser.Name)
+	assert.Equal(t, now, registerdUser.CreatedAt)
+	assert.Equal(t, now, registerdUser.UpdatedAt)
 }
-
-//ctrl := gomock.NewController(t)
-//
-//// Assert that Bar() is invoked.
-//defer ctrl.Finish()
-//
-//m := NewMockFoo(ctrl)
-//
-//// Asserts that the first and only call to Bar() is passed 99.
-//// Anything else will fail.
-//m.
-//EXPECT().
-//Bar(gomock.Eq(99)).
-//Return(101)
-//
-//SUT(m)
