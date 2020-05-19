@@ -3,6 +3,8 @@ services:
   go:
     build: ./go/
     command: bash -c "tail -f /dev/null"
+    ports:
+      - "1323:1323"
     volumes:
       - ../:/root/my_contracts
     environment:
