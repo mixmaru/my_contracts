@@ -41,5 +41,5 @@ func saveIndividualUser(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "処理に失敗しました。")
 	}
 
-	return c.String(http.StatusOK, fmt.Sprintf("登録成功。%+v", user))
+	return c.String(http.StatusCreated, fmt.Sprintf("登録成功。%+v", user))
 }
