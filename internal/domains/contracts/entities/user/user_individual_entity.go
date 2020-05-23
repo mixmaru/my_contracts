@@ -14,15 +14,9 @@ type UserIndividualEntity struct {
 }
 
 func NewUserIndividualEntity(name string) (*UserIndividualEntity, error) {
-	nameValue, errs := NewName(name)
-	if len(errs) > 0 {
-		if len(errs) > 0 {
-			messages := []string{}
-			for _, err := range errs {
-				messages = append(messages, err.Error())
-			}
-			return nil, errors.New(strings.Join(messages, ", "))
-		}
+	nameValue, err := NewName(name)
+	if err != nil {
+		return nil, err
 	}
 
 	return &UserIndividualEntity{
@@ -45,16 +39,11 @@ func NewUserIndividualEntityWithData(id int, name string, createdAt time.Time, u
 
 // 保持データをセットし直す
 func (u *UserIndividualEntity) LoadData(id int, name string, createdAt time.Time, updatedAt time.Time) error {
-	nameValue, errs := NewName(name)
-	if len(errs) > 0 {
-		if len(errs) > 0 {
-			messages := []string{}
-			for _, err := range errs {
-				messages = append(messages, err.Error())
-			}
-			return errors.New(strings.Join(messages, ", "))
-		}
+	nameValue, err := NewName(name)
+	if err != nil {
+		return err
 	}
+
 	u.id = id
 	u.name = nameValue
 	u.createdAt = createdAt
@@ -66,13 +55,13 @@ func (u *UserIndividualEntity) Name() string {
 	return u.name.value
 }
 
-func (u *UserIndividualEntity) SetName(name string) []error {
-	nameValue, errors := NewName(name)
-	if len(errors) > 0 {
-		return errors
+func (u *UserIndividualEntity) SetName(name string) error {
+	nameValue, err := NewName(name)
+	if err != nil {
+		return err
 	}
 	u.name = nameValue
-	return errors
+	return nil
 }
 
 // Name値オブジェクト
@@ -90,10 +79,14 @@ type OverLengthValidError struct {
 	error
 }
 
-func NewName(value string) (Name, []error) {
+func NewName(value string) (Name, error) {
 	validateErrors := nameValidate(value)
 	if len(validateErrors) > 0 {
-		return Name{}, validateErrors
+		var msgs []string
+		for _, msg := range validateErrors {
+			msgs = append(msgs, msg.Error())
+		}
+		return Name{}, errors.New(fmt.Sprintf("Nameバリデーションエラー。%v", strings.Join(msgs, ", ")))
 	}
 	return Name{
 		value: value,
