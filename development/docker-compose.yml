@@ -1,8 +1,10 @@
 version: '3'
 services:
-  go:
-    build: ./go/
-    command: bash -c "tail -f /dev/null"
+  api:
+    build: ./api/
+    command: bash -c "cd /root/my_contracts/api && go build && ./api"
+    ports:
+      - "1323:1323"
     volumes:
       - ../:/root/my_contracts
     environment:
