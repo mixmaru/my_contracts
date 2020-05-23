@@ -41,3 +41,22 @@ func (u *UserIndividualEntity) Name() string {
 func (u *UserIndividualEntity) SetName(name string) {
 	u.name = name
 }
+
+// Name値オブジェクト
+type Name struct {
+	value string
+}
+
+func NewName(value string) (Name, error) {
+	err := nameValidate(value)
+	if err != nil {
+		return Name{}, err
+	}
+	return Name{
+		value: value,
+	}, nil
+}
+
+func nameValidate(name string) error {
+	return nil
+}

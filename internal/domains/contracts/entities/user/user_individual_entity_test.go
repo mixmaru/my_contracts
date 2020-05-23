@@ -46,3 +46,9 @@ func TestUserIndividual_LoadUserIndividual(t *testing.T) {
 	assert.Equal(t, time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), userIndividual.CreatedAt())
 	assert.Equal(t, time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), userIndividual.UpdatedAt())
 }
+
+func TestUserIndividualEntity_NewName(t *testing.T) {
+	name, err := NewName("個人顧客名")
+	assert.NoError(t, err)
+	assert.Equal(t, Name{"個人顧客名"}, name)
+}
