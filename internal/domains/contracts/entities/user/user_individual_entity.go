@@ -1,7 +1,9 @@
 package user
 
 import (
+	"github.com/pkg/errors"
 	"time"
+	"unicode/utf8"
 )
 
 type UserIndividualEntity struct {
@@ -47,16 +49,33 @@ type Name struct {
 	value string
 }
 
-func NewName(value string) (Name, error) {
-	err := nameValidate(value)
-	if err != nil {
-		return Name{}, err
+type EmptyValidError struct {
+	error
+}
+
+func NewName(value string) (Name, []error) {
+	validateErrors := nameValidate(value)
+	if len(validateErrors) > 0 {
+		return Name{}, validateErrors
 	}
 	return Name{
 		value: value,
 	}, nil
 }
 
-func nameValidate(name string) error {
-	return nil
+func nameValidate(name string) []error {
+	var validErrors []error
+	if isEmpty(name) {
+		validErrors = append(validErrors, EmptyValidError{errors.New("nameが空です")})
+	}
+
+	return validErrors
+}
+
+func isEmpty(name string) bool {
+	if utf8.RuneCountInString(name) == 0 {
+		return true
+	} else {
+		return false
+	}
 }

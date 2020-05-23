@@ -48,7 +48,16 @@ func TestUserIndividual_LoadUserIndividual(t *testing.T) {
 }
 
 func TestUserIndividualEntity_NewName(t *testing.T) {
-	name, err := NewName("個人顧客名")
-	assert.NoError(t, err)
-	assert.Equal(t, Name{"個人顧客名"}, name)
+	t.Run("正常系", func(t *testing.T) {
+		name, errors := NewName("個人顧客名")
+		assert.Len(t, errors, 0)
+		assert.Equal(t, Name{"個人顧客名"}, name)
+	})
+
+	t.Run("名前が空文字だった時", func(t *testing.T) {
+		name, errors := NewName("")
+		assert.Len(t, errors, 1)
+		assert.IsType(t, EmptyValidError{}, errors[0])
+		assert.Equal(t, Name{}, name)
+	})
 }
