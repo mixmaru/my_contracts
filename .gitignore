@@ -1,6 +1,9 @@
 # postgresのデータ領域
 development/db/data
 
+# バイナリは除外
+api/api
+
 # Go用
 # Binaries for programs and plugins
 *.exe
