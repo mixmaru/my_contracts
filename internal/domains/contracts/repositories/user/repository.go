@@ -68,12 +68,15 @@ func (r *Repository) GetUserIndividualById(id int, transaction *gorp.Transaction
 	}
 
 	// entityに詰める
-	userEntity := user.NewUserIndividualEntityWithData(
+	userEntity, err := user.NewUserIndividualEntityWithData(
 		userData.Id,
 		userData.Name,
 		userData.CreatedAt,
 		userData.UpdatedAt,
 	)
+	if err != nil {
+		return nil, err
+	}
 	return userEntity, nil
 }
 

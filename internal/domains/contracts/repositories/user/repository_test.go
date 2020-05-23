@@ -21,8 +21,8 @@ func TestUser_Transaction(t *testing.T) {
 		assert.NoError(t, err)
 
 		//データ保存
-		user := user.NewUserIndividualEntity()
-		user.SetName("個人太郎")
+		user, err := user.NewUserIndividualEntity("個人太郎")
+		assert.NoError(t, err)
 		repo := Repository{}
 		user, err = repo.SaveUserIndividual(user, tran)
 		assert.NoError(t, err)
@@ -42,8 +42,8 @@ func TestUser_Transaction(t *testing.T) {
 		assert.NoError(t, err)
 
 		//データ保存
-		user := user.NewUserIndividualEntity()
-		user.SetName("個人太郎")
+		user, err := user.NewUserIndividualEntity("個人太郎")
+		assert.NoError(t, err)
 		repo := Repository{}
 		user, err = repo.SaveUserIndividual(user, tran)
 		assert.NoError(t, err)
@@ -60,21 +60,21 @@ func TestUser_Transaction(t *testing.T) {
 
 func TestUser_SaveUserIndividual(t *testing.T) {
 	// 登録用データ作成
-	user := user.NewUserIndividualEntity()
-	user.SetName("個人太郎")
+	user, err := user.NewUserIndividualEntity("個人太郎")
+	assert.NoError(t, err)
 
 	// 実行
 	repo := Repository{}
-	user, err := repo.SaveUserIndividual(user, nil)
+	user, err = repo.SaveUserIndividual(user, nil)
 	assert.NoError(t, err)
 }
 
 func TestUser_GetUserIndividualById(t *testing.T) {
 	//　事前にデータ登録する
-	user := user.NewUserIndividualEntity()
-	user.SetName("個人太郎")
+	user, err := user.NewUserIndividualEntity("個人太郎")
+	assert.NoError(t, err)
 	repo := &Repository{}
-	user, err := repo.SaveUserIndividual(user, nil)
+	user, err = repo.SaveUserIndividual(user, nil)
 	assert.NoError(t, err)
 
 	// idで取得して検証
