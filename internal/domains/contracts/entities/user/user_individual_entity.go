@@ -1,43 +1,62 @@
 package user
 
 import (
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
 	"time"
 )
 
 type UserIndividualEntity struct {
 	*UserEntity
-	name string
+	name values.NameValue
 }
 
-func NewUserIndividualEntity() *UserIndividualEntity {
+func NewUserIndividualEntity(name string) (*UserIndividualEntity, error) {
+	nameValue, err := values.NewNameValue(name)
+	if err != nil {
+		return nil, err
+	}
+
 	return &UserIndividualEntity{
 		UserEntity: &UserEntity{},
-		name:       "",
-	}
+		name:       nameValue,
+	}, nil
 }
 
-func NewUserIndividualEntityWithData(id int, name string, createdAt time.Time, updatedAt time.Time) *UserIndividualEntity {
-	userIndividual := NewUserIndividualEntity()
+func NewUserIndividualEntityWithData(id int, name string, createdAt time.Time, updatedAt time.Time) (*UserIndividualEntity, error) {
+	userIndividual, err := NewUserIndividualEntity(name)
+	if err != nil {
+		return nil, err
+	}
 	userIndividual.id = id
-	userIndividual.name = name
 	userIndividual.createdAt = createdAt
 	userIndividual.updatedAt = updatedAt
 
-	return userIndividual
+	return userIndividual, nil
 }
 
 // 保持データをセットし直す
-func (u *UserIndividualEntity) LoadData(id int, name string, createdAt time.Time, updatedAt time.Time) {
+func (u *UserIndividualEntity) LoadData(id int, name string, createdAt time.Time, updatedAt time.Time) error {
+	nameValue, err := values.NewNameValue(name)
+	if err != nil {
+		return err
+	}
+
 	u.id = id
-	u.name = name
+	u.name = nameValue
 	u.createdAt = createdAt
 	u.updatedAt = updatedAt
+	return nil
 }
 
 func (u *UserIndividualEntity) Name() string {
-	return u.name
+	return u.name.Value()
 }
 
-func (u *UserIndividualEntity) SetName(name string) {
-	u.name = name
+func (u *UserIndividualEntity) SetName(name string) error {
+	nameValue, err := values.NewNameValue(name)
+	if err != nil {
+		return err
+	}
+	u.name = nameValue
+	return nil
 }
