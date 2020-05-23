@@ -14,7 +14,7 @@ type NameValue struct {
 }
 
 func NewNameValue(value string) (NameValue, error) {
-	validateErrors := nameValidate(value)
+	validateErrors := NameValidate(value)
 	if len(validateErrors) > 0 {
 		var msgs []string
 		for _, msg := range validateErrors {
@@ -31,7 +31,7 @@ func (v *NameValue) Value() string {
 	return v.value
 }
 
-func nameValidate(name string) []error {
+func NameValidate(name string) []error {
 	var validErrors []error
 	if isEmpty(name) {
 		validErrors = append(validErrors, EmptyValidError{plain_err.New("nameが空です")})
