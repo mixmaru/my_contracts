@@ -13,16 +13,6 @@ type NameValue struct {
 	value string
 }
 
-// から文字エラー
-type EmptyValidError struct {
-	error
-}
-
-// 文字数オーバーエラー
-type OverLengthValidError struct {
-	error
-}
-
 func NewNameValue(value string) (NameValue, error) {
 	validateErrors := nameValidate(value)
 	if len(validateErrors) > 0 {
@@ -67,4 +57,14 @@ func isOverLength(name string) bool {
 	} else {
 		return true
 	}
+}
+
+// から文字エラー
+type EmptyValidError struct {
+	error
+}
+
+// 文字数オーバーエラー
+type OverLengthValidError struct {
+	error
 }
