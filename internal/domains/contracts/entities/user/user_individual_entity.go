@@ -49,7 +49,13 @@ type Name struct {
 	value string
 }
 
+// から文字エラー
 type EmptyValidError struct {
+	error
+}
+
+// 文字数オーバーエラー
+type OverLengthValidError struct {
 	error
 }
 
@@ -68,6 +74,9 @@ func nameValidate(name string) []error {
 	if isEmpty(name) {
 		validErrors = append(validErrors, EmptyValidError{errors.New("nameが空です")})
 	}
+	if isOverLength(name) {
+		validErrors = append(validErrors, OverLengthValidError{errors.New("nameが50文字より多いです")})
+	}
 
 	return validErrors
 }
@@ -77,5 +86,13 @@ func isEmpty(name string) bool {
 		return true
 	} else {
 		return false
+	}
+}
+
+func isOverLength(name string) bool {
+	if utf8.RuneCountInString(name) <= 50 {
+		return false
+	} else {
+		return true
 	}
 }

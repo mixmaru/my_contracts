@@ -60,4 +60,17 @@ func TestUserIndividualEntity_NewName(t *testing.T) {
 		assert.IsType(t, EmptyValidError{}, errors[0])
 		assert.Equal(t, Name{}, name)
 	})
+
+	t.Run("名前が50文字を超えていた時", func(t *testing.T) {
+		name, errors := NewName("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
+		assert.Len(t, errors, 1)
+		assert.IsType(t, OverLengthValidError{}, errors[0])
+		assert.Equal(t, Name{}, name)
+	})
+
+	t.Run("名前が50文字だった時", func(t *testing.T) {
+		name, errors := NewName("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789")
+		assert.Len(t, errors, 0)
+		assert.Equal(t, Name{"0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789"}, name)
+	})
 }
