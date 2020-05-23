@@ -1,6 +1,7 @@
 package user
 
 import (
+	plain_err "errors"
 	"fmt"
 	"github.com/pkg/errors"
 	"strings"
@@ -96,10 +97,10 @@ func NewName(value string) (Name, error) {
 func nameValidate(name string) []error {
 	var validErrors []error
 	if isEmpty(name) {
-		validErrors = append(validErrors, EmptyValidError{errors.New("nameが空です")})
+		validErrors = append(validErrors, EmptyValidError{plain_err.New("nameが空です")})
 	}
 	if isOverLength(name) {
-		validErrors = append(validErrors, OverLengthValidError{errors.New(fmt.Sprintf("nameが50文字より多いです。name: %v", name))})
+		validErrors = append(validErrors, OverLengthValidError{plain_err.New(fmt.Sprintf("nameが50文字より多いです。name: %v", name))})
 	}
 
 	return validErrors
