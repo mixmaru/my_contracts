@@ -9,8 +9,8 @@ import (
 // UserIndividualのインスタンス化をテスト
 func TestUserIndividual_NewIndividual(t *testing.T) {
 	// インスタンス化
-	userIndividual := NewUserIndividualEntity()
-	userIndividual.SetName("顧客太郎")
+	userIndividual, errors := NewUserIndividualEntity("顧客太郎")
+	assert.Len(t, errors, 0)
 
 	// テスト
 	assert.Equal(t, "顧客太郎", userIndividual.Name())
@@ -18,12 +18,13 @@ func TestUserIndividual_NewIndividual(t *testing.T) {
 
 // 個人顧客Entityの初期化と共にデータロードするやつ
 func TestUserIndividual_Static_LoadUserIndividual(t *testing.T) {
-	result := NewUserIndividualEntityWithData(
+	result, errors := NewUserIndividualEntityWithData(
 		1,
 		"個人太郎",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
+	assert.Len(t, errors, 0)
 
 	assert.Equal(t, 1, result.Id())
 	assert.Equal(t, "個人太郎", result.Name())
@@ -33,13 +34,15 @@ func TestUserIndividual_Static_LoadUserIndividual(t *testing.T) {
 
 // インスタンス化された個人顧客Entityに対してデータロードするやつ
 func TestUserIndividual_LoadUserIndividual(t *testing.T) {
-	userIndividual := NewUserIndividualEntity()
-	userIndividual.LoadData(
+	userIndividual, errors := NewUserIndividualEntity("既存太郎")
+	assert.Len(t, errors, 0)
+	errors = userIndividual.LoadData(
 		1,
 		"個人太郎",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
+	assert.Len(t, errors, 0)
 
 	assert.Equal(t, 1, userIndividual.Id())
 	assert.Equal(t, "個人太郎", userIndividual.Name())

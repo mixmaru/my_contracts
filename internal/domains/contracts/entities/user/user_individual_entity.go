@@ -8,40 +8,57 @@ import (
 
 type UserIndividualEntity struct {
 	*UserEntity
-	name string
+	name Name
 }
 
-func NewUserIndividualEntity() *UserIndividualEntity {
+func NewUserIndividualEntity(name string) (*UserIndividualEntity, []error) {
+	nameValue, errors := NewName(name)
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
 	return &UserIndividualEntity{
 		UserEntity: &UserEntity{},
-		name:       "",
-	}
+		name:       nameValue,
+	}, errors
 }
 
-func NewUserIndividualEntityWithData(id int, name string, createdAt time.Time, updatedAt time.Time) *UserIndividualEntity {
-	userIndividual := NewUserIndividualEntity()
+func NewUserIndividualEntityWithData(id int, name string, createdAt time.Time, updatedAt time.Time) (*UserIndividualEntity, []error) {
+	userIndividual, errors := NewUserIndividualEntity(name)
+	if len(errors) > 0 {
+		return nil, errors
+	}
 	userIndividual.id = id
-	userIndividual.name = name
 	userIndividual.createdAt = createdAt
 	userIndividual.updatedAt = updatedAt
 
-	return userIndividual
+	return userIndividual, errors
 }
 
 // 保持データをセットし直す
-func (u *UserIndividualEntity) LoadData(id int, name string, createdAt time.Time, updatedAt time.Time) {
+func (u *UserIndividualEntity) LoadData(id int, name string, createdAt time.Time, updatedAt time.Time) []error {
+	nameValue, errors := NewName(name)
+	if len(errors) > 0 {
+		return errors
+	}
 	u.id = id
-	u.name = name
+	u.name = nameValue
 	u.createdAt = createdAt
 	u.updatedAt = updatedAt
+	return errors
 }
 
 func (u *UserIndividualEntity) Name() string {
-	return u.name
+	return u.name.value
 }
 
-func (u *UserIndividualEntity) SetName(name string) {
-	u.name = name
+func (u *UserIndividualEntity) SetName(name string) []error {
+	nameValue, errors := NewName(name)
+	if len(errors) > 0 {
+		return errors
+	}
+	u.name = nameValue
+	return errors
 }
 
 // Name値オブジェクト
