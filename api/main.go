@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
@@ -48,5 +47,5 @@ func saveIndividualUser(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "処理に失敗しました。")
 	}
 
-	return c.String(http.StatusCreated, fmt.Sprintf("登録成功。%+v", user))
+	return c.JSON(http.StatusCreated, user)
 }
