@@ -42,9 +42,18 @@ func saveIndividualUser(c echo.Context) error {
 	name := c.FormValue("name")
 	userRepository := &user.Repository{}
 	userAppService := application_service.NewUserApplicationService(userRepository)
-	user, err := userAppService.RegisterUserIndividual(name)
+	user, validErrs, err := userAppService.RegisterUserIndividual(name)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "処理に失敗しました。")
+	}
+	if len(validErrs) > 0 {
+		validMessages := map[string][]string{
+			"name": []string{},
+		}
+		for _, err := range validErrs {
+			validMessages["name"] = append(validMessages["name"], err.Error())
+		}
+		return c.JSON(http.StatusBadRequest, validMessages)
 	}
 
 	return c.JSON(http.StatusCreated, user)
