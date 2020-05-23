@@ -59,13 +59,13 @@ func TestUserIndividualEntity_NewName(t *testing.T) {
 
 	t.Run("名前が空文字だった時", func(t *testing.T) {
 		name, err := NewName("")
-		assert.Error(t, err, "Nameバリデーションエラー。nameが空です。name:")
+		assert.Error(t, err)
 		assert.Equal(t, Name{}, name)
 	})
 
 	t.Run("名前が50文字を超えていた時", func(t *testing.T) {
 		name, err := NewName("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
-		assert.Error(t, err, "Nameバリデーションエラー。nameが50文字より多いです。name:0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
+		assert.Error(t, err)
 		assert.Equal(t, Name{}, name)
 	})
 
