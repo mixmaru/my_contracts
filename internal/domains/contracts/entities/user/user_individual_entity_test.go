@@ -49,29 +49,3 @@ func TestUserIndividual_LoadUserIndividual(t *testing.T) {
 	assert.Equal(t, time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), userIndividual.CreatedAt())
 	assert.Equal(t, time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), userIndividual.UpdatedAt())
 }
-
-func TestUserIndividualEntity_NewName(t *testing.T) {
-	t.Run("正常系", func(t *testing.T) {
-		name, err := NewName("個人顧客名")
-		assert.NoError(t, err)
-		assert.Equal(t, Name{"個人顧客名"}, name)
-	})
-
-	t.Run("名前が空文字だった時", func(t *testing.T) {
-		name, err := NewName("")
-		assert.Error(t, err)
-		assert.Equal(t, Name{}, name)
-	})
-
-	t.Run("名前が50文字を超えていた時", func(t *testing.T) {
-		name, err := NewName("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
-		assert.Error(t, err)
-		assert.Equal(t, Name{}, name)
-	})
-
-	t.Run("名前が50文字だった時", func(t *testing.T) {
-		name, err := NewName("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789")
-		assert.NoError(t, err)
-		assert.Equal(t, Name{"0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789"}, name)
-	})
-}
