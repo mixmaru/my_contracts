@@ -10,6 +10,14 @@ import (
 )
 
 func main() {
+	e := newRouter()
+
+	// Start server
+	e.Logger.Fatal(e.Start(":1323"))
+}
+
+// Routerの初期化
+func newRouter() *echo.Echo {
 	// Echo instance
 	e := echo.New()
 
@@ -23,8 +31,7 @@ func main() {
 	//e.PUT("/users/:id", updateUser)
 	//e.DELETE("/users/:id", deleteUser)
 
-	// Start server
-	e.Logger.Fatal(e.Start(":1323"))
+	return e
 }
 
 // e.POST("/individual_users", saveUser)
