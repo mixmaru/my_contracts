@@ -22,8 +22,10 @@ func NewUserApplicationService(userRepository interfaces.IUserRepository) *UserA
 // 成功時、userIDを返却する
 func (s *UserApplicationService) RegisterUserIndividual(name string) (data_transfer_objects.UserIndividualDto, error) {
 	// エンティティ作成
-	userEntity := user.NewUserIndividualEntity()
-	userEntity.SetName(name)
+	userEntity, err := user.NewUserIndividualEntity(name)
+	if err != nil {
+		return data_transfer_objects.UserIndividualDto{}, err
+	}
 
 	// トランザクション開始
 	dbMap, err := db_connection.GetConnection()

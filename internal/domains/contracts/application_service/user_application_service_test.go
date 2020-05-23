@@ -20,12 +20,14 @@ func TestUserApplication_NewUserApplicationService(t *testing.T) {
 // 個人顧客情報の登録とデータ取得のテスト
 func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 	// リポジトリのSaveUserIndividual()が受け取る引数を用意
-	saveUserEntity := user2.NewUserIndividualEntity()
-	saveUserEntity.SetName("個人太郎")
+	saveUserEntity, err := user2.NewUserIndividualEntity("個人太郎")
+	assert.NoError(t, err)
 
 	now := time.Now()
-	returnUserEntity := user2.NewUserIndividualEntity()
-	returnUserEntity.LoadData(1, "個人太郎", now, now)
+	returnUserEntity, err := user2.NewUserIndividualEntity("既存太郎")
+	assert.NoError(t, err)
+	err = returnUserEntity.LoadData(1, "個人太郎", now, now)
+	assert.NoError(t, err)
 
 	// モックリポジトリ作成
 	ctrl := gomock.NewController(t)
