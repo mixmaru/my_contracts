@@ -8,12 +8,13 @@ import (
 )
 
 func TestUser_NewUserRecordFromUserIndividualEntity(t *testing.T) {
-	userEntity := user.NewUserIndividualEntityWithData(
+	userEntity, err := user.NewUserIndividualEntityWithData(
 		1,
 		"個人たろう",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
+	assert.NoError(t, err)
 
 	user := NewUserRecordFromUserIndividualEntity(userEntity)
 	expect := &UserRecord{

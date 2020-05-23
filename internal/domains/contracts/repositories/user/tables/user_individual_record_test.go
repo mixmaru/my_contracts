@@ -9,12 +9,13 @@ import (
 
 func TestUserIndividualRecord_NewUserIndividualRecordFromUserIndividualEntity(t *testing.T) {
 	// entity用意
-	entity := user.NewUserIndividualEntityWithData(
+	entity, err := user.NewUserIndividualEntityWithData(
 		1,
 		"担当太郎",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
+	assert.NoError(t, err)
 
 	// 実行
 	resultData := NewUserIndividualRecordFromUserIndividualEntity(entity)
