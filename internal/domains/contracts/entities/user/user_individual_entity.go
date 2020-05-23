@@ -1,7 +1,9 @@
 package user
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
+	"strings"
 	"time"
 	"unicode/utf8"
 )
@@ -11,41 +13,53 @@ type UserIndividualEntity struct {
 	name Name
 }
 
-func NewUserIndividualEntity(name string) (*UserIndividualEntity, []error) {
-	nameValue, errors := NewName(name)
-	if len(errors) > 0 {
-		return nil, errors
+func NewUserIndividualEntity(name string) (*UserIndividualEntity, error) {
+	nameValue, errs := NewName(name)
+	if len(errs) > 0 {
+		if len(errs) > 0 {
+			messages := []string{}
+			for _, err := range errs {
+				messages = append(messages, err.Error())
+			}
+			return nil, errors.New(strings.Join(messages, ", "))
+		}
 	}
 
 	return &UserIndividualEntity{
 		UserEntity: &UserEntity{},
 		name:       nameValue,
-	}, errors
+	}, nil
 }
 
-func NewUserIndividualEntityWithData(id int, name string, createdAt time.Time, updatedAt time.Time) (*UserIndividualEntity, []error) {
-	userIndividual, errors := NewUserIndividualEntity(name)
-	if len(errors) > 0 {
-		return nil, errors
+func NewUserIndividualEntityWithData(id int, name string, createdAt time.Time, updatedAt time.Time) (*UserIndividualEntity, error) {
+	userIndividual, err := NewUserIndividualEntity(name)
+	if err != nil {
+		return nil, err
 	}
 	userIndividual.id = id
 	userIndividual.createdAt = createdAt
 	userIndividual.updatedAt = updatedAt
 
-	return userIndividual, errors
+	return userIndividual, nil
 }
 
 // 保持データをセットし直す
-func (u *UserIndividualEntity) LoadData(id int, name string, createdAt time.Time, updatedAt time.Time) []error {
-	nameValue, errors := NewName(name)
-	if len(errors) > 0 {
-		return errors
+func (u *UserIndividualEntity) LoadData(id int, name string, createdAt time.Time, updatedAt time.Time) error {
+	nameValue, errs := NewName(name)
+	if len(errs) > 0 {
+		if len(errs) > 0 {
+			messages := []string{}
+			for _, err := range errs {
+				messages = append(messages, err.Error())
+			}
+			return errors.New(strings.Join(messages, ", "))
+		}
 	}
 	u.id = id
 	u.name = nameValue
 	u.createdAt = createdAt
 	u.updatedAt = updatedAt
-	return errors
+	return nil
 }
 
 func (u *UserIndividualEntity) Name() string {
@@ -92,7 +106,7 @@ func nameValidate(name string) []error {
 		validErrors = append(validErrors, EmptyValidError{errors.New("nameが空です")})
 	}
 	if isOverLength(name) {
-		validErrors = append(validErrors, OverLengthValidError{errors.New("nameが50文字より多いです")})
+		validErrors = append(validErrors, OverLengthValidError{errors.New(fmt.Sprintf("nameが50文字より多いです。name: %v", name))})
 	}
 
 	return validErrors
