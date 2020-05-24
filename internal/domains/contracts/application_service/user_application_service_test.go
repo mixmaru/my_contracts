@@ -5,18 +5,11 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
 	user2 "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
-	user_repository "github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
 	"testing"
 	"time"
 )
-
-// インスタンス化テスト
-func TestUserApplication_NewUserApplicationService(t *testing.T) {
-	userApp := NewUserApplicationService(&user_repository.Repository{})
-	assert.IsType(t, &UserApplicationService{}, userApp)
-}
 
 // 個人顧客情報の登録とデータ取得のテスト
 func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
@@ -43,7 +36,7 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 			Times(1)
 
 		// インスタンス化
-		userApp := NewUserApplicationService(userRepositoryMock)
+		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
 
 		registerdUser, validErrs, err := userApp.RegisterUserIndividual("個人太郎")
 		assert.Len(t, validErrs, 0)
@@ -61,7 +54,7 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 		userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
 
 		// インスタンス化
-		userApp := NewUserApplicationService(userRepositoryMock)
+		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
 
 		_, validErrs, err := userApp.RegisterUserIndividual("")
 		assert.NoError(t, err)
@@ -76,7 +69,7 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 		userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
 
 		// インスタンス化
-		userApp := NewUserApplicationService(userRepositoryMock)
+		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
 
 		_, validErrs, err := userApp.RegisterUserIndividual("000000000011111111112222222222333333333344444444445")
 		assert.NoError(t, err)

@@ -4,7 +4,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user"
 	"net/http"
 )
 
@@ -40,8 +39,7 @@ func newRouter() *echo.Echo {
 func saveIndividualUser(c echo.Context) error {
 	// Get name and email
 	name := c.FormValue("name")
-	userRepository := &user.Repository{}
-	userAppService := application_service.NewUserApplicationService(userRepository)
+	userAppService := application_service.NewUserApplicationService()
 	user, validErrs, err := userAppService.RegisterUserIndividual(name)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "処理に失敗しました。")
