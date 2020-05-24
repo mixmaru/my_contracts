@@ -13,12 +13,6 @@ type UserApplicationService struct {
 	userRepository interfaces.IUserRepository
 }
 
-func NewUserApplicationService(userRepository interfaces.IUserRepository) *UserApplicationService {
-	return &UserApplicationService{
-		userRepository: userRepository,
-	}
-}
-
 // 個人顧客を新規登録する
 // 成功時、登録した個人顧客情報を返却する
 func (s *UserApplicationService) RegisterUserIndividual(name string) (data_transfer_objects.UserIndividualDto, ValidationError, error) {
