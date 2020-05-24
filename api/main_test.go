@@ -7,13 +7,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"strings"
 	"testing"
 )
 
-func TestMain_saveIndividualUser(t *testing.T) {
+func TestMain_saveIndividualUser_getIndividualUser(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
 		router := newRouter()
+
+		//////// データ登録テスト
 
 		// リクエストパラメータ作成
 		body := url.Values{}
@@ -35,6 +38,22 @@ func TestMain_saveIndividualUser(t *testing.T) {
 
 		assert.Equal(t, "個人　太郎", registeredUser.Name)
 
+		///////// データ取得テスト
+		// リクエスト実行
+		registeredId := strconv.Itoa(registeredUser.Id)
+		req = httptest.NewRequest("GET", "/individual_users/"+registeredId, nil)
+		rec = httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		assert.Equal(t, http.StatusOK, rec.Code)
+
+		var loadedUser data_transfer_objects.UserIndividualDto
+		// jsonパース
+		err = json.Unmarshal(rec.Body.Bytes(), &loadedUser)
+		assert.NoError(t, err)
+
+		assert.Equal(t, registeredUser, loadedUser)
 	})
 
 	t.Run("バリデーションエラー", func(t *testing.T) {
@@ -57,5 +76,27 @@ func TestMain_saveIndividualUser(t *testing.T) {
 		var validMessages map[string][]string
 		err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 		assert.NoError(t, err)
+	})
+}
+func TestMain_getIndividualUser(t *testing.T) {
+	// 正常系はTestMain_saveIndividualUser_getIndividualUserでテスト済
+	t.Run("指定IDの個人顧客が存在しなかった時", func(t *testing.T) {
+		router := newRouter()
+		req := httptest.NewRequest("GET", "/individual_users/0", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+	})
+
+	t.Run("IDに変な値を入れられた時", func(t *testing.T) {
+		router := newRouter()
+		req := httptest.NewRequest("GET", "/individual_users/aa1aa", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		assert.Equal(t, http.StatusNotFound, rec.Code)
 	})
 }

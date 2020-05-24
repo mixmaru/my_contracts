@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
 	"net/http"
+	"strconv"
 )
 
 func main() {
@@ -23,8 +24,10 @@ func newRouter() *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	// Routes
+	// 個人顧客新規登録
 	e.POST("/individual_users", saveIndividualUser)
+	// 個人顧客情報取得
+	e.GET("/individual_users/:id", getIndividualUser)
 	//e.GET("/users/:id", getUser)
 	//e.PUT("/users/:id", updateUser)
 	//e.DELETE("/users/:id", deleteUser)
@@ -32,7 +35,7 @@ func newRouter() *echo.Echo {
 	return e
 }
 
-// e.POST("/individual_users", saveUser)
+// 個人顧客新規登録
 // params:
 // name string 個人顧客名
 // curl -F "name=個人　太郎" http://localhost:1323/individual_users
@@ -42,7 +45,8 @@ func saveIndividualUser(c echo.Context) error {
 	userAppService := application_service.NewUserApplicationService()
 	user, validErrs, err := userAppService.RegisterUserIndividual(name)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "処理に失敗しました。")
+		c.Error(err)
+		return err
 	}
 	if len(validErrs) > 0 {
 		validMessages := map[string][]string{
@@ -55,4 +59,26 @@ func saveIndividualUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, user)
+}
+
+// 個人顧客情報取得
+// params:
+// name string 個人顧客名
+// curl http://localhost:1323/individual_users/1
+func getIndividualUser(c echo.Context) error {
+	userId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	// サービスインスタンス化
+	userAppService := application_service.NewUserApplicationService()
+	// データ取得
+	user, err := userAppService.GetUserIndividual(userId)
+	if err != nil {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	// 返却
+	return c.JSON(http.StatusOK, user)
 }
