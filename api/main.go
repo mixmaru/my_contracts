@@ -4,6 +4,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
+	"go.uber.org/zap"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -40,11 +42,17 @@ func newRouter() *echo.Echo {
 // name string 個人顧客名
 // curl -F "name=個人　太郎" http://localhost:1323/individual_users
 func saveIndividualUser(c echo.Context) error {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		log.Print("zapのインスタンス化に失敗")
+	}
+
 	// Get name and email
 	name := c.FormValue("name")
 	userAppService := application_service.NewUserApplicationService()
 	user, validErrs, err := userAppService.RegisterUserIndividual(name)
 	if err != nil {
+		logger.Error("個人顧客データ登録に失敗", zap.Error(err))
 		c.Error(err)
 		return err
 	}

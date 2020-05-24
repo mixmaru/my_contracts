@@ -16,6 +16,7 @@ type UserApplicationService struct {
 // 個人顧客を新規登録する
 // 成功時、登録した個人顧客情報を返却する
 func (s *UserApplicationService) RegisterUserIndividual(name string) (data_transfer_objects.UserIndividualDto, ValidationError, error) {
+	return data_transfer_objects.UserIndividualDto{}, nil, errors.New("エラーが置きましたよ")
 	// 入力値バリデーション
 	validErrors := values.NameValidate(name)
 	if len(validErrors) > 0 {
