@@ -77,3 +77,31 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 		assert.IsType(t, values.OverLengthValidError{}, validErrs[0])
 	})
 }
+
+// 個人顧客情報の取得のテスト
+func TestUserApplicationService_GetUserIndividual(t *testing.T) {
+	// userリポジトリモック
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
+
+	// GetUserIndividualById()が返却するデータを定義
+	returnUserEntity, err := user2.NewUserIndividualEntityWithData(
+		1,
+		"個人たろう",
+		time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
+	)
+	userRepositoryMock.EXPECT().
+		GetUserIndividualById(1, gomock.Any()).
+		Return(returnUserEntity, nil).
+		Times(1)
+	userAppService := NewUserApplicationServiceWithMock(userRepositoryMock)
+
+	userData, err := userAppService.GetUserIndividual(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, userData.Id)
+	assert.Equal(t, "個人たろう", userData.Name)
+	assert.Equal(t, time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), userData.CreatedAt)
+	assert.Equal(t, time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), userData.UpdatedAt)
+}
