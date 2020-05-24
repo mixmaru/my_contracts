@@ -1,11 +1,4 @@
 FROM golang:1.14.2
 
-# デバッガ
-RUN go get github.com/go-delve/delve/cmd/dlv
-# DBマイグレーションツール
-RUN go get -v github.com/rubenv/sql-migrate/...
-# モックライブラリ
-RUN go get github.com/golang/mock/mockgen
-
 EXPOSE 1323
 WORKDIR /root/my_contracts
