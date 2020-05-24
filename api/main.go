@@ -68,8 +68,7 @@ func saveIndividualUser(c echo.Context) error {
 func getIndividualUser(c echo.Context) error {
 	userId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.Error(err)
-		return err
+		return c.NoContent(http.StatusNotFound)
 	}
 
 	// サービスインスタンス化
