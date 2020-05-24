@@ -45,7 +45,8 @@ func saveIndividualUser(c echo.Context) error {
 	userAppService := application_service.NewUserApplicationService()
 	user, validErrs, err := userAppService.RegisterUserIndividual(name)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "処理に失敗しました。")
+		c.Error(err)
+		return err
 	}
 	if len(validErrs) > 0 {
 		validMessages := map[string][]string{
@@ -67,7 +68,8 @@ func saveIndividualUser(c echo.Context) error {
 func getIndividualUser(c echo.Context) error {
 	userId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "不正なurlです")
+		c.Error(err)
+		return err
 	}
 
 	// サービスインスタンス化
@@ -75,7 +77,7 @@ func getIndividualUser(c echo.Context) error {
 	// データ取得
 	user, err := userAppService.GetUserIndividual(userId)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "処理に失敗しました。")
+		return c.NoContent(http.StatusNotFound)
 	}
 
 	// 返却
