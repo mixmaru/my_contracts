@@ -53,7 +53,10 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./db/data:/var/lib/postgresql/data:z
+      - my_contracts_postgres:/var/lib/postgresql/data
       - ./db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_PASSWORD: password
+volumes:
+  my_contracts_postgres:
+    driver: local
