@@ -1,6 +1,7 @@
 package application_service
 
 import (
+	"database/sql"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
@@ -16,7 +17,6 @@ type UserApplicationService struct {
 // 個人顧客を新規登録する
 // 成功時、登録した個人顧客情報を返却する
 func (s *UserApplicationService) RegisterUserIndividual(name string) (data_transfer_objects.UserIndividualDto, ValidationError, error) {
-	return data_transfer_objects.UserIndividualDto{}, nil, errors.New("エラーが置きましたよ")
 	// 入力値バリデーション
 	validErrors := values.NameValidate(name)
 	if len(validErrors) > 0 {
@@ -58,6 +58,9 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (data_trans
 // 個人顧客情報を取得して返却する
 func (s *UserApplicationService) GetUserIndividual(userId int) (data_transfer_objects.UserIndividualDto, error) {
 	user, err := s.userRepository.GetUserIndividualById(userId, nil)
+	if err == sql.ErrNoRows {
+		return data_transfer_objects.UserIndividualDto{}, nil
+	}
 	if err != nil {
 		return data_transfer_objects.UserIndividualDto{}, err
 	}

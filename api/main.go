@@ -74,6 +74,11 @@ func saveIndividualUser(c echo.Context) error {
 // name string 個人顧客名
 // curl http://localhost:1323/individual_users/1
 func getIndividualUser(c echo.Context) error {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		log.Print("zapのインスタンス化に失敗")
+	}
+
 	userId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.NoContent(http.StatusNotFound)
@@ -84,6 +89,13 @@ func getIndividualUser(c echo.Context) error {
 	// データ取得
 	user, err := userAppService.GetUserIndividual(userId)
 	if err != nil {
+		logger.Error("個人顧客データ取得に失敗", zap.Error(err))
+		c.Error(err)
+		return err
+	}
+
+	// データがない
+	if user.Id == 0 {
 		return c.NoContent(http.StatusNotFound)
 	}
 
