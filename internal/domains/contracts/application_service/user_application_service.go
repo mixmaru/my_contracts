@@ -1,7 +1,6 @@
 package application_service
 
 import (
-	"database/sql"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
@@ -58,14 +57,16 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (data_trans
 // 個人顧客情報を取得して返却する
 func (s *UserApplicationService) GetUserIndividual(userId int) (data_transfer_objects.UserIndividualDto, error) {
 	user, err := s.userRepository.GetUserIndividualById(userId, nil)
-	if err == sql.ErrNoRows {
-		return data_transfer_objects.UserIndividualDto{}, nil
-	}
 	if err != nil {
 		return data_transfer_objects.UserIndividualDto{}, err
 	}
-	userDto := createUserDtoFromEntity(user)
-	return userDto, nil
+	if user == nil {
+		// データがない場合、空データ構造体を返す
+		return data_transfer_objects.UserIndividualDto{}, nil
+	} else {
+		userDto := createUserDtoFromEntity(user)
+		return userDto, nil
+	}
 }
 
 func createUserDtoFromEntity(entity *user.UserIndividualEntity) data_transfer_objects.UserIndividualDto {
