@@ -23,7 +23,7 @@ func TestMain_saveIndividualUser_getIndividualUser(t *testing.T) {
 		body.Set("name", "個人　太郎")
 
 		// リクエスト実行
-		req := httptest.NewRequest("POST", "/individual_users", strings.NewReader(body.Encode()))
+		req := httptest.NewRequest("POST", "/individual_users/", strings.NewReader(body.Encode()))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
@@ -64,7 +64,7 @@ func TestMain_saveIndividualUser_getIndividualUser(t *testing.T) {
 		body.Set("name", "")
 
 		// リクエスト実行
-		req := httptest.NewRequest("POST", "/individual_users", strings.NewReader(body.Encode()))
+		req := httptest.NewRequest("POST", "/individual_users/", strings.NewReader(body.Encode()))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
