@@ -12,25 +12,6 @@ import (
 	"testing"
 )
 
-//func TestZap(t *testing.T) {
-//	logger := zap.NewExample()
-//	logger.Info("Hello zap", zap.String("key", "value"), zap.Time("now", time.Now()))
-//	logger.Warn("Hello zap", zap.String("key", "value"), zap.Time("now", time.Now()))
-//	logger.Error("Hello zap", zap.String("key", "value"), zap.Time("now", time.Now()))
-//
-//	logger, err := zap.NewDevelopment()
-//	assert.NoError(t, err)
-//	logger.Info("Hello zap", zap.String("key", "value"), zap.Time("now", time.Now()))
-//	logger.Warn("Hello zap", zap.String("key", "value"), zap.Time("now", time.Now()))
-//	logger.Error("Hello zap", zap.String("key", "value"), zap.Time("now", time.Now()))
-//
-//	logger, err = zap.NewProduction()
-//	assert.NoError(t, err)
-//	logger.Info("Hello zap", zap.String("key", "value"), zap.Time("now", time.Now()))
-//	logger.Warn("Hello zap", zap.String("key", "value"), zap.Time("now", time.Now()))
-//	logger.Error("Hello zap", zap.String("key", "value"), zap.Time("now", time.Now()))
-//}
-
 func TestMain_saveIndividualUser_getIndividualUser(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
 		router := newRouter()

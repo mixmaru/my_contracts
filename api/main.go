@@ -4,8 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
-	"go.uber.org/zap"
-	"log"
+	"github.com/mixmaru/my_contracts/internal/utils/my_logger"
 	"net/http"
 	"strconv"
 )
@@ -27,7 +26,7 @@ func newRouter() *echo.Echo {
 	e.Use(middleware.Recover())
 
 	// 個人顧客新規登録
-	e.POST("/individual_users", saveIndividualUser)
+	e.POST("/individual_users/", saveIndividualUser)
 	// 個人顧客情報取得
 	e.GET("/individual_users/:id", getIndividualUser)
 	//e.GET("/users/:id", getUser)
@@ -42,9 +41,9 @@ func newRouter() *echo.Echo {
 // name string 個人顧客名
 // curl -F "name=個人　太郎" http://localhost:1323/individual_users
 func saveIndividualUser(c echo.Context) error {
-	logger, err := zap.NewDevelopment()
+	logger, err := my_logger.GetLogger()
 	if err != nil {
-		log.Print("zapのインスタンス化に失敗")
+		return err
 	}
 
 	// Get name and email
@@ -52,7 +51,7 @@ func saveIndividualUser(c echo.Context) error {
 	userAppService := application_service.NewUserApplicationService()
 	user, validErrs, err := userAppService.RegisterUserIndividual(name)
 	if err != nil {
-		logger.Error("個人顧客データ登録に失敗", zap.Error(err))
+		logger.Sugar().Errorw("個人顧客データ登録に失敗。", "name", name, "err", err)
 		c.Error(err)
 		return err
 	}
@@ -74,9 +73,9 @@ func saveIndividualUser(c echo.Context) error {
 // name string 個人顧客名
 // curl http://localhost:1323/individual_users/1
 func getIndividualUser(c echo.Context) error {
-	logger, err := zap.NewDevelopment()
+	logger, err := my_logger.GetLogger()
 	if err != nil {
-		log.Print("zapのインスタンス化に失敗")
+		return err
 	}
 
 	userId, err := strconv.Atoi(c.Param("id"))
@@ -89,7 +88,7 @@ func getIndividualUser(c echo.Context) error {
 	// データ取得
 	user, err := userAppService.GetUserIndividual(userId)
 	if err != nil {
-		logger.Error("個人顧客データ取得に失敗", zap.Error(err))
+		logger.Sugar().Errorw("個人顧客データ取得に失敗。", "userId", userId, "err", err)
 		c.Error(err)
 		return err
 	}
