@@ -1,4 +1,4 @@
-package logger
+package my_logger
 
 import (
 	"github.com/pkg/errors"

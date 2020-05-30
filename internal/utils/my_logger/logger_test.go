@@ -1,11 +1,11 @@
-package logger
+package my_logger
 
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestLogger_GetLogger(t *testing.T) {
+func TestMyLogger_GetLogger(t *testing.T) {
 	logger1, err := GetLogger()
 	assert.NoError(t, err)
 	logger2, err := GetLogger()
