@@ -2,6 +2,7 @@ package application_service
 
 import (
 	"github.com/golang/mock/gomock"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
 	user2 "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
@@ -85,23 +86,37 @@ func TestUserApplicationService_GetUserIndividual(t *testing.T) {
 	defer ctrl.Finish()
 	userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
 
-	// GetUserIndividualById()が返却するデータを定義
-	returnUserEntity, err := user2.NewUserIndividualEntityWithData(
-		1,
-		"個人たろう",
-		time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
-		time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
-	)
-	userRepositoryMock.EXPECT().
-		GetUserIndividualById(1, gomock.Any()).
-		Return(returnUserEntity, nil).
-		Times(1)
-	userAppService := NewUserApplicationServiceWithMock(userRepositoryMock)
+	t.Run("データがある時", func(t *testing.T) {
+		// GetUserIndividualById()が返却するデータを定義
+		returnUserEntity, err := user2.NewUserIndividualEntityWithData(
+			1,
+			"個人たろう",
+			time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
+		)
+		userRepositoryMock.EXPECT().
+			GetUserIndividualById(1, gomock.Any()).
+			Return(returnUserEntity, nil).
+			Times(1)
+		userAppService := NewUserApplicationServiceWithMock(userRepositoryMock)
 
-	userData, err := userAppService.GetUserIndividual(1)
-	assert.NoError(t, err)
-	assert.Equal(t, 1, userData.Id)
-	assert.Equal(t, "個人たろう", userData.Name)
-	assert.Equal(t, time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), userData.CreatedAt)
-	assert.Equal(t, time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), userData.UpdatedAt)
+		userData, err := userAppService.GetUserIndividual(1)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, userData.Id)
+		assert.Equal(t, "個人たろう", userData.Name)
+		assert.Equal(t, time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), userData.CreatedAt)
+		assert.Equal(t, time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), userData.UpdatedAt)
+	})
+
+	t.Run("データがない時", func(t *testing.T) {
+		// GetUserIndividualById()が返却するデータを定義
+		userRepositoryMock.EXPECT().
+			GetUserIndividualById(10000, gomock.Any()).
+			Return(nil, nil). // データが無い時はnilが返る
+			Times(1)
+		userAppService := NewUserApplicationServiceWithMock(userRepositoryMock)
+		userData, err := userAppService.GetUserIndividual(10000)
+		assert.NoError(t, err)
+		assert.Equal(t, data_transfer_objects.UserIndividualDto{}, userData)
+	})
 }

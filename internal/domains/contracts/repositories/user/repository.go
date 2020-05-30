@@ -1,6 +1,7 @@
 package user
 
 import (
+	"database/sql"
 	_ "github.com/lib/pq"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
@@ -53,6 +54,7 @@ func (r *Repository) SaveUserIndividual(userEntity *user.UserIndividualEntity, t
 	return userEntity, nil
 }
 
+// Idで個人顧客情報を取得する。データがなければnilを返す
 func (r *Repository) GetUserIndividualById(id int, transaction *gorp.Transaction) (*user.UserIndividualEntity, error) {
 	// db接続。
 	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
@@ -63,6 +65,10 @@ func (r *Repository) GetUserIndividualById(id int, transaction *gorp.Transaction
 
 	// dbからデータ取得
 	userData, err := r.getUserIndividualViewById(id, conn)
+	if err == sql.ErrNoRows {
+		// データがなかったら、nilを返す
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +97,12 @@ func (r *Repository) getUserIndividualViewById(id int, executor gorp.SqlExecutor
 		id,
 	)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		if err == sql.ErrNoRows {
+			return nil, err
+		} else {
+			return nil, errors.WithStack(err)
+		}
+
 	}
 
 	return data, nil

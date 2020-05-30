@@ -53,8 +53,8 @@ func TestUser_Transaction(t *testing.T) {
 		assert.NoError(t, err)
 
 		// データ取得できない
-		_, err = repo.GetUserIndividualById(user.Id(), nil)
-		assert.Error(t, err) // sql: no rows in result set エラーが起こる
+		user, err = repo.GetUserIndividualById(user.Id(), nil)
+		assert.Nil(t, user)
 	})
 }
 
@@ -78,12 +78,20 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 	assert.NoError(t, err)
 
 	// idで取得して検証
-	result, err := repo.GetUserIndividualById(user.Id(), nil)
-	assert.NoError(t, err)
-	assert.Equal(t, result.Id(), user.Id())
-	assert.Equal(t, result.Name(), user.Name())
-	assert.NotEqual(t, time.Time{}, user.CreatedAt())
-	assert.NotEqual(t, time.Time{}, user.UpdatedAt())
+	t.Run("データがある時", func(t *testing.T) {
+		result, err := repo.GetUserIndividualById(user.Id(), nil)
+		assert.NoError(t, err)
+		assert.Equal(t, result.Id(), user.Id())
+		assert.Equal(t, result.Name(), user.Name())
+		assert.NotEqual(t, time.Time{}, user.CreatedAt())
+		assert.NotEqual(t, time.Time{}, user.UpdatedAt())
+	})
+
+	t.Run("データが無い時", func(t *testing.T) {
+		user, err := repo.GetUserIndividualById(-1, nil)
+		assert.NoError(t, err)
+		assert.Nil(t, user)
+	})
 }
 
 func TestUser_SaveUserCorporation(t *testing.T) {

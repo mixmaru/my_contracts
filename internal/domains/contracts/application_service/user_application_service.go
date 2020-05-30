@@ -60,8 +60,13 @@ func (s *UserApplicationService) GetUserIndividual(userId int) (data_transfer_ob
 	if err != nil {
 		return data_transfer_objects.UserIndividualDto{}, err
 	}
-	userDto := createUserDtoFromEntity(user)
-	return userDto, nil
+	if user == nil {
+		// データがない場合、空データ構造体を返す
+		return data_transfer_objects.UserIndividualDto{}, nil
+	} else {
+		userDto := createUserDtoFromEntity(user)
+		return userDto, nil
+	}
 }
 
 func createUserDtoFromEntity(entity *user.UserIndividualEntity) data_transfer_objects.UserIndividualDto {
