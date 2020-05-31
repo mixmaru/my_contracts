@@ -29,6 +29,8 @@ func newRouter() *echo.Echo {
 	e.POST("/individual_users/", saveIndividualUser)
 	// 個人顧客情報取得
 	e.GET("/individual_users/:id", getIndividualUser)
+	// 個人顧客新規登録
+	e.POST("/corporation_users/", saveCorporationUser)
 	//e.GET("/users/:id", getUser)
 	//e.PUT("/users/:id", updateUser)
 	//e.DELETE("/users/:id", deleteUser)
@@ -100,4 +102,39 @@ func getIndividualUser(c echo.Context) error {
 
 	// 返却
 	return c.JSON(http.StatusOK, user)
+}
+
+// 法人顧客新規登録
+// params:
+// contact_name string 担当者名
+// president_name string 社長名
+// curl -F "contact_name=担当　太郎" -F "president_name=社長　太郎" http://localhost:1323/corporation_users/
+func saveCorporationUser(c echo.Context) error {
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	contactName := c.FormValue("contact_name")
+	presidentName := c.FormValue("president_name")
+
+	userAppService := application_service.NewUserApplicationService()
+	user, _, err := userAppService.RegisterUserCorporation(contactName, presidentName)
+	if err != nil {
+		logger.Sugar().Errorw("法人顧客データ登録に失敗。", "contactName", contactName, "presidentName", presidentName, "err", err)
+		c.Error(err)
+		return err
+	}
+
+	//if len(validErrs) > 0 {
+	//	validMessages := map[string][]string{
+	//		"name": []string{},
+	//	}
+	//	for _, err := range validErrs {
+	//		validMessages["name"] = append(validMessages["name"], err.Error())
+	//	}
+	//	return c.JSON(http.StatusBadRequest, validMessages)
+	//}
+
+	return c.JSON(http.StatusCreated, user)
 }

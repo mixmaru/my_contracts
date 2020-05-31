@@ -120,3 +120,68 @@ func TestUserApplicationService_GetUserIndividual(t *testing.T) {
 		assert.Equal(t, data_transfer_objects.UserIndividualDto{}, userData)
 	})
 }
+
+func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
+	t.Run("正常系", func(t *testing.T) {
+		// リポジトリのSaveUserCorporation()が受け取る引数を用意
+		saveUserEntity := user2.NewUserCorporationEntity()
+		saveUserEntity.SetPresidentName("社長太郎")
+		saveUserEntity.SetContactPersonName("担当太郎")
+
+		now := time.Now()
+		returnUserEntity := user2.NewUserCorporationEntityWithData(1, "担当太郎", "社長太郎", now, now)
+
+		// モックリポジトリ作成
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
+		userRepositoryMock.EXPECT().
+			SaveUserCorporation(
+				saveUserEntity,
+				gomock.AssignableToTypeOf(&gorp.Transaction{}),
+			).Return(returnUserEntity, nil).
+			Times(1)
+
+		// インスタンス化
+		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
+
+		registeredUser, validErrs, err := userApp.RegisterUserCorporation("担当太郎", "社長太郎")
+		assert.NoError(t, err)
+		assert.Len(t, validErrs, 0)
+		assert.Equal(t, 1, registeredUser.Id)
+		assert.Equal(t, "担当太郎", registeredUser.ContactPersonName)
+		assert.Equal(t, "社長太郎", registeredUser.PresidentName)
+		assert.Equal(t, now, registeredUser.CreatedAt)
+		assert.Equal(t, now, registeredUser.UpdatedAt)
+	})
+
+	t.Run("バリデーションエラー　名前がから文字", func(t *testing.T) {
+		// モックリポジトリ作成
+		//ctrl := gomock.NewController(t)
+		//defer ctrl.Finish()
+		//userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
+		//
+		//// インスタンス化
+		//userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
+		//
+		//_, validErrs, err := userApp.RegisterUserIndividual("")
+		//assert.NoError(t, err)
+		//assert.Len(t, validErrs, 1)
+		//assert.IsType(t, values.EmptyValidError{}, validErrs[0])
+	})
+
+	t.Run("バリデーションエラー　名前が50文字以上", func(t *testing.T) {
+		//// モックリポジトリ作成
+		//ctrl := gomock.NewController(t)
+		//defer ctrl.Finish()
+		//userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
+		//
+		//// インスタンス化
+		//userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
+		//
+		//_, validErrs, err := userApp.RegisterUserIndividual("000000000011111111112222222222333333333344444444445")
+		//assert.NoError(t, err)
+		//assert.Len(t, validErrs, 1)
+		//assert.IsType(t, values.OverLengthValidError{}, validErrs[0])
+	})
+}
