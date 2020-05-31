@@ -91,6 +91,13 @@ func createUserCorporationDtoFromEntity(entity *user.UserCorporationEntity) data
 // 法人顧客を新規登録する
 // 成功時、登録した法人顧客情報を返却する
 func (s *UserApplicationService) RegisterUserCorporation(contactPersonName string, presidentName string) (data_transfer_objects.UserCorporationDto, ValidationError, error) {
+	// 入力値バリデーション
+	validErrors := values.ContactPersonNameValidate(contactPersonName)
+	validErrors = append(validErrors, values.PresidentNameValidate(presidentName)...)
+	if len(validErrors) > 0 {
+		return data_transfer_objects.UserCorporationDto{}, validErrors, nil
+	}
+
 	// リポジトリ登録用にデータ作成
 	entity := user.NewUserCorporationEntity()
 	entity.SetContactPersonName(contactPersonName)

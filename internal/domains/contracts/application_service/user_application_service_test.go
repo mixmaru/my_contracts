@@ -156,33 +156,35 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		assert.Equal(t, now, registeredUser.UpdatedAt)
 	})
 
-	t.Run("バリデーションエラー　名前がから文字", func(t *testing.T) {
+	t.Run("バリデーションエラー　担当者名と社長名がから文字", func(t *testing.T) {
 		// モックリポジトリ作成
-		//ctrl := gomock.NewController(t)
-		//defer ctrl.Finish()
-		//userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
-		//
-		//// インスタンス化
-		//userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
-		//
-		//_, validErrs, err := userApp.RegisterUserIndividual("")
-		//assert.NoError(t, err)
-		//assert.Len(t, validErrs, 1)
-		//assert.IsType(t, values.EmptyValidError{}, validErrs[0])
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
+
+		// インスタンス化
+		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
+
+		_, validErrs, err := userApp.RegisterUserCorporation("", "")
+		assert.NoError(t, err)
+		assert.Len(t, validErrs, 2)
+		assert.IsType(t, &validators.EmptyValidError{}, validErrs[0])
+		assert.IsType(t, &validators.EmptyValidError{}, validErrs[1])
 	})
 
 	t.Run("バリデーションエラー　名前が50文字以上", func(t *testing.T) {
-		//// モックリポジトリ作成
-		//ctrl := gomock.NewController(t)
-		//defer ctrl.Finish()
-		//userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
-		//
-		//// インスタンス化
-		//userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
-		//
-		//_, validErrs, err := userApp.RegisterUserIndividual("000000000011111111112222222222333333333344444444445")
-		//assert.NoError(t, err)
-		//assert.Len(t, validErrs, 1)
-		//assert.IsType(t, values.OverLengthValidError{}, validErrs[0])
+		// モックリポジトリ作成
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
+
+		// インスタンス化
+		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
+
+		_, validErrs, err := userApp.RegisterUserCorporation("000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445")
+		assert.NoError(t, err)
+		assert.Len(t, validErrs, 2)
+		assert.IsType(t, &validators.OverLengthValidError{}, validErrs[0])
+		assert.IsType(t, &validators.OverLengthValidError{}, validErrs[1])
 	})
 }
