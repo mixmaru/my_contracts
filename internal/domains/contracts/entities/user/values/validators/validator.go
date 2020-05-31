@@ -23,7 +23,15 @@ type EmptyValidError struct {
 	error
 }
 
+func NewEmptyValidError(err error) EmptyValidError {
+	return EmptyValidError{error: err}
+}
+
 // 文字数オーバーエラー
 type OverLengthValidError struct {
 	error
+}
+
+func NewOverLengthValidError(error error) *OverLengthValidError {
+	return &OverLengthValidError{error: error}
 }
