@@ -110,20 +110,22 @@ func getIndividualUser(c echo.Context) error {
 // president_name string 社長名
 // curl -F "contact_name=担当　太郎" -F "president_name=社長　太郎" http://localhost:1323/corporation_users/
 func saveCorporationUser(c echo.Context) error {
-	//logger, err := my_logger.GetLogger()
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//// Get name and email
-	//name := c.FormValue("name")
-	//userAppService := application_service.NewUserApplicationService()
-	//user, validErrs, err := userAppService.RegisterUserIndividual(name)
-	//if err != nil {
-	//	logger.Sugar().Errorw("個人顧客データ登録に失敗。", "name", name, "err", err)
-	//	c.Error(err)
-	//	return err
-	//}
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	contactName := c.FormValue("contact_name")
+	presidentName := c.FormValue("president_name")
+
+	userAppService := application_service.NewUserApplicationService()
+	user, _, err := userAppService.RegisterUserCorporation(contactName, presidentName)
+	if err != nil {
+		logger.Sugar().Errorw("法人顧客データ登録に失敗。", "contactName", contactName, "presidentName", presidentName, "err", err)
+		c.Error(err)
+		return err
+	}
+
 	//if len(validErrs) > 0 {
 	//	validMessages := map[string][]string{
 	//		"name": []string{},
@@ -133,7 +135,6 @@ func saveCorporationUser(c echo.Context) error {
 	//	}
 	//	return c.JSON(http.StatusBadRequest, validMessages)
 	//}
-	//
-	//return c.JSON(http.StatusCreated, user)
-	return nil
+
+	return c.JSON(http.StatusCreated, user)
 }
