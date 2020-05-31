@@ -17,23 +17,36 @@ func NewUserCorporationEntity() *UserCorporationEntity {
 	}
 }
 
-func NewUserCorporationEntityWithData(id int, contractPersonName, presidentName string, createdAt, updatedAt time.Time) *UserCorporationEntity {
+func NewUserCorporationEntityWithData(id int, contractPersonName, presidentName string, createdAt, updatedAt time.Time) (*UserCorporationEntity, error) {
 	user := NewUserCorporationEntity()
 	user.id = id
-	user.SetContactPersonName(contractPersonName)
-	user.SetPresidentName(presidentName)
+	err := user.SetContactPersonName(contractPersonName)
+	if err != nil {
+		return nil, err
+	}
+	err = user.SetPresidentName(presidentName)
+	if err != nil {
+		return nil, err
+	}
 	user.createdAt = createdAt
 	user.updatedAt = updatedAt
-	return user
+	return user, nil
 }
 
 // 保持データをセットし直す
-func (u *UserCorporationEntity) LoadData(id int, contractPersonName, presidentName string, createdAt, updatedAt time.Time) {
+func (u *UserCorporationEntity) LoadData(id int, contractPersonName, presidentName string, createdAt, updatedAt time.Time) error {
 	u.id = id
-	u.SetContactPersonName(contractPersonName)
-	u.SetPresidentName(presidentName)
+	err := u.SetContactPersonName(contractPersonName)
+	if err != nil {
+		return err
+	}
+	err = u.SetPresidentName(presidentName)
+	if err != nil {
+		return err
+	}
 	u.createdAt = createdAt
 	u.updatedAt = updatedAt
+	return nil
 }
 
 func (u *UserCorporationEntity) SetContactPersonName(name string) error {

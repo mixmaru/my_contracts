@@ -34,13 +34,14 @@ func TestUserCorporationEntity_NewUserCorporationEntity(t *testing.T) {
 
 func TestUserCorporationEntity_NewUserCorporationEntityWithData(t *testing.T) {
 	// インスタンス化
-	user := NewUserCorporationEntityWithData(
+	user, err := NewUserCorporationEntityWithData(
 		1,
 		"担当太郎",
 		"社長次郎",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
+	assert.NoError(t, err)
 
 	// テスト
 	assert.Equal(t, 1, user.Id())

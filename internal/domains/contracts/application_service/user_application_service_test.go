@@ -129,7 +129,8 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		saveUserEntity.SetContactPersonName("担当太郎")
 
 		now := time.Now()
-		returnUserEntity := user2.NewUserCorporationEntityWithData(1, "担当太郎", "社長太郎", now, now)
+		returnUserEntity, err := user2.NewUserCorporationEntityWithData(1, "担当太郎", "社長太郎", now, now)
+		assert.NoError(t, err)
 
 		// モックリポジトリ作成
 		ctrl := gomock.NewController(t)

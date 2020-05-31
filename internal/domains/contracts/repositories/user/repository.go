@@ -153,13 +153,16 @@ func (r *Repository) getUserCorporationEntityById(id int, executor gorp.SqlExecu
 		return nil, errors.WithStack(err)
 	}
 
-	entity := user.NewUserCorporationEntityWithData(
+	entity, err := user.NewUserCorporationEntityWithData(
 		data.Id,
 		data.ContactPersonName,
 		data.PresidentName,
 		data.CreatedAt,
 		data.UpdatedAt,
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	return entity, nil
 }
