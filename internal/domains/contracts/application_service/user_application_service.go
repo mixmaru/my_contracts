@@ -7,7 +7,6 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/pkg/errors"
-	"time"
 )
 
 type UserApplicationService struct {
@@ -51,7 +50,7 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (data_trans
 	if err != nil {
 		return data_transfer_objects.UserIndividualDto{}, []error{}, err
 	}
-	userDto := createUserDtoFromEntity(userEntity)
+	userDto := createUserIndividualDtoFromEntity(userEntity)
 	return userDto, []error{}, nil
 }
 
@@ -65,12 +64,12 @@ func (s *UserApplicationService) GetUserIndividual(userId int) (data_transfer_ob
 		// データがない場合、空データ構造体を返す
 		return data_transfer_objects.UserIndividualDto{}, nil
 	} else {
-		userDto := createUserDtoFromEntity(user)
+		userDto := createUserIndividualDtoFromEntity(user)
 		return userDto, nil
 	}
 }
 
-func createUserDtoFromEntity(entity *user.UserIndividualEntity) data_transfer_objects.UserIndividualDto {
+func createUserIndividualDtoFromEntity(entity *user.UserIndividualEntity) data_transfer_objects.UserIndividualDto {
 	return data_transfer_objects.UserIndividualDto{
 		Id:        entity.Id(),
 		Name:      entity.Name(),
@@ -79,17 +78,48 @@ func createUserDtoFromEntity(entity *user.UserIndividualEntity) data_transfer_ob
 	}
 }
 
-// 個人顧客を新規登録する
-// 成功時、登録した個人顧客情報を返却する
-func (s *UserApplicationService) RegisterUserCorporation(contactPersionName string, PresidentName string) (data_transfer_objects.UserCorporationDto, ValidationError, error) {
-	userDto := data_transfer_objects.UserCorporationDto{
-		Id:                0,
-		ContactPersonName: contactPersionName,
-		PresidentName:     PresidentName,
-		CreatedAt:         time.Time{},
-		UpdatedAt:         time.Time{},
+func createUserCorporationDtoFromEntity(entity *user.UserCorporationEntity) data_transfer_objects.UserCorporationDto {
+	return data_transfer_objects.UserCorporationDto{
+		Id:                entity.Id(),
+		ContactPersonName: entity.ContactPersonName(),
+		PresidentName:     entity.PresidentName(),
+		CreatedAt:         entity.CreatedAt(),
+		UpdatedAt:         entity.UpdatedAt(),
 	}
-	return userDto, nil, nil
+}
+
+// 法人顧客を新規登録する
+// 成功時、登録した法人顧客情報を返却する
+func (s *UserApplicationService) RegisterUserCorporation(contactPersonName string, presidentName string) (data_transfer_objects.UserCorporationDto, ValidationError, error) {
+	// リポジトリ登録用にデータ作成
+	entity := user.NewUserCorporationEntity()
+	entity.SetContactPersonName(contactPersonName)
+	entity.SetPresidentName(presidentName)
+
+	// トランザクション開始
+	dbMap, err := db_connection.GetConnection()
+	if err != nil {
+		return data_transfer_objects.UserCorporationDto{}, []error{}, err
+	}
+	defer dbMap.Db.Close()
+	tran, err := dbMap.Begin()
+	if err != nil {
+		return data_transfer_objects.UserCorporationDto{}, []error{}, errors.Wrap(err, "トランザクション開始失敗")
+	}
+
+	// リポジトリつかって保存実行
+	registeredUser, err := s.userRepository.SaveUserCorporation(entity, tran)
+	if err != nil {
+		return data_transfer_objects.UserCorporationDto{}, []error{}, errors.WithMessagef(err, "法人顧客データ登録失敗。contractPersonName: %v, presidentName: %v", contactPersonName, presidentName)
+	}
+	err = tran.Commit()
+	if err != nil {
+		return data_transfer_objects.UserCorporationDto{}, []error{}, errors.WithMessagef(err, "法人顧客データCommit失敗。contractPersonName: %v, presidentName: %v", contactPersonName, presidentName)
+	}
+
+	// 登録データを取得してdtoにつめる
+	userDto := createUserCorporationDtoFromEntity(registeredUser)
+	return userDto, []error{}, nil
 }
 
 type ValidationError = []error

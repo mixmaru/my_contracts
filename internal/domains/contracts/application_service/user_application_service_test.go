@@ -123,26 +123,24 @@ func TestUserApplicationService_GetUserIndividual(t *testing.T) {
 
 func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
-		// リポジトリのSaveUserIndividual()が受け取る引数を用意
-		//saveUserEntity, err := user2.NewUserIndividualEntity("個人太郎")
-		//assert.NoError(t, err)
-		//
-		//now := time.Now()
-		//returnUserEntity, err := user2.NewUserIndividualEntity("既存太郎")
-		//assert.NoError(t, err)
-		//err = returnUserEntity.LoadData(1, "個人太郎", now, now)
-		//assert.NoError(t, err)
-		//
+		// リポジトリのSaveUserCorporation()が受け取る引数を用意
+		saveUserEntity := user2.NewUserCorporationEntity()
+		saveUserEntity.SetPresidentName("社長太郎")
+		saveUserEntity.SetContactPersonName("担当太郎")
+
+		now := time.Now()
+		returnUserEntity := user2.NewUserCorporationEntityWithData(1, "担当太郎", "社長太郎", now, now)
+
 		// モックリポジトリ作成
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
-		//userRepositoryMock.EXPECT().
-		//	SaveUserIndividual(
-		//		saveUserEntity,
-		//		gomock.AssignableToTypeOf(&gorp.Transaction{}),
-		//	).Return(returnUserEntity, nil).
-		//	Times(1)
+		userRepositoryMock.EXPECT().
+			SaveUserCorporation(
+				saveUserEntity,
+				gomock.AssignableToTypeOf(&gorp.Transaction{}),
+			).Return(returnUserEntity, nil).
+			Times(1)
 
 		// インスタンス化
 		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
@@ -150,14 +148,11 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		registeredUser, validErrs, err := userApp.RegisterUserCorporation("担当太郎", "社長太郎")
 		assert.NoError(t, err)
 		assert.Len(t, validErrs, 0)
-		assert.Equal(t, 0, registeredUser.Id)
+		assert.Equal(t, 1, registeredUser.Id)
 		assert.Equal(t, "担当太郎", registeredUser.ContactPersonName)
 		assert.Equal(t, "社長太郎", registeredUser.PresidentName)
-		//assert.Equal(t, 1, registeredUser.Id)
-		//assert.Equal(t, "個人太郎", registeredUser.ContactPersonName)
-		//assert.Equal(t, "社長太郎", registeredUser.PresidentName)
-		//assert.Equal(t, now, registeredUser.CreatedAt)
-		//assert.Equal(t, now, registeredUser.UpdatedAt)
+		assert.Equal(t, now, registeredUser.CreatedAt)
+		assert.Equal(t, now, registeredUser.UpdatedAt)
 	})
 
 	t.Run("バリデーションエラー　名前がから文字", func(t *testing.T) {
