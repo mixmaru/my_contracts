@@ -23,8 +23,8 @@ type EmptyValidError struct {
 	error
 }
 
-func NewEmptyValidError(err error) EmptyValidError {
-	return EmptyValidError{error: err}
+func NewEmptyValidError(err error) *EmptyValidError {
+	return &EmptyValidError{error: err}
 }
 
 // 文字数オーバーエラー
