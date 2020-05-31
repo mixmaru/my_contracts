@@ -13,6 +13,8 @@ type ContactPersonNameValue struct {
 	value string
 }
 
+const MaxContactPersonNameNum = 50
+
 func NewContactPersonNameValue(value string) (ContactPersonNameValue, error) {
 	validateErrors := ContactPersonNameValidate(value)
 	if len(validateErrors) > 0 {
@@ -36,8 +38,8 @@ func ContactPersonNameValidate(name string) []error {
 	if validators.IsEmptyString(name) {
 		validErrors = append(validErrors, validators.NewEmptyValidError(plain_err.New("nameが空です")))
 	}
-	if validators.IsOverLengthString(name, 50) {
-		validErrors = append(validErrors, validators.NewOverLengthValidError(plain_err.New(fmt.Sprintf("nameが50文字より多いです。name: %v", name))))
+	if validators.IsOverLengthString(name, MaxContactPersonNameNum) {
+		validErrors = append(validErrors, validators.NewOverLengthValidError(plain_err.New(fmt.Sprintf("nameが%v文字より多いです。name: %v", MaxContactPersonNameNum, name))))
 	}
 
 	return validErrors
