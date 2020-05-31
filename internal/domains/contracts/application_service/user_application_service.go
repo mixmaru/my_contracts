@@ -78,4 +78,10 @@ func createUserDtoFromEntity(entity *user.UserIndividualEntity) data_transfer_ob
 	}
 }
 
+// 個人顧客を新規登録する
+// 成功時、登録した個人顧客情報を返却する
+func (s *UserApplicationService) RegisterUserCorporation(name string) (data_transfer_objects.UserCorporationDto, ValidationError, error) {
+	return data_transfer_objects.UserCorporationDto{}, nil, nil
+}
+
 type ValidationError = []error
