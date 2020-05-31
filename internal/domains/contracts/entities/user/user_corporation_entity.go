@@ -1,13 +1,14 @@
 package user
 
 import (
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
 	"time"
 )
 
 type UserCorporationEntity struct {
 	*UserEntity
-	contactPersonName string //担当者名
-	presidentName     string //社長名
+	contactPersonName values.ContactPersonNameValue //担当者名
+	presidentName     values.PresidentNameValue     //社長名
 }
 
 func NewUserCorporationEntity() *UserCorporationEntity {
@@ -35,18 +36,28 @@ func (u *UserCorporationEntity) LoadData(id int, contractPersonName, presidentNa
 	u.updatedAt = updatedAt
 }
 
-func (u *UserCorporationEntity) SetContactPersonName(name string) {
-	u.contactPersonName = name
+func (u *UserCorporationEntity) SetContactPersonName(name string) error {
+	nameValue, err := values.NewContactPersonNameValue(name)
+	if err != nil {
+		return err
+	}
+	u.contactPersonName = nameValue
+	return nil
 }
 
-func (u *UserCorporationEntity) SetPresidentName(name string) {
-	u.presidentName = name
+func (u *UserCorporationEntity) SetPresidentName(name string) error {
+	nameValue, err := values.NewPresidentNameValue(name)
+	if err != nil {
+		return err
+	}
+	u.presidentName = nameValue
+	return nil
 }
 
 func (u *UserCorporationEntity) ContactPersonName() string {
-	return u.contactPersonName
+	return u.contactPersonName.Value()
 }
 
 func (u *UserCorporationEntity) PresidentName() string {
-	return u.presidentName
+	return u.presidentName.Value()
 }
