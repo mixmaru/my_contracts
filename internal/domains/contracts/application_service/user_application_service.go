@@ -7,6 +7,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/pkg/errors"
+	"time"
 )
 
 type UserApplicationService struct {
@@ -80,8 +81,15 @@ func createUserDtoFromEntity(entity *user.UserIndividualEntity) data_transfer_ob
 
 // 個人顧客を新規登録する
 // 成功時、登録した個人顧客情報を返却する
-func (s *UserApplicationService) RegisterUserCorporation(name string) (data_transfer_objects.UserCorporationDto, ValidationError, error) {
-	return data_transfer_objects.UserCorporationDto{}, nil, nil
+func (s *UserApplicationService) RegisterUserCorporation(contactPersionName string, PresidentName string) (data_transfer_objects.UserCorporationDto, ValidationError, error) {
+	userDto := data_transfer_objects.UserCorporationDto{
+		Id:                0,
+		ContactPersonName: contactPersionName,
+		PresidentName:     PresidentName,
+		CreatedAt:         time.Time{},
+		UpdatedAt:         time.Time{},
+	}
+	return userDto, nil, nil
 }
 
 type ValidationError = []error

@@ -147,9 +147,12 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		// インスタンス化
 		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
 
-		_, validErrs, err := userApp.RegisterUserCorporation("個人太郎")
-		assert.Len(t, validErrs, 0)
+		registeredUser, validErrs, err := userApp.RegisterUserCorporation("担当太郎", "社長太郎")
 		assert.NoError(t, err)
+		assert.Len(t, validErrs, 0)
+		assert.Equal(t, 0, registeredUser.Id)
+		assert.Equal(t, "担当太郎", registeredUser.ContactPersonName)
+		assert.Equal(t, "社長太郎", registeredUser.PresidentName)
 		//assert.Equal(t, 1, registeredUser.Id)
 		//assert.Equal(t, "個人太郎", registeredUser.ContactPersonName)
 		//assert.Equal(t, "社長太郎", registeredUser.PresidentName)
