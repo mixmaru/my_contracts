@@ -76,6 +76,7 @@ func TestMain_saveIndividualUser_getIndividualUser(t *testing.T) {
 		var validMessages map[string][]string
 		err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 		assert.NoError(t, err)
+		assert.Equal(t, "nameが空です", validMessages["name"][0])
 	})
 }
 func TestMain_getIndividualUser(t *testing.T) {
@@ -130,25 +131,52 @@ func TestMain_saveCorporationUser(t *testing.T) {
 		assert.Equal(t, "社長　太郎", registeredUser.PresidentName)
 	})
 
-	//t.Run("バリデーションエラー", func(t *testing.T) {
-	//	router := newRouter()
-	//
-	//	// リクエストパラメータ作成
-	//	body := url.Values{}
-	//	body.Set("name", "")
-	//
-	//	// リクエスト実行
-	//	req := httptest.NewRequest("POST", "/individual_users/", strings.NewReader(body.Encode()))
-	//	req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-	//	rec := httptest.NewRecorder()
-	//	router.ServeHTTP(rec, req)
-	//
-	//	// 検証
-	//	assert.Equal(t, http.StatusBadRequest, rec.Code)
-	//
-	//	// jsonパース
-	//	var validMessages map[string][]string
-	//	err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
-	//	assert.NoError(t, err)
-	//})
+	t.Run("バリデーションエラー", func(t *testing.T) {
+		router := newRouter()
+		// リクエストパラメータ作成
+
+		t.Run("空文字", func(t *testing.T) {
+			body := url.Values{}
+			body.Set("contact_name", "")
+			body.Set("president_name", "")
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/individual_users/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+			// jsonパース
+			var validMessages map[string][]string
+			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+			assert.NoError(t, err)
+			assert.Equal(t, "contract_nameが空です", validMessages["contract_name"][0])
+			assert.Equal(t, "president_nameが空です", validMessages["president_name"][0])
+		})
+
+		t.Run("文字多すぎ", func(t *testing.T) {
+			body := url.Values{}
+			body.Set("contact_name", "000000000011111111112222222222333333333344444444445")
+			body.Set("president_name", "００００００００００11111111112222222222333333333344444444445")
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/individual_users/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+			// jsonパース
+			var validMessages map[string][]string
+			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+			assert.NoError(t, err)
+			assert.Equal(t, "contract_nameが50文字より多いです", validMessages["contract_name"][0])
+			assert.Equal(t, "president_nameが50文字より多いです", validMessages["president_name"][0])
+		})
+	})
 }
