@@ -27,13 +27,14 @@ func TestUser_NewUserRecordFromUserIndividualEntity(t *testing.T) {
 }
 
 func TestUser_NewUserRecordFromUserCorporationEntity(t *testing.T) {
-	userEntity := user.NewUserCorporationEntityWithData(
+	userEntity, err := user.NewUserCorporationEntityWithData(
 		1,
 		"担当たろう",
 		"社長じろう",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
+	assert.NoError(t, err)
 
 	user := NewUserRecordFromUserCorporationEntity(userEntity)
 	expect := &UserRecord{

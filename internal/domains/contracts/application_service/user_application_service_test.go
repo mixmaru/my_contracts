@@ -5,7 +5,6 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
 	user2 "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
 	"testing"
@@ -59,8 +58,14 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 
 		_, validErrs, err := userApp.RegisterUserIndividual("")
 		assert.NoError(t, err)
-		assert.Len(t, validErrs, 1)
-		assert.IsType(t, values.EmptyValidError{}, validErrs[0])
+
+		expectValidErrs := ValidationErrors{
+			"name": []string{
+				"空です",
+			},
+		}
+
+		assert.Equal(t, expectValidErrs, validErrs)
 	})
 
 	t.Run("バリデーションエラー　名前が50文字以上", func(t *testing.T) {
@@ -74,8 +79,13 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 
 		_, validErrs, err := userApp.RegisterUserIndividual("000000000011111111112222222222333333333344444444445")
 		assert.NoError(t, err)
-		assert.Len(t, validErrs, 1)
-		assert.IsType(t, values.OverLengthValidError{}, validErrs[0])
+		expectValidErrs := ValidationErrors{
+			"name": []string{
+				"50文字より多いです",
+			},
+		}
+
+		assert.Equal(t, expectValidErrs, validErrs)
 	})
 }
 
@@ -129,7 +139,8 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		saveUserEntity.SetContactPersonName("担当太郎")
 
 		now := time.Now()
-		returnUserEntity := user2.NewUserCorporationEntityWithData(1, "担当太郎", "社長太郎", now, now)
+		returnUserEntity, err := user2.NewUserCorporationEntityWithData(1, "担当太郎", "社長太郎", now, now)
+		assert.NoError(t, err)
 
 		// モックリポジトリ作成
 		ctrl := gomock.NewController(t)
@@ -155,33 +166,49 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		assert.Equal(t, now, registeredUser.UpdatedAt)
 	})
 
-	t.Run("バリデーションエラー　名前がから文字", func(t *testing.T) {
+	t.Run("バリデーションエラー　担当者名と社長名がから文字", func(t *testing.T) {
 		// モックリポジトリ作成
-		//ctrl := gomock.NewController(t)
-		//defer ctrl.Finish()
-		//userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
-		//
-		//// インスタンス化
-		//userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
-		//
-		//_, validErrs, err := userApp.RegisterUserIndividual("")
-		//assert.NoError(t, err)
-		//assert.Len(t, validErrs, 1)
-		//assert.IsType(t, values.EmptyValidError{}, validErrs[0])
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
+
+		// インスタンス化
+		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
+
+		_, validErrs, err := userApp.RegisterUserCorporation("", "")
+		assert.NoError(t, err)
+		expectValidErrs := ValidationErrors{
+			"contact_name": []string{
+				"空です",
+			},
+			"president_name": []string{
+				"空です",
+			},
+		}
+
+		assert.Equal(t, expectValidErrs, validErrs)
 	})
 
 	t.Run("バリデーションエラー　名前が50文字以上", func(t *testing.T) {
-		//// モックリポジトリ作成
-		//ctrl := gomock.NewController(t)
-		//defer ctrl.Finish()
-		//userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
-		//
-		//// インスタンス化
-		//userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
-		//
-		//_, validErrs, err := userApp.RegisterUserIndividual("000000000011111111112222222222333333333344444444445")
-		//assert.NoError(t, err)
-		//assert.Len(t, validErrs, 1)
-		//assert.IsType(t, values.OverLengthValidError{}, validErrs[0])
+		// モックリポジトリ作成
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
+
+		// インスタンス化
+		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
+
+		_, validErrs, err := userApp.RegisterUserCorporation("000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445")
+		assert.NoError(t, err)
+		expectValidErrs := ValidationErrors{
+			"contact_name": []string{
+				"50文字より多いです",
+			},
+			"president_name": []string{
+				"50文字より多いです",
+			},
+		}
+
+		assert.Equal(t, expectValidErrs, validErrs)
 	})
 }
