@@ -40,13 +40,13 @@ func TestNameValue_ContactPersonNameValidate(t *testing.T) {
 	t.Run("名前が空文字だった時", func(t *testing.T) {
 		errs := ContactPersonNameValidate("")
 		assert.Len(t, errs, 1)
-		assert.EqualError(t, errs[0], "nameが空です")
+		assert.EqualError(t, errs[0], "空です")
 	})
 
 	t.Run("名前が50文字を超えていた時", func(t *testing.T) {
 		errs := ContactPersonNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
 		assert.Len(t, errs, 1)
-		assert.EqualError(t, errs[0], "nameが50文字より多いです。name: 0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
+		assert.EqualError(t, errs[0], "50文字より多いです")
 	})
 
 	t.Run("名前が50文字だった時", func(t *testing.T) {

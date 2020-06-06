@@ -17,12 +17,16 @@ type UserApplicationService struct {
 // 成功時、登録した個人顧客情報を返却する
 func (s *UserApplicationService) RegisterUserIndividual(name string) (data_transfer_objects.UserIndividualDto, ValidationErrors, error) {
 	// 入力値バリデーション
+	retValidErrors := ValidationErrors{}
 	nameValidErrors := values.NameValidate(name)
 	if len(nameValidErrors) > 0 {
-		validErrors := ValidationErrors{
-			"name": nameValidErrors,
-		}
-		return data_transfer_objects.UserIndividualDto{}, validErrors, nil
+		retValidErrors["name"] = []string{}
+	}
+	for _, validErr := range nameValidErrors {
+		retValidErrors["name"] = append(retValidErrors["name"], validErr.Error())
+	}
+	if len(retValidErrors) > 0 {
+		return data_transfer_objects.UserIndividualDto{}, retValidErrors, nil
 	}
 
 	// エンティティ作成
@@ -96,14 +100,26 @@ func createUserCorporationDtoFromEntity(entity *user.UserCorporationEntity) data
 func (s *UserApplicationService) RegisterUserCorporation(contactPersonName string, presidentName string) (data_transfer_objects.UserCorporationDto, ValidationErrors, error) {
 	// 入力値バリデーション
 	validationErrors := ValidationErrors{}
+
+	// 担当者名バリデーション
 	contactPersonNameValidErrors := values.ContactPersonNameValidate(contactPersonName)
 	if len(contactPersonNameValidErrors) > 0 {
-		validationErrors["contactPersonName"] = contactPersonNameValidErrors
+		validationErrors["contact_name"] = []string{}
 	}
+	for _, validError := range contactPersonNameValidErrors {
+		validationErrors["contact_name"] = append(validationErrors["contact_name"], validError.Error())
+	}
+
+	// 社長名バリデーション
 	presidentNameValidErrors := values.PresidentNameValidate(presidentName)
 	if len(presidentNameValidErrors) > 0 {
-		validationErrors["presidentName"] = presidentNameValidErrors
+		validationErrors["president_name"] = []string{}
 	}
+	for _, validError := range presidentNameValidErrors {
+		validationErrors["president_name"] = append(validationErrors["president_name"], validError.Error())
+	}
+
+	// バリデーションエラーがあればreturn
 	if len(validationErrors) > 0 {
 		return data_transfer_objects.UserCorporationDto{}, validationErrors, nil
 	}
@@ -139,4 +155,4 @@ func (s *UserApplicationService) RegisterUserCorporation(contactPersonName strin
 	return userDto, ValidationErrors{}, nil
 }
 
-type ValidationErrors = map[string][]error
+type ValidationErrors = map[string][]string

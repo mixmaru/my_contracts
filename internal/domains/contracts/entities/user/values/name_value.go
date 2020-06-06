@@ -36,10 +36,10 @@ func (v *NameValue) Value() string {
 func NameValidate(name string) []error {
 	var validErrors []error
 	if validators.IsEmptyString(name) {
-		validErrors = append(validErrors, validators.NewEmptyValidError(plain_err.New("nameが空です")))
+		validErrors = append(validErrors, validators.NewEmptyValidError(plain_err.New("空です")))
 	}
 	if validators.IsOverLengthString(name, NameMaxLength) {
-		validErrors = append(validErrors, validators.NewOverLengthValidError(plain_err.New(fmt.Sprintf("nameが%v文字より多いです。name: %v", NameMaxLength, name))))
+		validErrors = append(validErrors, validators.NewOverLengthValidError(plain_err.New(fmt.Sprintf("%v文字より多いです", NameMaxLength))))
 	}
 
 	return validErrors

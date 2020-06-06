@@ -36,10 +36,10 @@ func (v *PresidentNameValue) Value() string {
 func PresidentNameValidate(name string) []error {
 	var validErrors []error
 	if validators.IsEmptyString(name) {
-		validErrors = append(validErrors, validators.NewEmptyValidError(plain_err.New("president_nameが空です")))
+		validErrors = append(validErrors, validators.NewEmptyValidError(plain_err.New("空です")))
 	}
 	if validators.IsOverLengthString(name, MaxPresidentNameNum) {
-		validErrors = append(validErrors, validators.NewOverLengthValidError(plain_err.New(fmt.Sprintf("president_nameが%v文字より多いです。name: %v", MaxPresidentNameNum, name))))
+		validErrors = append(validErrors, validators.NewOverLengthValidError(plain_err.New(fmt.Sprintf("%v文字より多いです", MaxPresidentNameNum))))
 	}
 
 	return validErrors

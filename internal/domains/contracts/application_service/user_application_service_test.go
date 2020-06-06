@@ -5,7 +5,6 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
 	user2 "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values/validators"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
 	"testing"
@@ -59,9 +58,14 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 
 		_, validErrs, err := userApp.RegisterUserIndividual("")
 		assert.NoError(t, err)
-		assert.Len(t, validErrs, 1)
-		assert.Len(t, validErrs["name"], 1)
-		assert.IsType(t, &validators.EmptyValidError{}, validErrs["name"][0])
+
+		expectValidErrs := ValidationErrors{
+			"name": []string{
+				"空です",
+			},
+		}
+
+		assert.Equal(t, expectValidErrs, validErrs)
 	})
 
 	t.Run("バリデーションエラー　名前が50文字以上", func(t *testing.T) {
@@ -75,9 +79,13 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 
 		_, validErrs, err := userApp.RegisterUserIndividual("000000000011111111112222222222333333333344444444445")
 		assert.NoError(t, err)
-		assert.Len(t, validErrs, 1)
-		assert.Len(t, validErrs["name"], 1)
-		assert.IsType(t, &validators.OverLengthValidError{}, validErrs["name"][0])
+		expectValidErrs := ValidationErrors{
+			"name": []string{
+				"50文字より多いです",
+			},
+		}
+
+		assert.Equal(t, expectValidErrs, validErrs)
 	})
 }
 
@@ -169,11 +177,16 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 
 		_, validErrs, err := userApp.RegisterUserCorporation("", "")
 		assert.NoError(t, err)
-		assert.Len(t, validErrs, 2)
-		assert.Len(t, validErrs["contactPersonName"], 1)
-		assert.Len(t, validErrs["presidentName"], 1)
-		assert.IsType(t, &validators.EmptyValidError{}, validErrs["contactPersonName"][0])
-		assert.IsType(t, &validators.EmptyValidError{}, validErrs["presidentName"][0])
+		expectValidErrs := ValidationErrors{
+			"contact_name": []string{
+				"空です",
+			},
+			"president_name": []string{
+				"空です",
+			},
+		}
+
+		assert.Equal(t, expectValidErrs, validErrs)
 	})
 
 	t.Run("バリデーションエラー　名前が50文字以上", func(t *testing.T) {
@@ -187,10 +200,15 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 
 		_, validErrs, err := userApp.RegisterUserCorporation("000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445")
 		assert.NoError(t, err)
-		assert.Len(t, validErrs, 2)
-		assert.Len(t, validErrs["contactPersonName"], 1)
-		assert.Len(t, validErrs["presidentName"], 1)
-		assert.IsType(t, &validators.OverLengthValidError{}, validErrs["contactPersonName"][0])
-		assert.IsType(t, &validators.OverLengthValidError{}, validErrs["presidentName"][0])
+		expectValidErrs := ValidationErrors{
+			"contact_name": []string{
+				"50文字より多いです",
+			},
+			"president_name": []string{
+				"50文字より多いです",
+			},
+		}
+
+		assert.Equal(t, expectValidErrs, validErrs)
 	})
 }

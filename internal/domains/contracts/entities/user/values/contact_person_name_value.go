@@ -36,10 +36,10 @@ func (v *ContactPersonNameValue) Value() string {
 func ContactPersonNameValidate(name string) []error {
 	var validErrors []error
 	if validators.IsEmptyString(name) {
-		validErrors = append(validErrors, validators.NewEmptyValidError(plain_err.New("nameが空です")))
+		validErrors = append(validErrors, validators.NewEmptyValidError(plain_err.New("空です")))
 	}
 	if validators.IsOverLengthString(name, MaxContactPersonNameNum) {
-		validErrors = append(validErrors, validators.NewOverLengthValidError(plain_err.New(fmt.Sprintf("nameが%v文字より多いです。name: %v", MaxContactPersonNameNum, name))))
+		validErrors = append(validErrors, validators.NewOverLengthValidError(plain_err.New(fmt.Sprintf("%v文字より多いです", MaxContactPersonNameNum))))
 	}
 
 	return validErrors
