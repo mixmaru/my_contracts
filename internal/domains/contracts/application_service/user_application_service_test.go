@@ -60,7 +60,8 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 		_, validErrs, err := userApp.RegisterUserIndividual("")
 		assert.NoError(t, err)
 		assert.Len(t, validErrs, 1)
-		assert.IsType(t, &validators.EmptyValidError{}, validErrs[0])
+		assert.Len(t, validErrs["name"], 1)
+		assert.IsType(t, &validators.EmptyValidError{}, validErrs["name"][0])
 	})
 
 	t.Run("バリデーションエラー　名前が50文字以上", func(t *testing.T) {
@@ -75,7 +76,8 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 		_, validErrs, err := userApp.RegisterUserIndividual("000000000011111111112222222222333333333344444444445")
 		assert.NoError(t, err)
 		assert.Len(t, validErrs, 1)
-		assert.IsType(t, &validators.OverLengthValidError{}, validErrs[0])
+		assert.Len(t, validErrs["name"], 1)
+		assert.IsType(t, &validators.OverLengthValidError{}, validErrs["name"][0])
 	})
 }
 
@@ -168,8 +170,10 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		_, validErrs, err := userApp.RegisterUserCorporation("", "")
 		assert.NoError(t, err)
 		assert.Len(t, validErrs, 2)
-		assert.IsType(t, &validators.EmptyValidError{}, validErrs[0])
-		assert.IsType(t, &validators.EmptyValidError{}, validErrs[1])
+		assert.Len(t, validErrs["contactPersonName"], 1)
+		assert.Len(t, validErrs["presidentName"], 1)
+		assert.IsType(t, &validators.EmptyValidError{}, validErrs["contactPersonName"][0])
+		assert.IsType(t, &validators.EmptyValidError{}, validErrs["presidentName"][0])
 	})
 
 	t.Run("バリデーションエラー　名前が50文字以上", func(t *testing.T) {
@@ -184,7 +188,9 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		_, validErrs, err := userApp.RegisterUserCorporation("000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445")
 		assert.NoError(t, err)
 		assert.Len(t, validErrs, 2)
-		assert.IsType(t, &validators.OverLengthValidError{}, validErrs[0])
-		assert.IsType(t, &validators.OverLengthValidError{}, validErrs[1])
+		assert.Len(t, validErrs["contactPersonName"], 1)
+		assert.Len(t, validErrs["presidentName"], 1)
+		assert.IsType(t, &validators.OverLengthValidError{}, validErrs["contactPersonName"][0])
+		assert.IsType(t, &validators.OverLengthValidError{}, validErrs["presidentName"][0])
 	})
 }
