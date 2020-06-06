@@ -119,22 +119,22 @@ func saveCorporationUser(c echo.Context) error {
 	presidentName := c.FormValue("president_name")
 
 	userAppService := application_service.NewUserApplicationService()
-	user, _, err := userAppService.RegisterUserCorporation(contactName, presidentName)
+	user, validErrs, err := userAppService.RegisterUserCorporation(contactName, presidentName)
 	if err != nil {
 		logger.Sugar().Errorw("法人顧客データ登録に失敗。", "contactName", contactName, "presidentName", presidentName, "err", err)
 		c.Error(err)
 		return err
 	}
 
-	//if len(validErrs) > 0 {
-	//	validMessages := map[string][]string{
-	//		"name": []string{},
-	//	}
-	//	for _, err := range validErrs {
-	//		validMessages["name"] = append(validMessages["name"], err.Error())
-	//	}
-	//	return c.JSON(http.StatusBadRequest, validMessages)
-	//}
+	if len(validErrs) > 0 {
+		validMessages := map[string][]string{
+			"name": []string{},
+		}
+		for _, err := range validErrs {
+			validMessages["name"] = append(validMessages["name"], err.Error())
+		}
+		return c.JSON(http.StatusBadRequest, validMessages)
+	}
 
 	return c.JSON(http.StatusCreated, user)
 }

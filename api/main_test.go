@@ -141,7 +141,7 @@ func TestMain_saveCorporationUser(t *testing.T) {
 			body.Set("president_name", "")
 
 			// リクエスト実行
-			req := httptest.NewRequest("POST", "/individual_users/", strings.NewReader(body.Encode()))
+			req := httptest.NewRequest("POST", "/corporation_users/", strings.NewReader(body.Encode()))
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
@@ -163,7 +163,7 @@ func TestMain_saveCorporationUser(t *testing.T) {
 			body.Set("president_name", "００００００００００11111111112222222222333333333344444444445")
 
 			// リクエスト実行
-			req := httptest.NewRequest("POST", "/individual_users/", strings.NewReader(body.Encode()))
+			req := httptest.NewRequest("POST", "/corporation_users/", strings.NewReader(body.Encode()))
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
