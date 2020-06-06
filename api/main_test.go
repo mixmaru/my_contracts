@@ -153,8 +153,8 @@ func TestMain_saveCorporationUser(t *testing.T) {
 			var validMessages map[string][]string
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
-			assert.Equal(t, "contract_nameが空です", validMessages["contract_name"][0])
-			assert.Equal(t, "president_nameが空です", validMessages["president_name"][0])
+			assert.Equal(t, "contract_nameが空です", validMessages["contactPersonName"][0])
+			assert.Equal(t, "president_nameが空です", validMessages["presidentName"][0])
 		})
 
 		t.Run("文字多すぎ", func(t *testing.T) {
@@ -175,8 +175,8 @@ func TestMain_saveCorporationUser(t *testing.T) {
 			var validMessages map[string][]string
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
-			assert.Equal(t, "contract_nameが50文字より多いです", validMessages["contract_name"][0])
-			assert.Equal(t, "president_nameが50文字より多いです", validMessages["president_name"][0])
+			assert.Equal(t, "contract_nameが50文字より多いです", validMessages["contactPersonName"][0])
+			assert.Equal(t, "president_nameが50文字より多いです", validMessages["presidentName"][0])
 		})
 	})
 }

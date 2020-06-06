@@ -58,11 +58,12 @@ func saveIndividualUser(c echo.Context) error {
 		return err
 	}
 	if len(validErrs) > 0 {
-		validMessages := map[string][]string{
-			"name": []string{},
-		}
-		for _, err := range validErrs {
-			validMessages["name"] = append(validMessages["name"], err.Error())
+		validMessages := map[string][]string{}
+
+		for key, errs := range validErrs {
+			for _, err := range errs {
+				validMessages[key] = append(validMessages[key], err.Error())
+			}
 		}
 		return c.JSON(http.StatusBadRequest, validMessages)
 	}
@@ -127,11 +128,11 @@ func saveCorporationUser(c echo.Context) error {
 	}
 
 	if len(validErrs) > 0 {
-		validMessages := map[string][]string{
-			"name": []string{},
-		}
-		for _, err := range validErrs {
-			validMessages["name"] = append(validMessages["name"], err.Error())
+		validMessages := map[string][]string{}
+		for key, errs := range validErrs {
+			for _, err := range errs {
+				validMessages[key] = append(validMessages[key], err.Error())
+			}
 		}
 		return c.JSON(http.StatusBadRequest, validMessages)
 	}
