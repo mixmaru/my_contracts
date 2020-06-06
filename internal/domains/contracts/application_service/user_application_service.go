@@ -17,14 +17,7 @@ type UserApplicationService struct {
 // 成功時、登録した個人顧客情報を返却する
 func (s *UserApplicationService) RegisterUserIndividual(name string) (data_transfer_objects.UserIndividualDto, ValidationErrors, error) {
 	// 入力値バリデーション
-	retValidErrors := ValidationErrors{}
-	nameValidErrors := values.NameValidate(name)
-	if len(nameValidErrors) > 0 {
-		retValidErrors["name"] = []string{}
-	}
-	for _, validErr := range nameValidErrors {
-		retValidErrors["name"] = append(retValidErrors["name"], validErr.Error())
-	}
+	retValidErrors := userIndividualValidation(name)
 	if len(retValidErrors) > 0 {
 		return data_transfer_objects.UserIndividualDto{}, retValidErrors, nil
 	}
@@ -59,6 +52,21 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (data_trans
 	}
 	userDto := createUserIndividualDtoFromEntity(userEntity)
 	return userDto, ValidationErrors{}, nil
+}
+
+func userIndividualValidation(name string) ValidationErrors {
+	retValidErrors := ValidationErrors{}
+
+	// 個人顧客名バリデーション
+	nameValidErrors := values.NameValidate(name)
+	if len(nameValidErrors) > 0 {
+		retValidErrors["name"] = []string{}
+	}
+	for _, validErr := range nameValidErrors {
+		retValidErrors["name"] = append(retValidErrors["name"], validErr.Error())
+	}
+
+	return retValidErrors
 }
 
 // 個人顧客情報を取得して返却する
@@ -99,35 +107,21 @@ func createUserCorporationDtoFromEntity(entity *user.UserCorporationEntity) data
 // 成功時、登録した法人顧客情報を返却する
 func (s *UserApplicationService) RegisterUserCorporation(contactPersonName string, presidentName string) (data_transfer_objects.UserCorporationDto, ValidationErrors, error) {
 	// 入力値バリデーション
-	validationErrors := ValidationErrors{}
-
-	// 担当者名バリデーション
-	contactPersonNameValidErrors := values.ContactPersonNameValidate(contactPersonName)
-	if len(contactPersonNameValidErrors) > 0 {
-		validationErrors["contact_name"] = []string{}
-	}
-	for _, validError := range contactPersonNameValidErrors {
-		validationErrors["contact_name"] = append(validationErrors["contact_name"], validError.Error())
-	}
-
-	// 社長名バリデーション
-	presidentNameValidErrors := values.PresidentNameValidate(presidentName)
-	if len(presidentNameValidErrors) > 0 {
-		validationErrors["president_name"] = []string{}
-	}
-	for _, validError := range presidentNameValidErrors {
-		validationErrors["president_name"] = append(validationErrors["president_name"], validError.Error())
-	}
-
-	// バリデーションエラーがあればreturn
+	validationErrors := registerUserCorporationValidation(contactPersonName, presidentName)
 	if len(validationErrors) > 0 {
 		return data_transfer_objects.UserCorporationDto{}, validationErrors, nil
 	}
 
 	// リポジトリ登録用にデータ作成
 	entity := user.NewUserCorporationEntity()
-	entity.SetContactPersonName(contactPersonName)
-	entity.SetPresidentName(presidentName)
+	err := entity.SetContactPersonName(contactPersonName)
+	if err != nil {
+		return data_transfer_objects.UserCorporationDto{}, validationErrors, err
+	}
+	err = entity.SetPresidentName(presidentName)
+	if err != nil {
+		return data_transfer_objects.UserCorporationDto{}, validationErrors, err
+	}
 
 	// トランザクション開始
 	dbMap, err := db_connection.GetConnection()
@@ -153,6 +147,30 @@ func (s *UserApplicationService) RegisterUserCorporation(contactPersonName strin
 	// 登録データを取得してdtoにつめる
 	userDto := createUserCorporationDtoFromEntity(registeredUser)
 	return userDto, ValidationErrors{}, nil
+}
+
+func registerUserCorporationValidation(contactPersonName string, presidentName string) ValidationErrors {
+	validationErrors := ValidationErrors{}
+
+	// 担当者名バリデーション
+	contactPersonNameValidErrors := values.ContactPersonNameValidate(contactPersonName)
+	if len(contactPersonNameValidErrors) > 0 {
+		validationErrors["contact_name"] = []string{}
+	}
+	for _, validError := range contactPersonNameValidErrors {
+		validationErrors["contact_name"] = append(validationErrors["contact_name"], validError.Error())
+	}
+
+	// 社長名バリデーション
+	presidentNameValidErrors := values.PresidentNameValidate(presidentName)
+	if len(presidentNameValidErrors) > 0 {
+		validationErrors["president_name"] = []string{}
+	}
+	for _, validError := range presidentNameValidErrors {
+		validationErrors["president_name"] = append(validationErrors["president_name"], validError.Error())
+	}
+
+	return validationErrors
 }
 
 type ValidationErrors = map[string][]string
