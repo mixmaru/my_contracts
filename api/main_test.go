@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -76,7 +77,13 @@ func TestMain_saveIndividualUser_getIndividualUser(t *testing.T) {
 		var validMessages map[string][]string
 		err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 		assert.NoError(t, err)
-		assert.Equal(t, "nameが空です", validMessages["name"][0])
+
+		expect := map[string][]string{
+			"name": []string{
+				"空です",
+			},
+		}
+		assert.Equal(t, expect, validMessages)
 	})
 }
 func TestMain_getIndividualUser(t *testing.T) {
@@ -153,8 +160,16 @@ func TestMain_saveCorporationUser(t *testing.T) {
 			var validMessages map[string][]string
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
-			assert.Equal(t, "contract_nameが空です", validMessages["contactPersonName"][0])
-			assert.Equal(t, "president_nameが空です", validMessages["presidentName"][0])
+
+			expected := application_service.ValidationErrors{
+				"contact_name": []string{
+					"空です",
+				},
+				"president_name": []string{
+					"空です",
+				},
+			}
+			assert.Equal(t, expected, validMessages)
 		})
 
 		t.Run("文字多すぎ", func(t *testing.T) {
@@ -175,8 +190,16 @@ func TestMain_saveCorporationUser(t *testing.T) {
 			var validMessages map[string][]string
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
-			assert.Equal(t, "contract_nameが50文字より多いです", validMessages["contactPersonName"][0])
-			assert.Equal(t, "president_nameが50文字より多いです", validMessages["presidentName"][0])
+
+			expected := application_service.ValidationErrors{
+				"contact_name": []string{
+					"50文字より多いです",
+				},
+				"president_name": []string{
+					"50文字より多いです",
+				},
+			}
+			assert.Equal(t, expected, validMessages)
 		})
 	})
 }
