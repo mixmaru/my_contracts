@@ -133,7 +133,7 @@ func TestMain_saveCorporationUser(t *testing.T) {
 
 		// リクエストパラメータ作成
 		body := url.Values{}
-		body.Set("contact_name", "担当　太郎")
+		body.Set("contact_person_name", "担当　太郎")
 		body.Set("president_name", "社長　太郎")
 
 		// リクエスト実行
@@ -160,7 +160,7 @@ func TestMain_saveCorporationUser(t *testing.T) {
 
 		t.Run("空文字", func(t *testing.T) {
 			body := url.Values{}
-			body.Set("contact_name", "")
+			body.Set("contact_person_name", "")
 			body.Set("president_name", "")
 
 			// リクエスト実行
@@ -178,7 +178,7 @@ func TestMain_saveCorporationUser(t *testing.T) {
 			assert.NoError(t, err)
 
 			expected := application_service.ValidationErrors{
-				"contact_name": []string{
+				"contact_person_name": []string{
 					"空です",
 				},
 				"president_name": []string{
@@ -190,7 +190,7 @@ func TestMain_saveCorporationUser(t *testing.T) {
 
 		t.Run("文字多すぎ", func(t *testing.T) {
 			body := url.Values{}
-			body.Set("contact_name", "000000000011111111112222222222333333333344444444445")
+			body.Set("contact_person_name", "000000000011111111112222222222333333333344444444445")
 			body.Set("president_name", "００００００００００11111111112222222222333333333344444444445")
 
 			// リクエスト実行
@@ -208,7 +208,7 @@ func TestMain_saveCorporationUser(t *testing.T) {
 			assert.NoError(t, err)
 
 			expected := application_service.ValidationErrors{
-				"contact_name": []string{
+				"contact_person_name": []string{
 					"50文字より多いです",
 				},
 				"president_name": []string{

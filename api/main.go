@@ -101,16 +101,16 @@ func getIndividualUser(c echo.Context) error {
 
 // 法人顧客新規登録
 // params:
-// contact_name string 担当者名
+// contact_person_name string 担当者名
 // president_name string 社長名
-// curl -F "contact_name=担当　太郎" -F "president_name=社長　太郎" http://localhost:1323/corporation_users/
+// curl -F "contact_person_name=担当　太郎" -F "president_name=社長　太郎" http://localhost:1323/corporation_users/
 func saveCorporationUser(c echo.Context) error {
 	logger, err := my_logger.GetLogger()
 	if err != nil {
 		return err
 	}
 
-	contactName := c.FormValue("contact_name")
+	contactName := c.FormValue("contact_person_name")
 	presidentName := c.FormValue("president_name")
 
 	userAppService := application_service.NewUserApplicationService()

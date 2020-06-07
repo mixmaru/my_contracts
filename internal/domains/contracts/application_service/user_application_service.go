@@ -155,10 +155,10 @@ func registerUserCorporationValidation(contactPersonName string, presidentName s
 	// 担当者名バリデーション
 	contactPersonNameValidErrors := values.ContactPersonNameValidate(contactPersonName)
 	if len(contactPersonNameValidErrors) > 0 {
-		validationErrors["contact_name"] = []string{}
+		validationErrors["contact_person_name"] = []string{}
 	}
 	for _, validError := range contactPersonNameValidErrors {
-		validationErrors["contact_name"] = append(validationErrors["contact_name"], validError.Error())
+		validationErrors["contact_person_name"] = append(validationErrors["contact_person_name"], validError.Error())
 	}
 
 	// 社長名バリデーション
