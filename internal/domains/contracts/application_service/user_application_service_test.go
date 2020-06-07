@@ -213,5 +213,46 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 	})
 }
 func TestUserApplicationService_GetUserCorporation(t *testing.T) {
+	// userリポジトリモック
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
 
+	t.Run("データがある時", func(t *testing.T) {
+		// GetUserIndividualById()が返却するデータを定義
+		returnUserEntity, err := user2.NewUserCorporationEntityWithData(
+			1,
+			"担当たろう",
+			"社長たろう",
+			time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
+		)
+		assert.NoError(t, err)
+
+		userRepositoryMock.EXPECT().
+			GetUserCorporationById(1, gomock.Any()).
+			Return(returnUserEntity, nil).
+			Times(1)
+		userAppService := NewUserApplicationServiceWithMock(userRepositoryMock)
+
+		userData, err := userAppService.GetUserCorporation(1)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, userData.Id)
+		assert.Equal(t, "個人たろう", userData.ContactPersonName)
+		assert.Equal(t, "社長たろう", userData.PresidentName)
+		assert.Equal(t, time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), userData.CreatedAt)
+		assert.Equal(t, time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), userData.UpdatedAt)
+	})
+
+	t.Run("データがない時", func(t *testing.T) {
+		// GetUserIndividualById()が返却するデータを定義
+		userRepositoryMock.EXPECT().
+			GetUserIndividualById(10000, gomock.Any()).
+			Return(nil, nil). // データが無い時はnilが返る
+			Times(1)
+		userAppService := NewUserApplicationServiceWithMock(userRepositoryMock)
+		userData, err := userAppService.GetUserCorporation(10000)
+		assert.NoError(t, err)
+		assert.Equal(t, data_transfer_objects.UserCorporationDto{}, userData)
+	})
 }
