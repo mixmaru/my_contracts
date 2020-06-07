@@ -212,3 +212,6 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		assert.Equal(t, expectValidErrs, validErrs)
 	})
 }
+func TestUserApplicationService_GetUserCorporation(t *testing.T) {
+
+}

@@ -173,4 +173,20 @@ func registerUserCorporationValidation(contactPersonName string, presidentName s
 	return validationErrors
 }
 
+// 法人顧客情報を取得して返却する
+func (s *UserApplicationService) GetUserCorporation(userId int) (data_transfer_objects.UserCorporationDto, error) {
+	//user, err := s.userRepository.GetUserIndividualById(userId, nil)
+	//if err != nil {
+	//	return data_transfer_objects.UserIndividualDto{}, err
+	//}
+	//if user == nil {
+	//	// データがない場合、空データ構造体を返す
+	//	return data_transfer_objects.UserIndividualDto{}, nil
+	//} else {
+	//	userDto := createUserIndividualDtoFromEntity(user)
+	//	return userDto, nil
+	//}
+	return data_transfer_objects.UserCorporationDto{}, nil
+}
+
 type ValidationErrors = map[string][]string
