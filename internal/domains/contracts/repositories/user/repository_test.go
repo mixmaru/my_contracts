@@ -94,6 +94,36 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 	})
 }
 
+func TestUser_GetUserCorporationById(t *testing.T) {
+	//　事前にデータ登録する
+	savingUser := user.NewUserCorporationEntity()
+	err := savingUser.SetContactPersonName("担当　太郎")
+	assert.NoError(t, err)
+	err = savingUser.SetPresidentName("社長　太郎")
+	assert.NoError(t, err)
+
+	repo := &Repository{}
+	savedUser, err := repo.SaveUserCorporation(savingUser, nil)
+	assert.NoError(t, err)
+
+	// idで取得して検証
+	t.Run("データがある時", func(t *testing.T) {
+		result, err := repo.GetUserCorporationById(savedUser.Id(), nil)
+		assert.NoError(t, err)
+		assert.Equal(t, result.Id(), result.Id())
+		assert.Equal(t, "担当　太郎", result.ContactPersonName())
+		assert.Equal(t, "社長　太郎", result.PresidentName())
+		assert.NotEqual(t, time.Time{}, result.CreatedAt())
+		assert.NotEqual(t, time.Time{}, result.UpdatedAt())
+	})
+
+	t.Run("データが無い時", func(t *testing.T) {
+		result, err := repo.GetUserCorporationById(-1, nil)
+		assert.NoError(t, err)
+		assert.Nil(t, result)
+	})
+}
+
 func TestUser_SaveUserCorporation(t *testing.T) {
 	// 保存するデータ作成
 	user := user.NewUserCorporationEntity()
