@@ -10,4 +10,5 @@ type IUserRepository interface {
 	GetUserIndividualById(id int, transaction *gorp.Transaction) (*user.UserIndividualEntity, error)
 
 	SaveUserCorporation(userEntity *user.UserCorporationEntity, transaction *gorp.Transaction) (*user.UserCorporationEntity, error)
+	GetUserCorporationById(id int, transaction *gorp.Transaction) (*user.UserCorporationEntity, error)
 }
