@@ -238,7 +238,7 @@ func TestUserApplicationService_GetUserCorporation(t *testing.T) {
 		userData, err := userAppService.GetUserCorporation(1)
 		assert.NoError(t, err)
 		assert.Equal(t, 1, userData.Id)
-		assert.Equal(t, "個人たろう", userData.ContactPersonName)
+		assert.Equal(t, "担当たろう", userData.ContactPersonName)
 		assert.Equal(t, "社長たろう", userData.PresidentName)
 		assert.Equal(t, time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), userData.CreatedAt)
 		assert.Equal(t, time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), userData.UpdatedAt)
@@ -247,7 +247,7 @@ func TestUserApplicationService_GetUserCorporation(t *testing.T) {
 	t.Run("データがない時", func(t *testing.T) {
 		// GetUserIndividualById()が返却するデータを定義
 		userRepositoryMock.EXPECT().
-			GetUserIndividualById(10000, gomock.Any()).
+			GetUserCorporationById(10000, gomock.Any()).
 			Return(nil, nil). // データが無い時はnilが返る
 			Times(1)
 		userAppService := NewUserApplicationServiceWithMock(userRepositoryMock)
