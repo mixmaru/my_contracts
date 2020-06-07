@@ -76,7 +76,8 @@ func getIndividualUser(c echo.Context) error {
 
 	userId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.NoContent(http.StatusNotFound)
+		// idに変な値が渡された
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
 	}
 
 	// サービスインスタンス化
@@ -91,7 +92,7 @@ func getIndividualUser(c echo.Context) error {
 
 	// データがない
 	if user.Id == 0 {
-		return c.NoContent(http.StatusNotFound)
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
 	}
 
 	// 返却
