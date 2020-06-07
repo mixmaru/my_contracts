@@ -110,7 +110,7 @@ func TestUser_GetUserCorporationById(t *testing.T) {
 	t.Run("データがある時", func(t *testing.T) {
 		result, err := repo.GetUserCorporationById(savedUser.Id(), nil)
 		assert.NoError(t, err)
-		assert.Equal(t, result.Id(), result.Id())
+		assert.Equal(t, savedUser.Id(), result.Id())
 		assert.Equal(t, "担当　太郎", result.ContactPersonName())
 		assert.Equal(t, "社長　太郎", result.PresidentName())
 		assert.NotEqual(t, time.Time{}, result.CreatedAt())
