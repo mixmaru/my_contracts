@@ -9,7 +9,7 @@ import (
 )
 
 // トランザクションが正しく動作しているかテスト
-func TestUser_Transaction(t *testing.T) {
+func TestUserRepository_Transaction(t *testing.T) {
 	// db接続
 	dbMap, err := db_connection.GetConnection()
 	assert.NoError(t, err)
@@ -23,7 +23,7 @@ func TestUser_Transaction(t *testing.T) {
 		//データ保存
 		user, err := user.NewUserIndividualEntity("個人太郎")
 		assert.NoError(t, err)
-		repo := Repository{}
+		repo := UserRepository{}
 		user, err = repo.SaveUserIndividual(user, tran)
 		assert.NoError(t, err)
 
@@ -44,7 +44,7 @@ func TestUser_Transaction(t *testing.T) {
 		//データ保存
 		user, err := user.NewUserIndividualEntity("個人太郎")
 		assert.NoError(t, err)
-		repo := Repository{}
+		repo := UserRepository{}
 		user, err = repo.SaveUserIndividual(user, tran)
 		assert.NoError(t, err)
 
@@ -58,22 +58,22 @@ func TestUser_Transaction(t *testing.T) {
 	})
 }
 
-func TestUser_SaveUserIndividual(t *testing.T) {
+func TestUserRepository_SaveUserIndividual(t *testing.T) {
 	// 登録用データ作成
 	user, err := user.NewUserIndividualEntity("個人太郎")
 	assert.NoError(t, err)
 
 	// 実行
-	repo := Repository{}
+	repo := UserRepository{}
 	user, err = repo.SaveUserIndividual(user, nil)
 	assert.NoError(t, err)
 }
 
-func TestUser_GetUserIndividualById(t *testing.T) {
+func TestUserRepository_GetUserIndividualById(t *testing.T) {
 	//　事前にデータ登録する
 	user, err := user.NewUserIndividualEntity("個人太郎")
 	assert.NoError(t, err)
-	repo := &Repository{}
+	repo := &UserRepository{}
 	user, err = repo.SaveUserIndividual(user, nil)
 	assert.NoError(t, err)
 
@@ -94,7 +94,7 @@ func TestUser_GetUserIndividualById(t *testing.T) {
 	})
 }
 
-func TestUser_GetUserCorporationById(t *testing.T) {
+func TestUserRepository_GetUserCorporationById(t *testing.T) {
 	//　事前にデータ登録する
 	savingUser := user.NewUserCorporationEntity()
 	err := savingUser.SetContactPersonName("担当　太郎")
@@ -102,7 +102,7 @@ func TestUser_GetUserCorporationById(t *testing.T) {
 	err = savingUser.SetPresidentName("社長　太郎")
 	assert.NoError(t, err)
 
-	repo := &Repository{}
+	repo := &UserRepository{}
 	savedUser, err := repo.SaveUserCorporation(savingUser, nil)
 	assert.NoError(t, err)
 
@@ -124,19 +124,19 @@ func TestUser_GetUserCorporationById(t *testing.T) {
 	})
 }
 
-func TestUser_SaveUserCorporation(t *testing.T) {
+func TestUserRepository_SaveUserCorporation(t *testing.T) {
 	// 保存するデータ作成
 	user := user.NewUserCorporationEntity()
 	user.SetContactPersonName("担当太郎")
 	user.SetPresidentName("社長次郎")
 
 	// 保存実行
-	repo := &Repository{}
+	repo := &UserRepository{}
 	user, err := repo.SaveUserCorporation(user, nil)
 	assert.NoError(t, err)
 }
 
-func TestUser_getUserCorporationViewById(t *testing.T) {
+func TestUserRepository_getUserCorporationViewById(t *testing.T) {
 	// db接続
 	dbMap, err := db_connection.GetConnection()
 	assert.NoError(t, err)
@@ -146,7 +146,7 @@ func TestUser_getUserCorporationViewById(t *testing.T) {
 	user := user.NewUserCorporationEntity()
 	user.SetContactPersonName("担当太郎")
 	user.SetPresidentName("社長次郎")
-	repo := &Repository{}
+	repo := &UserRepository{}
 	user, err = repo.SaveUserCorporation(user, nil)
 	assert.NoError(t, err)
 

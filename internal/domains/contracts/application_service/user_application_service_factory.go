@@ -6,7 +6,7 @@ import (
 )
 
 func NewUserApplicationService() *UserApplicationService {
-	return &UserApplicationService{userRepository: &user.Repository{}}
+	return &UserApplicationService{userRepository: &user.UserRepository{}}
 }
 
 func NewUserApplicationServiceWithMock(userRepository interfaces.IUserRepository) *UserApplicationService {
