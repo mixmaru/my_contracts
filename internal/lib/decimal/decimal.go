@@ -1,6 +1,7 @@
 package decimal
 
 import (
+	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
@@ -20,12 +21,25 @@ func NewFromFloat(value float64) Decimal {
 	return Decimal{decimal.NewFromFloat(value)}
 }
 
+func NewFromString(value string) (Decimal, error) {
+	decimal, err := decimal.NewFromString(value)
+	if err != nil {
+		return Decimal{}, errors.WithStack(err)
+	}
+
+	return Decimal{decimal}, nil
+}
+
 func (d *Decimal) Add(decimal Decimal) Decimal {
 	return Decimal{d.decimal.Add(decimal.decimal)}
 }
 
 func (d *Decimal) Sub(decimal Decimal) Decimal {
 	return Decimal{d.decimal.Sub(decimal.decimal)}
+}
+
+func (d *Decimal) Mul(decimal Decimal) Decimal {
+	return Decimal{d.decimal.Mul(decimal.decimal)}
 }
 
 func (d *Decimal) Equal(decimal Decimal) bool {

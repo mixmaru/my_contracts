@@ -85,5 +85,36 @@ func TestDecimal_Sub(t *testing.T) {
 }
 
 // 積算
+func TestDecimal_Mul(t *testing.T) {
+	type Inp struct {
+		a string
+		b string
+	}
+
+	inputs := map[Inp]string{
+		Inp{"2", "3"}:                     "6",
+		Inp{"2454495034", "3451204593"}:   "8470964534836491162",
+		Inp{"24544.95034", ".3451204593"}: "8470.964534836491162",
+		Inp{".1", ".1"}:                   "0.01",
+		Inp{"0", "1.001"}:                 "0",
+	}
+
+	for input, expect := range inputs {
+		decimalA, err := NewFromString(input.a)
+		assert.NoError(t, err)
+
+		decimalB, err := NewFromString(input.b)
+		assert.NoError(t, err)
+
+		result := decimalA.Mul(decimalB)
+
+		expect, err := NewFromString(expect)
+		assert.NoError(t, err)
+
+		if !result.Equal(expect) {
+			t.Errorf("%v != %v", result.decimal, expect.decimal)
+		}
+	}
+}
 
 // 割り算
