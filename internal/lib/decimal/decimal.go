@@ -24,6 +24,10 @@ func (d *Decimal) Add(decimal Decimal) Decimal {
 	return Decimal{d.decimal.Add(decimal.decimal)}
 }
 
+func (d *Decimal) Sub(decimal Decimal) Decimal {
+	return Decimal{d.decimal.Sub(decimal.decimal)}
+}
+
 func (d *Decimal) Equal(decimal Decimal) bool {
 	return d.decimal.Equal(decimal.decimal)
 }

@@ -53,7 +53,36 @@ func TestDecimal_Add(t *testing.T) {
 	}
 }
 
-// 減産
+// 引き算
+func TestDecimal_Sub(t *testing.T) {
+	type Inp struct {
+		a float64
+		b float64
+	}
+
+	inputs := map[Inp]float64{
+		Inp{2, 3}:                     -1,
+		Inp{12, 3}:                    9,
+		Inp{-2, 9}:                    -11,
+		Inp{2454495034, 3451204593}:   -996709559,
+		Inp{24544.95034, .3451204593}: 24544.6052195407,
+		Inp{.1, -.1}:                  0.2,
+		Inp{.1, .1}:                   0,
+		Inp{0, 1.001}:                 -1.001,
+		Inp{1.001, 0}:                 1.001,
+		Inp{2.3, .3}:                  2,
+	}
+
+	for input, expect := range inputs {
+		decimalA := NewFromFloat(input.a)
+		decimalB := NewFromFloat(input.b)
+		result := decimalA.Sub(decimalB)
+		expect := NewFromFloat(expect)
+		if !result.Equal(expect) {
+			t.Errorf("%v != %v", result.decimal, expect.decimal)
+		}
+	}
+}
 
 // 積算
 
