@@ -28,29 +28,25 @@ type TestCase struct {
 
 // 加算
 func TestDecimal_Add(t *testing.T) {
-	testCases := []TestCase{
-		{
-			Left:   100,
-			Right:  200,
-			Result: 300,
-		},
-		{
-			Left:   100,
-			Right:  -200,
-			Result: -100,
-		},
-		{
-			Left:   100.1,
-			Right:  100,
-			Result: 200.1,
-		},
+	type Inp struct {
+		a float64
+		b float64
 	}
 
-	for _, testCase := range testCases {
-		decimal1 := NewFromFloat(testCase.Left)
-		decimal2 := NewFromFloat(testCase.Right)
-		result := decimal1.Add(decimal2)
-		expect := NewFromFloat(testCase.Result)
+	inputs := map[Inp]float64{
+		Inp{2, 3}:                     5,
+		Inp{2454495034, 3451204593}:   5905699627,
+		Inp{24544.95034, .3451204593}: 24545.2954604593,
+		Inp{.1, .1}:                   0.2,
+		Inp{.1, -.1}:                  0,
+		Inp{0, 1.001}:                 1.001,
+	}
+
+	for input, expect := range inputs {
+		decimalA := NewFromFloat(input.a)
+		decimalB := NewFromFloat(input.b)
+		result := decimalA.Add(decimalB)
+		expect := NewFromFloat(expect)
 		if !result.Equal(expect) {
 			t.Errorf("%v != %v", result.decimal, expect.decimal)
 		}
