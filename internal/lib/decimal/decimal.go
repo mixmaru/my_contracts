@@ -1,6 +1,7 @@
 package decimal
 
 import (
+	"database/sql/driver"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
@@ -48,4 +49,14 @@ func (d *Decimal) Div(decimal Decimal) Decimal {
 
 func (d *Decimal) Equal(decimal Decimal) bool {
 	return d.decimal.Equal(decimal.decimal)
+}
+
+// Value implements the driver.Valuer interface for database serialization.
+func (d Decimal) Value() (driver.Value, error) {
+	return d.decimal.Value()
+}
+
+// Scan implements the sql.Scanner interface for database deserialization.
+func (d *Decimal) Scan(value interface{}) error {
+	return d.decimal.Scan(value)
 }

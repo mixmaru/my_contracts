@@ -1,11 +1,14 @@
 package tables
 
-import "time"
+import (
+	"github.com/mixmaru/my_contracts/internal/lib/decimal"
+	"time"
+)
 
 type ProductRecord struct {
-	Id   int    `db:"id"`
-	Name string `db:"name"`
-	//Price float64
-	CreateAt time.Time `db:"created_at"`
-	UpdateAt time.Time `db:"updated_at"`
+	Id       int             `db:"id"`
+	Name     string          `db:"name"`
+	Price    decimal.Decimal `db:"price"`
+	CreateAt time.Time       `db:"created_at"`
+	UpdateAt time.Time       `db:"updated_at"`
 }
