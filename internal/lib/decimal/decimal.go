@@ -42,6 +42,10 @@ func (d *Decimal) Mul(decimal Decimal) Decimal {
 	return Decimal{d.decimal.Mul(decimal.decimal)}
 }
 
+func (d *Decimal) Div(decimal Decimal) Decimal {
+	return Decimal{d.decimal.Div(decimal.decimal)}
+}
+
 func (d *Decimal) Equal(decimal Decimal) bool {
 	return d.decimal.Equal(decimal.decimal)
 }

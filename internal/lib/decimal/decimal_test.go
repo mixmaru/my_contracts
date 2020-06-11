@@ -118,3 +118,41 @@ func TestDecimal_Mul(t *testing.T) {
 }
 
 // 割り算
+func TestDecimal_Div(t *testing.T) {
+	type Inp struct {
+		a string
+		b string
+	}
+
+	inputs := map[Inp]string{
+		Inp{"6", "3"}:                            "2",
+		Inp{"10", "2"}:                           "5",
+		Inp{"2.2", "1.1"}:                        "2",
+		Inp{"-2.2", "-1.1"}:                      "2",
+		Inp{"12.88", "5.6"}:                      "2.3",
+		Inp{"1023427554493", "43432632"}:         "23563.5628642767953828", // rounded
+		Inp{"1", "434324545566634"}:              "0.0000000000000023",
+		Inp{"1", "3"}:                            "0.3333333333333333",
+		Inp{"2", "3"}:                            "0.6666666666666667", // rounded
+		Inp{"10000", "3"}:                        "3333.3333333333333333",
+		Inp{"10234274355545544493", "-3"}:        "-3411424785181848164.3333333333333333",
+		Inp{"-4612301402398.4753343454", "23.5"}: "-196268144782.9138440146978723",
+	}
+
+	for input, expect := range inputs {
+		decimalA, err := NewFromString(input.a)
+		assert.NoError(t, err)
+
+		decimalB, err := NewFromString(input.b)
+		assert.NoError(t, err)
+
+		result := decimalA.Div(decimalB)
+
+		expect, err := NewFromString(expect)
+		assert.NoError(t, err)
+
+		if !result.Equal(expect) {
+			t.Errorf("%v != %v", result.decimal, expect.decimal)
+		}
+	}
+}
