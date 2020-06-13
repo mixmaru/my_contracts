@@ -32,6 +32,12 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, transact
 		return nil, errors.WithStack(err)
 	}
 
+	// 再取得
+	err = conn.SelectOne(&productRecord, "select * from products where id = $1", productRecord.Id)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
 	// エンティティに詰め直し
 	productEntity.LoadData(
 		productRecord.Id,
