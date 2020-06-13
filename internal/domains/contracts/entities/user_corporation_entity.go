@@ -1,7 +1,7 @@
-package user
+package entities
 
 import (
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values"
 	"time"
 )
 

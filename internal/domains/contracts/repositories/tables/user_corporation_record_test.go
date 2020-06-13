@@ -1,7 +1,7 @@
 package tables
 
 import (
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -9,7 +9,7 @@ import (
 
 func TestUserCorporationRecord_NewUserCorporationRecordFromUserCorporationEntity(t *testing.T) {
 	// entity用意
-	entity, err := user.NewUserCorporationEntityWithData(
+	entity, err := entities.NewUserCorporationEntityWithData(
 		1,
 		"担当太郎",
 		"社長次郎",

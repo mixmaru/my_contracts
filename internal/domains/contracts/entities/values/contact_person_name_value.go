@@ -3,7 +3,7 @@ package values
 import (
 	plain_err "errors"
 	"fmt"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values/validators"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values/validators"
 	"github.com/pkg/errors"
 	"strings"
 )

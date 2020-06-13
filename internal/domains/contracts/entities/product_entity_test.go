@@ -1,4 +1,4 @@
-package product
+package entities
 
 import (
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"

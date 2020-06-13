@@ -1,14 +1,14 @@
 package tables
 
 import (
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
 func TestUser_NewUserRecordFromUserIndividualEntity(t *testing.T) {
-	userEntity, err := user.NewUserIndividualEntityWithData(
+	userEntity, err := entities.NewUserIndividualEntityWithData(
 		1,
 		"個人たろう",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -29,7 +29,7 @@ func TestUser_NewUserRecordFromUserIndividualEntity(t *testing.T) {
 }
 
 func TestUser_NewUserRecordFromUserCorporationEntity(t *testing.T) {
-	userEntity, err := user.NewUserCorporationEntityWithData(
+	userEntity, err := entities.NewUserCorporationEntityWithData(
 		1,
 		"担当たろう",
 		"社長じろう",

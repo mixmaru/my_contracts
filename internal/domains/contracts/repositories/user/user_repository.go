@@ -3,7 +3,7 @@ package user
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/tables"
 	"github.com/pkg/errors"
@@ -14,7 +14,7 @@ type UserRepository struct {
 }
 
 // 個人顧客エンティティを保存する
-func (r *UserRepository) SaveUserIndividual(userEntity *user.UserIndividualEntity, transaction *gorp.Transaction) (*user.UserIndividualEntity, error) {
+func (r *UserRepository) SaveUserIndividual(userEntity *entities.UserIndividualEntity, transaction *gorp.Transaction) (*entities.UserIndividualEntity, error) {
 	// db接続。
 	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
 	if err != nil {
@@ -55,7 +55,7 @@ func (r *UserRepository) SaveUserIndividual(userEntity *user.UserIndividualEntit
 }
 
 // Idで個人顧客情報を取得する。データがなければnilを返す
-func (r *UserRepository) GetUserIndividualById(id int, transaction *gorp.Transaction) (*user.UserIndividualEntity, error) {
+func (r *UserRepository) GetUserIndividualById(id int, transaction *gorp.Transaction) (*entities.UserIndividualEntity, error) {
 	// db接続。
 	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
 	if err != nil {
@@ -74,7 +74,7 @@ func (r *UserRepository) GetUserIndividualById(id int, transaction *gorp.Transac
 	}
 
 	// entityに詰める
-	userEntity, err := user.NewUserIndividualEntityWithData(
+	userEntity, err := entities.NewUserIndividualEntityWithData(
 		userData.Id,
 		userData.Name,
 		userData.CreatedAt,
@@ -108,7 +108,7 @@ func (r *UserRepository) getUserIndividualViewById(id int, executor gorp.SqlExec
 }
 
 // 法人顧客エンティティを保存する
-func (r *UserRepository) SaveUserCorporation(userEntity *user.UserCorporationEntity, transaction *gorp.Transaction) (*user.UserCorporationEntity, error) {
+func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporationEntity, transaction *gorp.Transaction) (*entities.UserCorporationEntity, error) {
 	// db接続。
 	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
 	if err != nil {
@@ -146,13 +146,13 @@ func (r *UserRepository) SaveUserCorporation(userEntity *user.UserCorporationEnt
 }
 
 // dbからid指定で法人顧客情報を取得する
-func (r *UserRepository) getUserCorporationEntityById(id int, executor gorp.SqlExecutor) (*user.UserCorporationEntity, error) {
+func (r *UserRepository) getUserCorporationEntityById(id int, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
 	data, err := r.getUserCorporationViewById(id, executor)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	entity, err := user.NewUserCorporationEntityWithData(
+	entity, err := entities.NewUserCorporationEntityWithData(
 		data.Id,
 		data.ContactPersonName,
 		data.PresidentName,
@@ -185,7 +185,7 @@ func (r *UserRepository) getUserCorporationViewById(id int, executor gorp.SqlExe
 }
 
 // Idで法人顧客情報を取得する。データがなければnilを返す
-func (r *UserRepository) GetUserCorporationById(id int, transaction *gorp.Transaction) (*user.UserCorporationEntity, error) {
+func (r *UserRepository) GetUserCorporationById(id int, transaction *gorp.Transaction) (*entities.UserCorporationEntity, error) {
 	// db接続。
 	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
 	if err != nil {
@@ -205,7 +205,7 @@ func (r *UserRepository) GetUserCorporationById(id int, transaction *gorp.Transa
 	}
 
 	// entityに詰める
-	userEntity, err := user.NewUserCorporationEntityWithData(
+	userEntity, err := entities.NewUserCorporationEntityWithData(
 		userData.Id,
 		userData.ContactPersonName,
 		userData.PresidentName,

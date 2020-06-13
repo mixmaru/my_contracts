@@ -4,7 +4,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
-	user2 "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
 	"testing"
@@ -15,11 +15,11 @@ import (
 func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
 		// リポジトリのSaveUserIndividual()が受け取る引数を用意
-		saveUserEntity, err := user2.NewUserIndividualEntity("個人太郎")
+		saveUserEntity, err := entities.NewUserIndividualEntity("個人太郎")
 		assert.NoError(t, err)
 
 		now := time.Now()
-		returnUserEntity, err := user2.NewUserIndividualEntity("既存太郎")
+		returnUserEntity, err := entities.NewUserIndividualEntity("既存太郎")
 		assert.NoError(t, err)
 		err = returnUserEntity.LoadData(1, "個人太郎", now, now)
 		assert.NoError(t, err)
@@ -98,7 +98,7 @@ func TestUserApplicationService_GetUserIndividual(t *testing.T) {
 
 	t.Run("データがある時", func(t *testing.T) {
 		// GetUserIndividualById()が返却するデータを定義
-		returnUserEntity, err := user2.NewUserIndividualEntityWithData(
+		returnUserEntity, err := entities.NewUserIndividualEntityWithData(
 			1,
 			"個人たろう",
 			time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -134,12 +134,12 @@ func TestUserApplicationService_GetUserIndividual(t *testing.T) {
 func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
 		// リポジトリのSaveUserCorporation()が受け取る引数を用意
-		saveUserEntity := user2.NewUserCorporationEntity()
+		saveUserEntity := entities.NewUserCorporationEntity()
 		saveUserEntity.SetPresidentName("社長太郎")
 		saveUserEntity.SetContactPersonName("担当太郎")
 
 		now := time.Now()
-		returnUserEntity, err := user2.NewUserCorporationEntityWithData(1, "担当太郎", "社長太郎", now, now)
+		returnUserEntity, err := entities.NewUserCorporationEntityWithData(1, "担当太郎", "社長太郎", now, now)
 		assert.NoError(t, err)
 
 		// モックリポジトリ作成
@@ -220,7 +220,7 @@ func TestUserApplicationService_GetUserCorporation(t *testing.T) {
 
 	t.Run("データがある時", func(t *testing.T) {
 		// GetUserIndividualById()が返却するデータを定義
-		returnUserEntity, err := user2.NewUserCorporationEntityWithData(
+		returnUserEntity, err := entities.NewUserCorporationEntityWithData(
 			1,
 			"担当たろう",
 			"社長たろう",

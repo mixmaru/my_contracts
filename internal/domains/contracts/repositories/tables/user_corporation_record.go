@@ -1,7 +1,7 @@
 package tables
 
 import (
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 )
 
 type UserCorporationRecord struct {
@@ -12,7 +12,7 @@ type UserCorporationRecord struct {
 }
 
 // UserIndividualEntity Entityからデータを読み込んでUserIndividual(DBマッピング用)を作成する
-func NewUserCorporationRecordFromUserCorporationEntity(entity *user.UserCorporationEntity) *UserCorporationRecord {
+func NewUserCorporationRecordFromUserCorporationEntity(entity *entities.UserCorporationEntity) *UserCorporationRecord {
 	return &UserCorporationRecord{
 		UserId:            entity.Id(),
 		ContactParsonName: entity.ContactPersonName(),

@@ -3,8 +3,8 @@ package application_service
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user/values"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/pkg/errors"
 )
@@ -23,7 +23,7 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (data_trans
 	}
 
 	// エンティティ作成
-	userEntity, err := user.NewUserIndividualEntity(name)
+	userEntity, err := entities.NewUserIndividualEntity(name)
 	if err != nil {
 		return data_transfer_objects.UserIndividualDto{}, ValidationErrors{}, err
 	}
@@ -84,7 +84,7 @@ func (s *UserApplicationService) GetUserIndividual(userId int) (data_transfer_ob
 	}
 }
 
-func createUserIndividualDtoFromEntity(entity *user.UserIndividualEntity) data_transfer_objects.UserIndividualDto {
+func createUserIndividualDtoFromEntity(entity *entities.UserIndividualEntity) data_transfer_objects.UserIndividualDto {
 	return data_transfer_objects.UserIndividualDto{
 		Id:        entity.Id(),
 		Name:      entity.Name(),
@@ -93,7 +93,7 @@ func createUserIndividualDtoFromEntity(entity *user.UserIndividualEntity) data_t
 	}
 }
 
-func createUserCorporationDtoFromEntity(entity *user.UserCorporationEntity) data_transfer_objects.UserCorporationDto {
+func createUserCorporationDtoFromEntity(entity *entities.UserCorporationEntity) data_transfer_objects.UserCorporationDto {
 	return data_transfer_objects.UserCorporationDto{
 		Id:                entity.Id(),
 		ContactPersonName: entity.ContactPersonName(),
@@ -113,7 +113,7 @@ func (s *UserApplicationService) RegisterUserCorporation(contactPersonName strin
 	}
 
 	// リポジトリ登録用にデータ作成
-	entity := user.NewUserCorporationEntity()
+	entity := entities.NewUserCorporationEntity()
 	err := entity.SetContactPersonName(contactPersonName)
 	if err != nil {
 		return data_transfer_objects.UserCorporationDto{}, validationErrors, err
