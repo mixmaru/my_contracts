@@ -1,16 +1,15 @@
 package product
 
 import (
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
-	"time"
 )
 
 type ProductEntity struct {
-	id        int
-	name      string
-	price     decimal.Decimal
-	createdAt time.Time
-	updatedAt time.Time
+	id    int
+	name  string
+	price decimal.Decimal
+	entities.CreatedAtUpdatedAt
 }
 
 func New(name string, price decimal.Decimal) *ProductEntity {
