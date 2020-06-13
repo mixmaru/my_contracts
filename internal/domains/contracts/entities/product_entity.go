@@ -2,6 +2,7 @@ package entities
 
 import (
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
+	"time"
 )
 
 type ProductEntity struct {
@@ -23,4 +24,13 @@ func (p *ProductEntity) Name() string {
 
 func (p *ProductEntity) Price() decimal.Decimal {
 	return p.price
+}
+
+// 保持データをセットし直す
+func (p *ProductEntity) LoadData(id int, name string, price decimal.Decimal, createdAt time.Time, updatedAt time.Time) {
+	p.id = id
+	p.name = name
+	p.price = price
+	p.createdAt = createdAt
+	p.updatedAt = updatedAt
 }
