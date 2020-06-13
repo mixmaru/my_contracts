@@ -86,20 +86,24 @@ func (s *UserApplicationService) GetUserIndividual(userId int) (data_transfer_ob
 
 func createUserIndividualDtoFromEntity(entity *entities.UserIndividualEntity) data_transfer_objects.UserIndividualDto {
 	return data_transfer_objects.UserIndividualDto{
-		Id:        entity.Id(),
-		Name:      entity.Name(),
-		CreatedAt: entity.CreatedAt(),
-		UpdatedAt: entity.UpdatedAt(),
+		Name: entity.Name(),
+		BaseDto: data_transfer_objects.BaseDto{
+			Id:        entity.Id(),
+			CreatedAt: entity.CreatedAt(),
+			UpdatedAt: entity.UpdatedAt(),
+		},
 	}
 }
 
 func createUserCorporationDtoFromEntity(entity *entities.UserCorporationEntity) data_transfer_objects.UserCorporationDto {
 	return data_transfer_objects.UserCorporationDto{
-		Id:                entity.Id(),
 		ContactPersonName: entity.ContactPersonName(),
 		PresidentName:     entity.PresidentName(),
-		CreatedAt:         entity.CreatedAt(),
-		UpdatedAt:         entity.UpdatedAt(),
+		BaseDto: data_transfer_objects.BaseDto{
+			Id:        entity.Id(),
+			CreatedAt: entity.CreatedAt(),
+			UpdatedAt: entity.UpdatedAt(),
+		},
 	}
 }
 
