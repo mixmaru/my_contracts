@@ -21,10 +21,12 @@ func TestUserIndividualRecord_NewUserIndividualRecordFromUserIndividualEntity(t 
 	resultData := NewUserIndividualRecordFromUserIndividualEntity(entity)
 
 	expect := &UserIndividualRecord{
-		UserId:    1,
-		Name:      "担当太郎",
-		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		UserId: 1,
+		Name:   "担当太郎",
+		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+			CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		},
 	}
 
 	// テスト

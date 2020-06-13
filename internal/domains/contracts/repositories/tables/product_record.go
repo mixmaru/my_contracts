@@ -8,5 +8,5 @@ type ProductRecord struct {
 	Id    int             `db:"id"`
 	Name  string          `db:"name"`
 	Price decimal.Decimal `db:"price"`
-	CreateAtUpdateAt
+	CreatedAtUpdatedAt
 }

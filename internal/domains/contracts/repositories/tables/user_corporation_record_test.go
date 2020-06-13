@@ -25,8 +25,10 @@ func TestUserCorporationRecord_NewUserCorporationRecordFromUserCorporationEntity
 		UserId:            1,
 		ContactParsonName: "担当太郎",
 		PresidentName:     "社長次郎",
-		CreatedAt:         time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		UpdatedAt:         time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+			CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		},
 	}
 
 	// テスト

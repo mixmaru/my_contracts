@@ -18,9 +18,11 @@ func TestUser_NewUserRecordFromUserIndividualEntity(t *testing.T) {
 
 	user := NewUserRecordFromUserIndividualEntity(userEntity)
 	expect := &UserRecord{
-		Id:        1,
-		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		Id: 1,
+		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+			CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		},
 	}
 
 	assert.Equal(t, expect, user)
@@ -38,9 +40,11 @@ func TestUser_NewUserRecordFromUserCorporationEntity(t *testing.T) {
 
 	user := NewUserRecordFromUserCorporationEntity(userEntity)
 	expect := &UserRecord{
-		Id:        1,
-		CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		Id: 1,
+		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+			CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		},
 	}
 
 	assert.Equal(t, expect, user)
