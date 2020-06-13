@@ -2,7 +2,7 @@ package product
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/product/tables"
+	tables2 "github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/tables"
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
@@ -19,7 +19,7 @@ func (r *ProductRepository) Save(productEntity interface{}, transaction *gorp.Tr
 	}
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
-	productRecord := tables.ProductRecord{Name: "商品名3", Price: decimal.NewFromFloat(1000)}
+	productRecord := tables2.ProductRecord{Name: "商品名4", Price: decimal.NewFromFloat(1000)}
 	err = conn.Insert(&productRecord)
 	if err != nil {
 		return nil, errors.WithStack(err)

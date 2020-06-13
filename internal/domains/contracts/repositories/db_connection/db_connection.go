@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
-	productTables "github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/product/tables"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/tables"
 	userTables "github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user/tables"
 	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/pkg/errors"
@@ -39,7 +39,7 @@ func GetConnection() (*gorp.DbMap, error) {
 	dbmap.AddTableWithName(userTables.UserIndividualRecord{}, "users_individual")
 	dbmap.AddTableWithName(userTables.UserCorporationRecord{}, "users_corporation")
 
-	dbmap.AddTableWithName(productTables.ProductRecord{}, "products").SetKeys(true, "Id")
+	dbmap.AddTableWithName(tables.ProductRecord{}, "products").SetKeys(true, "Id")
 
 	return dbmap, nil
 }
