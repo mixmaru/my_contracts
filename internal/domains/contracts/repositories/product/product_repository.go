@@ -33,5 +33,12 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, transact
 	}
 
 	// エンティティに詰め直し
-	return nil, nil
+	productEntity.LoadData(
+		productRecord.Id,
+		productRecord.Name,
+		productRecord.Price,
+		productRecord.CreatedAt,
+		productRecord.UpdatedAt,
+	)
+	return productEntity, nil
 }
