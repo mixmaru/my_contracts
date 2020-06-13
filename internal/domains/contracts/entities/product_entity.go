@@ -10,7 +10,7 @@ type ProductEntity struct {
 	BaseEntity
 }
 
-func New(name string, price decimal.Decimal) *ProductEntity {
+func NewProductEntity(name string, price decimal.Decimal) *ProductEntity {
 	return &ProductEntity{
 		name:  name,
 		price: price,
