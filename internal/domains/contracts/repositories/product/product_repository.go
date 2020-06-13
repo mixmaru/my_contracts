@@ -42,3 +42,22 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, transact
 	)
 	return productEntity, nil
 }
+
+func (r *ProductRepository) GetById(id int, transaction *gorp.Transaction) (*entities.ProductEntity, error) {
+	// db接続
+	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
+	if err != nil {
+		return nil, err
+	}
+	defer db_connection.CloseConnectionIfNotTransaction(conn)
+
+	// データ取得
+	var productRecord tables2.ProductRecord
+	err = conn.SelectOne(productRecord, "select * from products where id = $1", id)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	// エンティティに詰める
+	return nil, nil
+}
