@@ -5,7 +5,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/user/tables"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/tables"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
 )
