@@ -18,6 +18,12 @@ func NewProductEntity(name string, price decimal.Decimal) *ProductEntity {
 	}
 }
 
+func NewProductEntityWithData(id int, name string, price decimal.Decimal, createdAt, updatedAt time.Time) *ProductEntity {
+	productEntity := ProductEntity{}
+	productEntity.LoadData(id, name, price, createdAt, updatedAt)
+	return &productEntity
+}
+
 func (p *ProductEntity) Name() string {
 	return p.name
 }
