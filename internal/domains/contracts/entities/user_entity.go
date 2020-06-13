@@ -6,14 +6,11 @@ import (
 
 type IUserEntity interface {
 	Id() int
-	CreatedAt() time.Time
-	UpdatedAt() time.Time
 }
 
 type UserEntity struct {
-	id        int
-	createdAt time.Time
-	updatedAt time.Time
+	id int
+	CreatedAtUpdatedAt
 }
 
 func (u *UserEntity) Id() int {
