@@ -13,3 +13,15 @@ type BaseEntity struct {
 	createdAt time.Time
 	updatedAt time.Time
 }
+
+func (b *BaseEntity) Id() int {
+	return b.id
+}
+
+func (b *BaseEntity) CreatedAt() time.Time {
+	return b.createdAt
+}
+
+func (b *BaseEntity) UpdatedAt() time.Time {
+	return b.updatedAt
+}
