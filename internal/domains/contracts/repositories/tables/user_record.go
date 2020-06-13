@@ -2,8 +2,6 @@ package tables
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
-	"gopkg.in/gorp.v2"
-	"time"
 )
 
 type UserRecord struct {
@@ -31,17 +29,4 @@ func NewUserRecordFromUserCorporationEntity(userCorporation *user.UserCorporatio
 			UpdatedAt: userCorporation.UpdatedAt(),
 		},
 	}
-}
-
-// insert時に時刻をセットするhook
-func (u *UserRecord) PreInsert(s gorp.SqlExecutor) error {
-	u.CreatedAt = time.Now()
-	u.UpdatedAt = u.CreatedAt
-	return nil
-}
-
-// updateに時刻をセットするhook
-func (u *UserRecord) PreUpdate(s gorp.SqlExecutor) error {
-	u.UpdatedAt = time.Now()
-	return nil
 }
