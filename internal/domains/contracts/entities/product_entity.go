@@ -5,10 +5,9 @@ import (
 )
 
 type ProductEntity struct {
-	id    int
 	name  string
 	price decimal.Decimal
-	CreatedAtUpdatedAt
+	BaseEntity
 }
 
 func New(name string, price decimal.Decimal) *ProductEntity {

@@ -5,12 +5,10 @@ import (
 )
 
 type IUserEntity interface {
-	Id() int
 }
 
 type UserEntity struct {
-	id int
-	CreatedAtUpdatedAt
+	BaseEntity
 }
 
 func (u *UserEntity) Id() int {
