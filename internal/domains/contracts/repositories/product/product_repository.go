@@ -53,11 +53,18 @@ func (r *ProductRepository) GetById(id int, transaction *gorp.Transaction) (*ent
 
 	// データ取得
 	var productRecord tables2.ProductRecord
-	err = conn.SelectOne(productRecord, "select * from products where id = $1", id)
+	err = conn.SelectOne(&productRecord, "select * from products where id = $1", id)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	// エンティティに詰める
-	return nil, nil
+	productEntity := entities.NewProductEntityWithData(
+		productRecord.Id,
+		productRecord.Name,
+		productRecord.Price,
+		productRecord.CreatedAt,
+		productRecord.UpdatedAt,
+	)
+	return productEntity, nil
 }
