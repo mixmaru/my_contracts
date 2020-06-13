@@ -19,7 +19,7 @@ func (r *ProductRepository) Save(productEntity interface{}, transaction *gorp.Tr
 	}
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
-	productRecord := tables.ProductRecord{Name: "商品名2", Price: decimal.NewFromFloat(1000)}
+	productRecord := tables.ProductRecord{Name: "商品名3", Price: decimal.NewFromFloat(1000)}
 	err = conn.Insert(&productRecord)
 	if err != nil {
 		return nil, errors.WithStack(err)

@@ -5,10 +5,14 @@ import (
 	"time"
 )
 
+type CreateAtUpdateAt struct {
+	CreateAt time.Time `db:"created_at"`
+	UpdateAt time.Time `db:"updated_at"`
+}
+
 type ProductRecord struct {
-	Id       int             `db:"id"`
-	Name     string          `db:"name"`
-	Price    decimal.Decimal `db:"price"`
-	CreateAt time.Time       `db:"created_at"`
-	UpdateAt time.Time       `db:"updated_at"`
+	Id    int             `db:"id"`
+	Name  string          `db:"name"`
+	Price decimal.Decimal `db:"price"`
+	CreateAtUpdateAt
 }
