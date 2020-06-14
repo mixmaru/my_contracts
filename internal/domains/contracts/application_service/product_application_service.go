@@ -53,3 +53,25 @@ func (p *ProductApplicationService) Register(name string, price decimal.Decimal)
 	// 返却
 	return dto, nil, nil
 }
+
+func (p *ProductApplicationService) Get(id int) (data_transfer_objects.ProductDto, error) {
+	// リポジトリつかってデータ取得
+	entity, err := p.productRepository.GetById(id, nil)
+	if err != nil {
+		return data_transfer_objects.ProductDto{}, err
+	}
+
+	// dtoにつめる
+	dto := data_transfer_objects.ProductDto{
+		Name:  entity.Name(),
+		Price: entity.Price(),
+		BaseDto: data_transfer_objects.BaseDto{
+			Id:        entity.Id(),
+			CreatedAt: entity.CreatedAt(),
+			UpdatedAt: entity.UpdatedAt(),
+		},
+	}
+
+	// 返却
+	return dto, nil
+}
