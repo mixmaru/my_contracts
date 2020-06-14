@@ -41,15 +41,8 @@ func (p *ProductApplicationService) Register(name string, price decimal.Decimal)
 	}
 
 	// dtoに詰める
-	dto := data_transfer_objects.ProductDto{
-		Name:  savedEntity.Name(),
-		Price: savedEntity.Price(),
-		BaseDto: data_transfer_objects.BaseDto{
-			Id:        savedEntity.Id(),
-			CreatedAt: savedEntity.CreatedAt(),
-			UpdatedAt: savedEntity.UpdatedAt(),
-		},
-	}
+	dto := data_transfer_objects.NewProductDtoFromEntity(savedEntity)
+
 	// 返却
 	return dto, nil, nil
 }
@@ -66,15 +59,7 @@ func (p *ProductApplicationService) Get(id int) (data_transfer_objects.ProductDt
 	}
 
 	// dtoにつめる
-	dto := data_transfer_objects.ProductDto{
-		Name:  entity.Name(),
-		Price: entity.Price(),
-		BaseDto: data_transfer_objects.BaseDto{
-			Id:        entity.Id(),
-			CreatedAt: entity.CreatedAt(),
-			UpdatedAt: entity.UpdatedAt(),
-		},
-	}
+	dto := data_transfer_objects.NewProductDtoFromEntity(entity)
 
 	// 返却
 	return dto, nil
