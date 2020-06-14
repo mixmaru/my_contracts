@@ -1,6 +1,7 @@
 package product
 
 import (
+	"database/sql"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	tables2 "github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/tables"
@@ -61,7 +62,12 @@ func (r *ProductRepository) GetById(id int, transaction *gorp.Transaction) (*ent
 	var productRecord tables2.ProductRecord
 	err = conn.SelectOne(&productRecord, "select * from products where id = $1", id)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		if err == sql.ErrNoRows {
+			// データがない
+			return nil, nil
+		} else {
+			return nil, errors.WithStack(err)
+		}
 	}
 
 	// エンティティに詰める
