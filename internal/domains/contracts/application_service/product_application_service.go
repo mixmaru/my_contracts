@@ -60,6 +60,10 @@ func (p *ProductApplicationService) Get(id int) (data_transfer_objects.ProductDt
 	if err != nil {
 		return data_transfer_objects.ProductDto{}, err
 	}
+	if entity == nil {
+		// データがない
+		return data_transfer_objects.ProductDto{}, nil
+	}
 
 	// dtoにつめる
 	dto := data_transfer_objects.ProductDto{
