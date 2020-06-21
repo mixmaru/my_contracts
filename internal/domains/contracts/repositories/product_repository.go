@@ -1,10 +1,9 @@
 package repositories
 
 import (
-	"database/sql"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
-	tables2 "github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/tables"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/tables"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
 )
@@ -22,7 +21,7 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, transact
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// recordオブジェクトに詰め替え
-	productRecord := tables2.ProductRecord{
+	productRecord := tables.ProductRecord{
 		Name:  productEntity.Name(),
 		Price: productEntity.Price(),
 	}
@@ -59,9 +58,9 @@ func (r *ProductRepository) GetById(id int, transaction *gorp.Transaction) (*ent
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// データ取得
-	var productRecord tables2.ProductRecord
+	var productRecord tables.ProductRecord
 	var productEntity entities.ProductEntity
-	noRow, err := r.selectOne(conn, &productRecord, &productEntity, "select * from products where id = $1", id)
+	noRow, err := selectOne(conn, &productRecord, &productEntity, "select * from products where id = $1", id)
 	if err != nil {
 		return nil, err
 	}
@@ -69,24 +68,4 @@ func (r *ProductRepository) GetById(id int, transaction *gorp.Transaction) (*ent
 		return nil, nil
 	}
 	return &productEntity, nil
-}
-
-func (r *ProductRepository) selectOne(executor gorp.SqlExecutor, record tables2.IRecord, entity entities.IBaseEntity, query string, args ...interface{}) (noRow bool, err error) {
-	err = executor.SelectOne(record, query, args...)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// データがない
-			return true, nil
-		} else {
-			return true, errors.WithStack(err)
-		}
-	}
-
-	// エンティティに詰める
-	err = record.SetDataToEntity(entity)
-	if err != nil {
-		return true, err
-	}
-
-	return false, nil
 }
