@@ -1,4 +1,4 @@
-package user
+package repositories
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
