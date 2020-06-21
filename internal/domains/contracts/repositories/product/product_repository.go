@@ -60,23 +60,33 @@ func (r *ProductRepository) GetById(id int, transaction *gorp.Transaction) (*ent
 
 	// データ取得
 	var productRecord tables2.ProductRecord
-	err = conn.SelectOne(&productRecord, "select * from products where id = $1", id)
+	var productEntity entities.ProductEntity
+	noRow, err := r.selectOne(conn, &productRecord, &productEntity, "select * from products where id = $1", id)
+	if err != nil {
+		return nil, err
+	}
+	if noRow {
+		return nil, nil
+	}
+	return &productEntity, nil
+}
+
+func (r *ProductRepository) selectOne(executor gorp.SqlExecutor, record tables2.IRecord, entity entities.IBaseEntity, query string, args ...interface{}) (noRow bool, err error) {
+	err = executor.SelectOne(record, query, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// データがない
-			return nil, nil
+			return true, nil
 		} else {
-			return nil, errors.WithStack(err)
+			return true, errors.WithStack(err)
 		}
 	}
 
 	// エンティティに詰める
-	productEntity := entities.NewProductEntityWithData(
-		productRecord.Id,
-		productRecord.Name,
-		productRecord.Price,
-		productRecord.CreatedAt,
-		productRecord.UpdatedAt,
-	)
-	return productEntity, nil
+	err = record.SetDataToEntity(entity)
+	if err != nil {
+		return true, err
+	}
+
+	return false, nil
 }
