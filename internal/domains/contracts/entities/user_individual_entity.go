@@ -41,6 +41,10 @@ func (u *UserIndividualEntity) LoadData(id int, name string, createdAt time.Time
 		return err
 	}
 
+	if u.UserEntity == nil {
+		u.UserEntity = &UserEntity{}
+	}
+
 	u.id = id
 	u.name = nameValue
 	u.createdAt = createdAt
