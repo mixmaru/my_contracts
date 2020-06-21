@@ -40,18 +40,7 @@ func (r *UserRepository) SaveUserIndividual(userEntity *entities.UserIndividualE
 	}
 
 	// dbから再読込してentityに詰め直す
-	userDbData, err := r.getUserIndividualViewById(user.Id, conn)
-	if err != nil {
-		return nil, err
-	}
-	userEntity.LoadData(
-		userDbData.Id,
-		userDbData.Name,
-		userDbData.CreatedAt,
-		userDbData.UpdatedAt,
-	)
-
-	return userEntity, nil
+	return r.getUserIndividualEntityById(user.Id, userEntity, conn)
 }
 
 // Idで個人顧客情報を取得する。データがなければnilを返す
@@ -64,12 +53,16 @@ func (r *UserRepository) GetUserIndividualById(id int, transaction *gorp.Transac
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// dbからデータ取得
+	return r.getUserIndividualEntityById(id, &entities.UserIndividualEntity{}, conn)
+}
+
+// dbからid指定で個人顧客情報を取得する
+func (r *UserRepository) getUserIndividualEntityById(id int, entity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (*entities.UserIndividualEntity, error) {
 	userIndividualView := tables.UserIndividualView{}
-	userIndividualEntity := entities.UserIndividualEntity{}
 	noRow, err := selectOne(
-		conn,
+		executor,
 		&userIndividualView,
-		&userIndividualEntity,
+		entity,
 		"SELECT u.id, ui.name, u.created_at, u.updated_at FROM users u "+
 			"inner join users_individual ui on u.id = ui.user_id "+
 			"WHERE id = $1", id,
@@ -80,28 +73,7 @@ func (r *UserRepository) GetUserIndividualById(id int, transaction *gorp.Transac
 	if noRow {
 		return nil, nil
 	}
-	return &userIndividualEntity, nil
-}
-
-// dbからid指定で個人顧客情報を取得する
-func (r *UserRepository) getUserIndividualViewById(id int, executor gorp.SqlExecutor) (*tables.UserIndividualView, error) {
-	data := &tables.UserIndividualView{}
-	err := executor.SelectOne(
-		data,
-		"SELECT u.id, ui.name, u.created_at, u.updated_at FROM users u "+
-			"inner join users_individual ui on u.id = ui.user_id "+
-			"WHERE id = $1",
-		id,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, err
-		} else {
-			return nil, errors.WithStack(err)
-		}
-	}
-
-	return data, nil
+	return entity, nil
 }
 
 // 法人顧客エンティティを保存する
