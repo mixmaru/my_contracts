@@ -64,26 +64,23 @@ func (r *UserRepository) GetUserIndividualById(id int, transaction *gorp.Transac
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// dbからデータ取得
-	userData, err := r.getUserIndividualViewById(id, conn)
-	if err == sql.ErrNoRows {
-		// データがなかったら、nilを返す
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	// entityに詰める
-	userEntity, err := entities.NewUserIndividualEntityWithData(
-		userData.Id,
-		userData.Name,
-		userData.CreatedAt,
-		userData.UpdatedAt,
+	userIndividualView := tables.UserIndividualView{}
+	userIndividualEntity := entities.UserIndividualEntity{}
+	noRow, err := selectOne(
+		conn,
+		&userIndividualView,
+		&userIndividualEntity,
+		"SELECT u.id, ui.name, u.created_at, u.updated_at FROM users u "+
+			"inner join users_individual ui on u.id = ui.user_id "+
+			"WHERE id = $1", id,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return userEntity, nil
+	if noRow {
+		return nil, nil
+	}
+	return &userIndividualEntity, nil
 }
 
 // dbからid指定で個人顧客情報を取得する
