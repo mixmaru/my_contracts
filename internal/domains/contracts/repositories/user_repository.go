@@ -163,26 +163,18 @@ func (r *UserRepository) GetUserCorporationById(id int, transaction *gorp.Transa
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// dbからデータ取得
-	userData, err := r.getUserCorporationViewById(id, conn)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// 対象データがない。nilを返す
-			return nil, nil
-		} else {
-			return nil, err
-		}
-	}
-
-	// entityに詰める
-	userEntity, err := entities.NewUserCorporationEntityWithData(
-		userData.Id,
-		userData.ContactPersonName,
-		userData.PresidentName,
-		userData.CreatedAt,
-		userData.UpdatedAt,
-	)
+	record := tables.UserCorporationView{}
+	entity := entities.UserCorporationEntity{}
+	query := "SELECT u.id, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at " +
+		"FROM users u " +
+		"inner join users_corporation uc on u.id = uc.user_id " +
+		"WHERE id = $1"
+	noRow, err := selectOne(conn, &record, &entity, query, id)
 	if err != nil {
 		return nil, err
 	}
-	return userEntity, nil
+	if noRow {
+		return nil, nil
+	}
+	return &entity, nil
 }
