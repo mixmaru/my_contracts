@@ -151,7 +151,7 @@ func TestUserRepository_getUserCorporationViewById(t *testing.T) {
 	assert.NoError(t, err)
 
 	// idで取得する
-	result, err := repo.getUserCorporationEntityById(user.Id(), dbMap)
+	result, err := repo.getUserCorporationEntityById(user.Id(), &entities.UserCorporationEntity{}, dbMap)
 	assert.NoError(t, err)
 
 	// 検証

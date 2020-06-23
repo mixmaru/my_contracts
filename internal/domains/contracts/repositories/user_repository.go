@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"database/sql"
 	_ "github.com/lib/pq"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
@@ -105,52 +104,25 @@ func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporatio
 	}
 
 	// 再読込する
-	data, err := r.getUserCorporationViewById(userRecord.Id, conn)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	userEntity.LoadData(data.Id, data.ContactPersonName, data.PresidentName, data.CreatedAt, data.UpdatedAt)
-	return userEntity, nil
+	return r.getUserCorporationEntityById(userRecord.Id, userEntity, conn)
 }
 
 // dbからid指定で法人顧客情報を取得する
-func (r *UserRepository) getUserCorporationEntityById(id int, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
-	data, err := r.getUserCorporationViewById(id, executor)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	entity, err := entities.NewUserCorporationEntityWithData(
-		data.Id,
-		data.ContactPersonName,
-		data.PresidentName,
-		data.CreatedAt,
-		data.UpdatedAt,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return entity, nil
-}
-
-// dbからid指定で法人顧客情報を取得する
-func (r *UserRepository) getUserCorporationViewById(id int, executor gorp.SqlExecutor) (*tables.UserCorporationView, error) {
-	data := &tables.UserCorporationView{}
-	selectSql := "SELECT u.id, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at " +
+func (r *UserRepository) getUserCorporationEntityById(id int, entity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
+	// dbからデータ取得
+	record := tables.UserCorporationView{}
+	query := "SELECT u.id, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at " +
 		"FROM users u " +
 		"inner join users_corporation uc on u.id = uc.user_id " +
 		"WHERE id = $1"
-	err := executor.SelectOne(data, selectSql, id)
+	noRow, err := selectOne(executor, &record, entity, query, id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, err
-		} else {
-			return nil, errors.WithStack(err)
-		}
+		return nil, err
 	}
-	return data, nil
+	if noRow {
+		return nil, nil
+	}
+	return entity, nil
 }
 
 // Idで法人顧客情報を取得する。データがなければnilを返す
@@ -162,19 +134,5 @@ func (r *UserRepository) GetUserCorporationById(id int, transaction *gorp.Transa
 	}
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
-	// dbからデータ取得
-	record := tables.UserCorporationView{}
-	entity := entities.UserCorporationEntity{}
-	query := "SELECT u.id, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at " +
-		"FROM users u " +
-		"inner join users_corporation uc on u.id = uc.user_id " +
-		"WHERE id = $1"
-	noRow, err := selectOne(conn, &record, &entity, query, id)
-	if err != nil {
-		return nil, err
-	}
-	if noRow {
-		return nil, nil
-	}
-	return &entity, nil
+	return r.getUserCorporationEntityById(id, &entities.UserCorporationEntity{}, conn)
 }

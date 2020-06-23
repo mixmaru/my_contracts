@@ -35,6 +35,9 @@ func NewUserCorporationEntityWithData(id int, contractPersonName, presidentName 
 
 // 保持データをセットし直す
 func (u *UserCorporationEntity) LoadData(id int, contractPersonName, presidentName string, createdAt, updatedAt time.Time) error {
+	if u.UserEntity == nil {
+		u.UserEntity = &UserEntity{}
+	}
 	u.id = id
 	err := u.SetContactPersonName(contractPersonName)
 	if err != nil {
