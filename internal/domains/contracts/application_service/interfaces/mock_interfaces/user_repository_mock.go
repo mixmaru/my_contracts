@@ -6,7 +6,7 @@ package mock_interfaces
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	user "github.com/mixmaru/my_contracts/internal/domains/contracts/entities/user"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	gorp "gopkg.in/gorp.v2"
 	reflect "reflect"
 )
@@ -35,10 +35,10 @@ func (m *MockIUserRepository) EXPECT() *MockIUserRepositoryMockRecorder {
 }
 
 // SaveUserIndividual mocks base method.
-func (m *MockIUserRepository) SaveUserIndividual(userEntity *user.UserIndividualEntity, transaction *gorp.Transaction) (*user.UserIndividualEntity, error) {
+func (m *MockIUserRepository) SaveUserIndividual(userEntity *entities.UserIndividualEntity, transaction *gorp.Transaction) (*entities.UserIndividualEntity, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveUserIndividual", userEntity, transaction)
-	ret0, _ := ret[0].(*user.UserIndividualEntity)
+	ret0, _ := ret[0].(*entities.UserIndividualEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,10 +50,10 @@ func (mr *MockIUserRepositoryMockRecorder) SaveUserIndividual(userEntity, transa
 }
 
 // GetUserIndividualById mocks base method.
-func (m *MockIUserRepository) GetUserIndividualById(id int, transaction *gorp.Transaction) (*user.UserIndividualEntity, error) {
+func (m *MockIUserRepository) GetUserIndividualById(id int, transaction *gorp.Transaction) (*entities.UserIndividualEntity, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserIndividualById", id, transaction)
-	ret0, _ := ret[0].(*user.UserIndividualEntity)
+	ret0, _ := ret[0].(*entities.UserIndividualEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,10 +65,10 @@ func (mr *MockIUserRepositoryMockRecorder) GetUserIndividualById(id, transaction
 }
 
 // SaveUserCorporation mocks base method.
-func (m *MockIUserRepository) SaveUserCorporation(userEntity *user.UserCorporationEntity, transaction *gorp.Transaction) (*user.UserCorporationEntity, error) {
+func (m *MockIUserRepository) SaveUserCorporation(userEntity *entities.UserCorporationEntity, transaction *gorp.Transaction) (*entities.UserCorporationEntity, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveUserCorporation", userEntity, transaction)
-	ret0, _ := ret[0].(*user.UserCorporationEntity)
+	ret0, _ := ret[0].(*entities.UserCorporationEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -80,10 +80,10 @@ func (mr *MockIUserRepositoryMockRecorder) SaveUserCorporation(userEntity, trans
 }
 
 // GetUserCorporationById mocks base method.
-func (m *MockIUserRepository) GetUserCorporationById(id int, transaction *gorp.Transaction) (*user.UserCorporationEntity, error) {
+func (m *MockIUserRepository) GetUserCorporationById(id int, transaction *gorp.Transaction) (*entities.UserCorporationEntity, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserCorporationById", id, transaction)
-	ret0, _ := ret[0].(*user.UserCorporationEntity)
+	ret0, _ := ret[0].(*entities.UserCorporationEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
