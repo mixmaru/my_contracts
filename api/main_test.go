@@ -312,7 +312,7 @@ func TestMain_saveProduct(t *testing.T) {
 		body.Set("price", "1000.01")
 
 		// リクエスト実行
-		req := httptest.NewRequest("POST", "/product/", strings.NewReader(body.Encode()))
+		req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)

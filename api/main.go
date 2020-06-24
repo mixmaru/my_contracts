@@ -35,7 +35,7 @@ func newRouter() *echo.Echo {
 	// 法人顧客情報取得
 	e.GET("/corporation_users/:id", getCorporationUser)
 	// 商品登録
-	e.POST("/product/", saveProduct)
+	e.POST("/products/", saveProduct)
 
 	return e
 }
