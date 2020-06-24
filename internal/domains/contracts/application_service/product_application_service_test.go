@@ -37,7 +37,7 @@ func TestProductApplicationService_Register(t *testing.T) {
 
 	assert.Equal(t, 100, dto.Id)
 	assert.Equal(t, "商品名", dto.Name)
-	assert.True(t, dto.Price.Equal(decimal.NewFromFloat(1000)))
+	assert.Equal(t, "1000", dto.Price)
 	assert.True(t, dto.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
 	assert.True(t, dto.UpdatedAt.Equal(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)))
 }
@@ -68,7 +68,7 @@ func TestProductApplicationService_Get(t *testing.T) {
 
 		assert.Equal(t, 100, dto.Id)
 		assert.Equal(t, "商品名", dto.Name)
-		assert.True(t, dto.Price.Equal(decimal.NewFromFloat(1000)))
+		assert.Equal(t, "1000", dto.Price)
 		assert.True(t, dto.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
 		assert.True(t, dto.UpdatedAt.Equal(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)))
 	})
