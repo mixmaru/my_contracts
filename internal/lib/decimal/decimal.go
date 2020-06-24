@@ -31,6 +31,10 @@ func NewFromString(value string) (Decimal, error) {
 	return Decimal{decimal}, nil
 }
 
+func (d *Decimal) String() string {
+	return d.decimal.String()
+}
+
 func (d *Decimal) Add(decimal Decimal) Decimal {
 	return Decimal{d.decimal.Add(decimal.decimal)}
 }

@@ -20,6 +20,11 @@ func TestDecimal_NewFromInt(t *testing.T) {
 	assert.NotNil(t, decimal)
 }
 
+func TestDecimal_String(t *testing.T) {
+	decimal := NewFromFloat(100.01)
+	assert.Equal(t, "100.01", decimal.String())
+}
+
 type TestCase struct {
 	Left   float64
 	Right  float64
