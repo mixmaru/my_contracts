@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
+	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/mixmaru/my_contracts/internal/utils/my_logger"
 	"net/http"
 	"strconv"
@@ -33,6 +34,8 @@ func newRouter() *echo.Echo {
 	e.POST("/corporation_users/", saveCorporationUser)
 	// 法人顧客情報取得
 	e.GET("/corporation_users/:id", getCorporationUser)
+	// 商品登録
+	e.POST("/product/", saveProduct)
 
 	return e
 }
@@ -161,4 +164,37 @@ func getCorporationUser(c echo.Context) error {
 
 	// 返却
 	return c.JSON(http.StatusOK, user)
+}
+
+// 商品新規登録
+// params:
+// name string 商品名
+// price string 価格
+// curl -F "name=A商品" -F "price=10.1" http://localhost:1323/individual_users
+func saveProduct(c echo.Context) error {
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	// Get name and email
+	name := c.FormValue("name")
+	priceStr := c.FormValue("price")
+	price, err := decimal.NewFromString(priceStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+
+	productAppService := application_service.NewProductApplicationService()
+	product, validErrs, err := productAppService.Register(name, price)
+	if err != nil {
+		logger.Sugar().Errorw("商品データ登録に失敗。", "name", name, "price", price, "err", err)
+		c.Error(err)
+		return err
+	}
+	if len(validErrs) > 0 {
+		return c.JSON(http.StatusBadRequest, validErrs)
+	}
+
+	return c.JSON(http.StatusCreated, product)
 }
