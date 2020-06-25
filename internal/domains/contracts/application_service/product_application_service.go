@@ -13,11 +13,16 @@ type ProductApplicationService struct {
 	productRepository interfaces.IProductRepository
 }
 
-func (p *ProductApplicationService) Register(name string, price decimal.Decimal) (data_transfer_objects.ProductDto, ValidationErrors, error) {
-	// バリデーション実行
+func (p *ProductApplicationService) Register(name string, price string) (data_transfer_objects.ProductDto, ValidationErrors, error) {
+	// 入力値バリデーション
+	validationErrors := registerValidation(name, price)
+	if len(validationErrors) > 0 {
+		return data_transfer_objects.ProductDto{}, validationErrors, nil
+	}
 
 	// entityを作成
-	entity := entities.NewProductEntity(name, price)
+	priceDecimal, err := decimal.NewFromString(price)
+	entity := entities.NewProductEntity(name, priceDecimal)
 
 	// トランザクション開始
 	conn, err := db_connection.GetConnection()
@@ -45,6 +50,40 @@ func (p *ProductApplicationService) Register(name string, price decimal.Decimal)
 
 	// 返却
 	return dto, nil, nil
+}
+
+func registerValidation(name string, price string) ValidationErrors {
+	validationErrors := ValidationErrors{}
+
+	// 商品名バリデーション
+	// 文字数50文字以上
+	// 文字がから文字
+	// 重複チェック
+
+	// 価格バリデーション
+	// decimalに変換可能か？
+	// マイナスでないか？
+
+	//// 担当者名バリデーション
+	//contactPersonNameValidErrors := values.ContactPersonNameValidate(contactPersonName)
+	//if len(contactPersonNameValidErrors) > 0 {
+	//	validationErrors["contact_person_name"] = []string{}
+	//}
+	//for _, validError := range contactPersonNameValidErrors {
+	//	validationErrors["contact_person_name"] = append(validationErrors["contact_person_name"], validError.Error())
+	//}
+	//
+	//// 社長名バリデーション
+	//presidentNameValidErrors := values.PresidentNameValidate(presidentName)
+	//if len(presidentNameValidErrors) > 0 {
+	//	validationErrors["president_name"] = []string{}
+	//}
+	//for _, validError := range presidentNameValidErrors {
+	//	validationErrors["president_name"] = append(validationErrors["president_name"], validError.Error())
+	//}
+
+	return validationErrors
+
 }
 
 func (p *ProductApplicationService) Get(id int) (data_transfer_objects.ProductDto, error) {

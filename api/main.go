@@ -4,7 +4,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
-	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/mixmaru/my_contracts/internal/utils/my_logger"
 	"net/http"
 	"strconv"
@@ -181,11 +180,7 @@ func saveProduct(c echo.Context) error {
 
 	// Get name and email
 	name := c.FormValue("name")
-	priceStr := c.FormValue("price")
-	price, err := decimal.NewFromString(priceStr)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
-	}
+	price := c.FormValue("price")
 
 	productAppService := application_service.NewProductApplicationService()
 	product, validErrs, err := productAppService.Register(name, price)
