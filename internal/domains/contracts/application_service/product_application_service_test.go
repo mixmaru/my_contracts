@@ -13,7 +13,6 @@ import (
 )
 
 func TestProductApplicationService_Register(t *testing.T) {
-	productEntity := entities.NewProductEntity("商品名", decimal.NewFromFloat(1000))
 	returnProductEntity := entities.NewProductEntityWithData(
 		100,
 		"商品名",
@@ -27,7 +26,7 @@ func TestProductApplicationService_Register(t *testing.T) {
 	productRepositoryMock := mock_interfaces.NewMockIProductRepository(ctrl)
 	productRepositoryMock.EXPECT().
 		Save(
-			productEntity,
+			gomock.AssignableToTypeOf(&entities.ProductEntity{}),
 			gomock.AssignableToTypeOf(&gorp.Transaction{}),
 		).Return(returnProductEntity, nil).
 		Times(1)
