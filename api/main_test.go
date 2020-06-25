@@ -394,3 +394,81 @@ func TestMain_saveProduct(t *testing.T) {
 	//	})
 	//})
 }
+
+func TestMain_getProduct(t *testing.T) {
+	// productデータをすべて削除
+	conn, err := db_connection.GetConnection()
+	assert.NoError(t, err)
+	_, err = conn.Exec("truncate products cascade")
+	assert.NoError(t, err)
+
+	// 検証用データ登録
+	router := newRouter()
+	body := url.Values{}
+	body.Set("name", "A商品")
+	body.Set("price", "1000.001")
+
+	// リクエスト実行
+	req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+	// 検証
+	assert.Equal(t, http.StatusCreated, rec.Code)
+
+	// 保存したデータを取得
+	var registeredProduct data_transfer_objects.ProductDto
+	err = json.Unmarshal(rec.Body.Bytes(), &registeredProduct)
+	assert.NoError(t, err)
+
+	t.Run("正常系", func(t *testing.T) {
+		router := newRouter()
+		req := httptest.NewRequest("GET", fmt.Sprintf("/products/%v", registeredProduct.Id), nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 保存したデータを取得
+		var gotProductData data_transfer_objects.ProductDto
+		err = json.Unmarshal(rec.Body.Bytes(), &gotProductData)
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, registeredProduct, gotProductData)
+	})
+
+	t.Run("指定IDの商品が存在しなかった時", func(t *testing.T) {
+		router := newRouter()
+		req := httptest.NewRequest("GET", "/products/0", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		var jsonValues map[string]string
+		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+		assert.NoError(t, err)
+
+		expect := map[string]string{
+			"message": "Not Found",
+		}
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, expect, jsonValues)
+	})
+
+	t.Run("IDに変な値を入れられた時", func(t *testing.T) {
+		router := newRouter()
+		req := httptest.NewRequest("GET", "/products/aa99fdsa", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		var jsonValues map[string]string
+		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+		assert.NoError(t, err)
+
+		expect := map[string]string{
+			"message": "Not Found",
+		}
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, expect, jsonValues)
+	})
+}
