@@ -13,13 +13,14 @@ import (
 )
 
 func TestProductApplicationService_Register(t *testing.T) {
-	returnProductEntity := entities.NewProductEntityWithData(
+	returnProductEntity, err := entities.NewProductEntityWithData(
 		100,
 		"商品名",
 		decimal.NewFromFloat(1000),
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
+	assert.NoError(t, err)
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -44,13 +45,14 @@ func TestProductApplicationService_Register(t *testing.T) {
 
 func TestProductApplicationService_Get(t *testing.T) {
 	t.Run("データがある時", func(t *testing.T) {
-		returnProductEntity := entities.NewProductEntityWithData(
+		returnProductEntity, err := entities.NewProductEntityWithData(
 			100,
 			"商品名",
 			decimal.NewFromFloat(1000),
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		)
+		assert.NoError(t, err)
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()

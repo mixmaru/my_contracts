@@ -18,12 +18,15 @@ func (p *ProductRecord) SetDataToEntity(entity interface{}) error {
 	if !ok {
 		return errors.New("*entities.ProductEntityではないものが渡された")
 	}
-	value.LoadData(
+	err := value.LoadData(
 		p.Id,
 		p.Name,
 		p.Price,
 		p.CreatedAt,
 		p.UpdatedAt,
 	)
+	if err != nil {
+		return err
+	}
 	return nil
 }

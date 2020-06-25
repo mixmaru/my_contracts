@@ -22,7 +22,10 @@ func (p *ProductApplicationService) Register(name string, price string) (data_tr
 
 	// entityを作成
 	priceDecimal, err := decimal.NewFromString(price)
-	entity := entities.NewProductEntity(name, priceDecimal)
+	entity, err := entities.NewProductEntity(name, priceDecimal)
+	if err != nil {
+		return data_transfer_objects.ProductDto{}, nil, err
+	}
 
 	// トランザクション開始
 	conn, err := db_connection.GetConnection()
