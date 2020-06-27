@@ -4,6 +4,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/pkg/errors"
@@ -60,7 +61,13 @@ func registerValidation(name string, price string) ValidationErrors {
 
 	// 商品名バリデーション
 	// 文字数50文字以上
-	// 文字がから文字
+	productNameValidErrors := values.ProductNameValidate(name)
+	if len(productNameValidErrors) > 0 {
+		validationErrors["name"] = []string{}
+	}
+	for _, validError := range productNameValidErrors {
+		validationErrors["name"] = append(validationErrors["name"], validError.Error())
+	}
 	// 重複チェック
 
 	// 価格バリデーション
