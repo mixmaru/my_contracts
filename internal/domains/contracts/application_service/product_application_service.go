@@ -16,7 +16,7 @@ type ProductApplicationService struct {
 
 func (p *ProductApplicationService) Register(name string, price string) (data_transfer_objects.ProductDto, ValidationErrors, error) {
 	// 入力値バリデーション
-	validationErrors := registerValidation(name, price)
+	validationErrors := p.registerValidation(name, price)
 	if len(validationErrors) > 0 {
 		return data_transfer_objects.ProductDto{}, validationErrors, nil
 	}
@@ -56,7 +56,7 @@ func (p *ProductApplicationService) Register(name string, price string) (data_tr
 	return dto, nil, nil
 }
 
-func registerValidation(name string, price string) ValidationErrors {
+func (p *ProductApplicationService) registerValidation(name string, price string) ValidationErrors {
 	validationErrors := ValidationErrors{}
 
 	// 商品名バリデーション
