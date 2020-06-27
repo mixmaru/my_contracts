@@ -8,4 +8,5 @@ import (
 type IProductRepository interface {
 	Save(productEntity *entities.ProductEntity, transaction *gorp.Transaction) (*entities.ProductEntity, error)
 	GetById(id int, transaction *gorp.Transaction) (*entities.ProductEntity, error)
+	GetByName(name string, transaction *gorp.Transaction) (*entities.ProductEntity, error)
 }
