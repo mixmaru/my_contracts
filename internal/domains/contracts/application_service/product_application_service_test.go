@@ -5,7 +5,6 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
-	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
 	"testing"
@@ -16,7 +15,7 @@ func TestProductApplicationService_Register(t *testing.T) {
 	returnProductEntity, err := entities.NewProductEntityWithData(
 		100,
 		"商品名",
-		decimal.NewFromFloat(1000),
+		"1000",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
@@ -54,7 +53,7 @@ func TestProductApplicationService_Get(t *testing.T) {
 		returnProductEntity, err := entities.NewProductEntityWithData(
 			100,
 			"商品名",
-			decimal.NewFromFloat(1000),
+			"1000",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		)

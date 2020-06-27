@@ -8,22 +8,27 @@ import (
 
 type ProductEntity struct {
 	name  values.ProductNameValue
-	price decimal.Decimal
+	price values.ProductPriceValue
 	BaseEntity
 }
 
-func NewProductEntity(name string, price decimal.Decimal) (*ProductEntity, error) {
+func NewProductEntity(name string, price string) (*ProductEntity, error) {
 	nameValue, err := values.NewProductNameValue(name)
 	if err != nil {
 		return nil, err
 	}
+	priceValue, err := values.NewProductPriceValue(price)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ProductEntity{
 		name:  nameValue,
-		price: price,
+		price: priceValue,
 	}, nil
 }
 
-func NewProductEntityWithData(id int, name string, price decimal.Decimal, createdAt, updatedAt time.Time) (*ProductEntity, error) {
+func NewProductEntityWithData(id int, name string, price string, createdAt, updatedAt time.Time) (*ProductEntity, error) {
 	productEntity := ProductEntity{}
 	err := productEntity.LoadData(id, name, price, createdAt, updatedAt)
 	if err != nil {
@@ -37,19 +42,20 @@ func (p *ProductEntity) Name() string {
 }
 
 func (p *ProductEntity) Price() decimal.Decimal {
-	return p.price
+	return p.price.Value()
 }
 
 // 保持データをセットし直す
-func (p *ProductEntity) LoadData(id int, name string, price decimal.Decimal, createdAt time.Time, updatedAt time.Time) error {
+func (p *ProductEntity) LoadData(id int, name string, price string, createdAt time.Time, updatedAt time.Time) error {
 	nameValue, err := values.NewProductNameValue(name)
 	if err != nil {
 		return err
 	}
+	priceValue, err := values.NewProductPriceValue(price)
 
 	p.id = id
 	p.name = nameValue
-	p.price = price
+	p.price = priceValue
 	p.createdAt = createdAt
 	p.updatedAt = updatedAt
 	return nil

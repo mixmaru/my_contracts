@@ -21,7 +21,7 @@ func (p *ProductRecord) SetDataToEntity(entity interface{}) error {
 	err := value.LoadData(
 		p.Id,
 		p.Name,
-		p.Price,
+		p.Price.String(),
 		p.CreatedAt,
 		p.UpdatedAt,
 	)

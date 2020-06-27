@@ -4,7 +4,6 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/tables"
-	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -19,7 +18,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	r := ProductRepository{}
 
 	// 既存データ登録
-	savedProductEntity, err := entities.NewProductEntity("商品名", decimal.NewFromFloat(1000))
+	savedProductEntity, err := entities.NewProductEntity("商品名", "1000")
 	assert.NoError(t, err)
 	_, err = r.Save(savedProductEntity, nil)
 	assert.NoError(t, err)

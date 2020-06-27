@@ -42,7 +42,7 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, transact
 	err = productEntity.LoadData(
 		productRecord.Id,
 		productRecord.Name,
-		productRecord.Price,
+		productRecord.Price.String(),
 		productRecord.CreatedAt,
 		productRecord.UpdatedAt,
 	)

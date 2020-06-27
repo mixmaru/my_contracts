@@ -16,7 +16,7 @@ func TestProductRepository_Save(t *testing.T) {
 	assert.NoError(t, err)
 
 	r := ProductRepository{}
-	productEntity, err := entities.NewProductEntity("商品名", decimal.NewFromFloat(1000))
+	productEntity, err := entities.NewProductEntity("商品名", "1000")
 	assert.NoError(t, err)
 	_, err = r.Save(productEntity, nil)
 	assert.NoError(t, err)
@@ -39,7 +39,7 @@ func TestProductRepository_GetById(t *testing.T) {
 
 	t.Run("データがある時", func(t *testing.T) {
 		// データ登録
-		productEntity, err := entities.NewProductEntity("商品名", decimal.NewFromFloat(1000))
+		productEntity, err := entities.NewProductEntity("商品名", "1000")
 		assert.NoError(t, err)
 		_, err = r.Save(productEntity, nil)
 		assert.NoError(t, err)
@@ -75,7 +75,7 @@ func TestProductRepository_GetByName(t *testing.T) {
 
 	t.Run("データがある時", func(t *testing.T) {
 		// データ登録
-		productEntity, err := entities.NewProductEntity("商品名", decimal.NewFromFloat(1000))
+		productEntity, err := entities.NewProductEntity("商品名", "1000")
 		assert.NoError(t, err)
 		_, err = r.Save(productEntity, nil)
 		assert.NoError(t, err)

@@ -6,7 +6,6 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
-	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/pkg/errors"
 )
 
@@ -25,8 +24,7 @@ func (p *ProductApplicationService) Register(name string, price string) (data_tr
 	}
 
 	// entityを作成
-	priceDecimal, err := decimal.NewFromString(price)
-	entity, err := entities.NewProductEntity(name, priceDecimal)
+	entity, err := entities.NewProductEntity(name, price)
 	if err != nil {
 		return data_transfer_objects.ProductDto{}, nil, err
 	}

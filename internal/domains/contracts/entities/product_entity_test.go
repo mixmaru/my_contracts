@@ -10,7 +10,7 @@ import (
 // UserIndividualのインスタンス化をテスト
 func TestProductEntity_NewProductEntity(t *testing.T) {
 	// インスタンス化
-	productEntity, err := NewProductEntity("name", decimal.NewFromFloat(1000))
+	productEntity, err := NewProductEntity("name", "1000")
 	assert.NoError(t, err)
 
 	// テスト
@@ -20,21 +20,21 @@ func TestProductEntity_NewProductEntity(t *testing.T) {
 }
 func TestProductEntity_NewProductEntityWithData(t *testing.T) {
 	// インスタンス化
-	price := decimal.NewFromFloat(1000)
 	createdAt := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	updatedAt := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
-	productEntity, err := NewProductEntityWithData(1, "name", price, createdAt, updatedAt)
+	productEntity, err := NewProductEntityWithData(1, "name", "1000", createdAt, updatedAt)
 	assert.NoError(t, err)
 
 	assert.Equal(t, 1, productEntity.Id())
 	assert.Equal(t, "name", productEntity.Name())
-	assert.True(t, price.Equal(productEntity.Price()))
+	price := productEntity.Price()
+	assert.Equal(t, "1000", price.String())
 	assert.True(t, createdAt.Equal(productEntity.CreatedAt()))
 	assert.True(t, updatedAt.Equal(productEntity.UpdatedAt()))
 }
 
 func TestProductEntity_LoadData(t *testing.T) {
-	productEntity, err := NewProductEntity("name", decimal.NewFromFloat(1000))
+	productEntity, err := NewProductEntity("name", "1000")
 	assert.NoError(t, err)
 
 	createdAt := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -42,7 +42,7 @@ func TestProductEntity_LoadData(t *testing.T) {
 	err = productEntity.LoadData(
 		1,
 		"name2",
-		decimal.NewFromFloat(2000),
+		"2000",
 		createdAt,
 		updateAt,
 	)

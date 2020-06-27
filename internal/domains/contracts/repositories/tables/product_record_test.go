@@ -25,7 +25,9 @@ func TestProductRecord_SetDataToEntity(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 1, entity.Id())
 		assert.Equal(t, "名前", entity.Name())
-		assert.Equal(t, decimal.NewFromFloat(1000), entity.Price())
+
+		price := entity.Price()
+		assert.Equal(t, "1000", price.String())
 		assert.Equal(t, time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), entity.CreatedAt())
 		assert.Equal(t, time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), entity.UpdatedAt())
 	})
