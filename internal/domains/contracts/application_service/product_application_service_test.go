@@ -110,12 +110,14 @@ func TestProductApplicationService_registerValidation(t *testing.T) {
 	productAppService := NewProductApplicationService()
 
 	t.Run("エラーなし", func(t *testing.T) {
-		validationErrors := productAppService.registerValidation("A商品", "1000.01")
+		validationErrors, err := productAppService.registerValidation("A商品", "1000.01")
+		assert.NoError(t, err)
 		assert.Equal(t, ValidationErrors{}, validationErrors)
 	})
 
 	t.Run("nameが50文字より多い priceがdecimalに変換不可能", func(t *testing.T) {
-		validationErrors := productAppService.registerValidation("1234567890123456789012345678901234567890１２３４５６７８９０1", "aaa")
+		validationErrors, err := productAppService.registerValidation("1234567890123456789012345678901234567890１２３４５６７８９０1", "aaa")
+		assert.NoError(t, err)
 		expect := ValidationErrors{
 			"name": []string{
 				"50文字より多いです",
@@ -128,7 +130,8 @@ func TestProductApplicationService_registerValidation(t *testing.T) {
 	})
 
 	t.Run("nameがすでに存在する商品名", func(t *testing.T) {
-		validationErrors := productAppService.registerValidation("既存商品", "1000")
+		validationErrors, err := productAppService.registerValidation("既存商品", "1000")
+		assert.NoError(t, err)
 		expect := ValidationErrors{
 			"name": []string{
 				"すでに存在します",
@@ -138,7 +141,8 @@ func TestProductApplicationService_registerValidation(t *testing.T) {
 	})
 
 	t.Run("nameが空 priceがマイナス", func(t *testing.T) {
-		validationErrors := productAppService.registerValidation("", "-1000")
+		validationErrors, err := productAppService.registerValidation("", "-1000")
+		assert.NoError(t, err)
 		expect := ValidationErrors{
 			"name": []string{
 				"空です",

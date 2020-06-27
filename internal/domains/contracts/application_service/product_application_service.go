@@ -16,7 +16,10 @@ type ProductApplicationService struct {
 
 func (p *ProductApplicationService) Register(name string, price string) (data_transfer_objects.ProductDto, ValidationErrors, error) {
 	// 入力値バリデーション
-	validationErrors := p.registerValidation(name, price)
+	validationErrors, err := p.registerValidation(name, price)
+	if err != nil {
+		return data_transfer_objects.ProductDto{}, nil, err
+	}
 	if len(validationErrors) > 0 {
 		return data_transfer_objects.ProductDto{}, validationErrors, nil
 	}
@@ -56,7 +59,7 @@ func (p *ProductApplicationService) Register(name string, price string) (data_tr
 	return dto, nil, nil
 }
 
-func (p *ProductApplicationService) registerValidation(name string, price string) ValidationErrors {
+func (p *ProductApplicationService) registerValidation(name string, price string) (ValidationErrors, error) {
 	validationErrors := ValidationErrors{}
 
 	// 商品名バリデーション
@@ -69,6 +72,13 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 		validationErrors["name"] = append(validationErrors["name"], validError.Error())
 	}
 	// 重複チェック
+	productEntity, err := p.productRepository.GetByName(name, nil)
+	if err != nil {
+		return validationErrors, err
+	}
+	if productEntity != nil {
+		validationErrors["name"] = append(validationErrors["name"], "すでに存在します")
+	}
 
 	// 価格バリデーション
 	// decimalに変換可能か？
@@ -92,7 +102,7 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 	//	validationErrors["president_name"] = append(validationErrors["president_name"], validError.Error())
 	//}
 
-	return validationErrors
+	return validationErrors, nil
 
 }
 
