@@ -72,3 +72,24 @@ func (r *ProductRepository) GetById(id int, transaction *gorp.Transaction) (*ent
 	}
 	return &productEntity, nil
 }
+
+func (r *ProductRepository) GetByName(name string, transaction *gorp.Transaction) (*entities.ProductEntity, error) {
+	// db接続
+	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
+	if err != nil {
+		return nil, err
+	}
+	defer db_connection.CloseConnectionIfNotTransaction(conn)
+
+	// データ取得
+	var productRecord tables.ProductRecord
+	var productEntity entities.ProductEntity
+	noRow, err := selectOne(conn, &productRecord, &productEntity, "select * from products where name = $1", name)
+	if err != nil {
+		return nil, err
+	}
+	if noRow {
+		return nil, nil
+	}
+	return &productEntity, nil
+}
