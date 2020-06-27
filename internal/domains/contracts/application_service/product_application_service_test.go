@@ -31,6 +31,12 @@ func TestProductApplicationService_Register(t *testing.T) {
 			gomock.AssignableToTypeOf(&gorp.Transaction{}),
 		).Return(returnProductEntity, nil).
 		Times(1)
+	productRepositoryMock.EXPECT().
+		GetByName(
+			"商品名",
+			gomock.AssignableToTypeOf(&gorp.Transaction{}),
+		).Return(nil, nil).
+		Times(1)
 
 	productApp := NewProductApplicationServiceWithMock(productRepositoryMock)
 	dto, _, err := productApp.Register("商品名", "1000")
