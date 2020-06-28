@@ -161,3 +161,33 @@ func TestDecimal_Div(t *testing.T) {
 		}
 	}
 }
+
+// 正チェック
+func TestDecimal_IsPositive(t *testing.T) {
+	d := NewFromFloat(10)
+	assert.True(t, d.IsPositive())
+	d = NewFromFloat(0)
+	assert.False(t, d.IsPositive())
+	d = NewFromFloat(-10)
+	assert.False(t, d.IsPositive())
+}
+
+// 負チェック
+func TestDecimal_IsNegative(t *testing.T) {
+	d := NewFromFloat(10)
+	assert.False(t, d.IsNegative())
+	d = NewFromFloat(0)
+	assert.False(t, d.IsNegative())
+	d = NewFromFloat(-10)
+	assert.True(t, d.IsNegative())
+}
+
+// 0チェック
+func TestDecimal_IsZero(t *testing.T) {
+	d := NewFromFloat(10)
+	assert.False(t, d.IsZero())
+	d = NewFromFloat(0)
+	assert.True(t, d.IsZero())
+	d = NewFromFloat(-10)
+	assert.False(t, d.IsZero())
+}
