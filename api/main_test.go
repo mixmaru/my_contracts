@@ -329,70 +329,70 @@ func TestMain_saveProduct(t *testing.T) {
 		assert.Equal(t, "1000.01", registeredProduct.Price)
 	})
 
-	//t.Run("バリデーションエラー", func(t *testing.T) {
-	//	router := newRouter()
-	//	// リクエストパラメータ作成
-	//
-	//	t.Run("空文字", func(t *testing.T) {
-	//		body := url.Values{}
-	//		body.Set("contact_person_name", "")
-	//		body.Set("president_name", "")
-	//
-	//		// リクエスト実行
-	//		req := httptest.NewRequest("POST", "/corporation_users/", strings.NewReader(body.Encode()))
-	//		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-	//		rec := httptest.NewRecorder()
-	//		router.ServeHTTP(rec, req)
-	//
-	//		// 検証
-	//		assert.Equal(t, http.StatusBadRequest, rec.Code)
-	//
-	//		// jsonパース
-	//		var validMessages map[string][]string
-	//		err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
-	//		assert.NoError(t, err)
-	//
-	//		expected := application_service.ValidationErrors{
-	//			"contact_person_name": []string{
-	//				"空です",
-	//			},
-	//			"president_name": []string{
-	//				"空です",
-	//			},
-	//		}
-	//		assert.Equal(t, expected, validMessages)
-	//	})
-	//
-	//	t.Run("文字多すぎ", func(t *testing.T) {
-	//		body := url.Values{}
-	//		body.Set("contact_person_name", "000000000011111111112222222222333333333344444444445")
-	//		body.Set("president_name", "００００００００００11111111112222222222333333333344444444445")
-	//
-	//		// リクエスト実行
-	//		req := httptest.NewRequest("POST", "/corporation_users/", strings.NewReader(body.Encode()))
-	//		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-	//		rec := httptest.NewRecorder()
-	//		router.ServeHTTP(rec, req)
-	//
-	//		// 検証
-	//		assert.Equal(t, http.StatusBadRequest, rec.Code)
-	//
-	//		// jsonパース
-	//		var validMessages map[string][]string
-	//		err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
-	//		assert.NoError(t, err)
-	//
-	//		expected := application_service.ValidationErrors{
-	//			"contact_person_name": []string{
-	//				"50文字より多いです",
-	//			},
-	//			"president_name": []string{
-	//				"50文字より多いです",
-	//			},
-	//		}
-	//		assert.Equal(t, expected, validMessages)
-	//	})
-	//})
+	t.Run("バリデーションエラー", func(t *testing.T) {
+		router := newRouter()
+		// リクエストパラメータ作成
+
+		t.Run("空文字", func(t *testing.T) {
+			body := url.Values{}
+			body.Set("contact_person_name", "")
+			body.Set("president_name", "")
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+			// jsonパース
+			var validMessages map[string][]string
+			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+			assert.NoError(t, err)
+
+			expected := application_service.ValidationErrors{
+				"name": []string{
+					"空です",
+				},
+				"price": []string{
+					"空です",
+				},
+			}
+			assert.Equal(t, expected, validMessages)
+		})
+
+		t.Run("文字多すぎ　priceがマイナス値", func(t *testing.T) {
+			body := url.Values{}
+			body.Set("name", "000000000011111111112222222222333333333344444444445")
+			body.Set("price", "-1000")
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+			// jsonパース
+			var validMessages map[string][]string
+			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+			assert.NoError(t, err)
+
+			expected := application_service.ValidationErrors{
+				"name": []string{
+					"50文字より多いです",
+				},
+				"price": []string{
+					"マイナス値です",
+				},
+			}
+			assert.Equal(t, expected, validMessages)
+		})
+	})
 }
 
 func TestMain_getProduct(t *testing.T) {
