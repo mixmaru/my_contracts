@@ -45,7 +45,7 @@ func TestProductPriceValue_ProductPriceValidate(t *testing.T) {
 		validErrs, err := ProductPriceValidate("-1")
 		assert.NoError(t, err)
 		assert.Len(t, validErrs, 1)
-		assert.EqualError(t, validErrs[0], "マイナスの数値です")
+		assert.EqualError(t, validErrs[0], "マイナス値です")
 	})
 
 	t.Run("数値じゃなかったとき", func(t *testing.T) {

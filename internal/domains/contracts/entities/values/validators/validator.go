@@ -59,3 +59,13 @@ type NumericStringValidError struct {
 func NewNumericStringValidError(error error) *NumericStringValidError {
 	return &NumericStringValidError{error: error}
 }
+
+// その他のエラー定義
+// マイナス値エラー
+type NegativeValidError struct {
+	error
+}
+
+func NewNegativeValidError(error error) *NegativeValidError {
+	return &NegativeValidError{error: error}
+}

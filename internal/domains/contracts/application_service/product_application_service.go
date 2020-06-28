@@ -61,7 +61,6 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 	validationErrors := ValidationErrors{}
 
 	// 商品名バリデーション
-	// 文字数50文字以上
 	productNameValidErrors := values.ProductNameValidate(name)
 	if len(productNameValidErrors) > 0 {
 		validationErrors["name"] = []string{}
@@ -69,6 +68,7 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 	for _, validError := range productNameValidErrors {
 		validationErrors["name"] = append(validationErrors["name"], validError.Error())
 	}
+
 	// 重複チェック
 	productEntity, err := p.productRepository.GetByName(name, nil)
 	if err != nil {
@@ -79,26 +79,16 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 	}
 
 	// 価格バリデーション
-	// decimalに変換可能か？
-	// マイナスでないか？
-
-	//// 担当者名バリデーション
-	//contactPersonNameValidErrors := values.ContactPersonNameValidate(contactPersonName)
-	//if len(contactPersonNameValidErrors) > 0 {
-	//	validationErrors["contact_person_name"] = []string{}
-	//}
-	//for _, validError := range contactPersonNameValidErrors {
-	//	validationErrors["contact_person_name"] = append(validationErrors["contact_person_name"], validError.Error())
-	//}
-	//
-	//// 社長名バリデーション
-	//presidentNameValidErrors := values.PresidentNameValidate(presidentName)
-	//if len(presidentNameValidErrors) > 0 {
-	//	validationErrors["president_name"] = []string{}
-	//}
-	//for _, validError := range presidentNameValidErrors {
-	//	validationErrors["president_name"] = append(validationErrors["president_name"], validError.Error())
-	//}
+	productPriceValidErrors, err := values.ProductPriceValidate(price)
+	if err != nil {
+		return validationErrors, err
+	}
+	if len(productPriceValidErrors) > 0 {
+		validationErrors["price"] = []string{}
+	}
+	for _, validError := range productPriceValidErrors {
+		validationErrors["price"] = append(validationErrors["price"], validError.Error())
+	}
 
 	return validationErrors, nil
 

@@ -60,7 +60,7 @@ func ProductPriceValidate(price string) (validErrors []error, err error) {
 		return nil, err
 	}
 	if priceDecimal.IsNegative() {
-		validErrors = append(validErrors, validators.NewNegativeValidError(plain_err.New("マイナスの数値です")))
+		validErrors = append(validErrors, validators.NewNegativeValidError(plain_err.New("マイナス値です")))
 	}
 
 	return validErrors, nil
