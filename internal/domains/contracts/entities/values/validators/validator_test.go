@@ -44,3 +44,21 @@ func TestValidator_IsOverLengthString(t *testing.T) {
 		assert.False(t, IsOverLengthString("", 10))
 	})
 }
+
+func TestValidator_IsNumericString(t *testing.T) {
+	t.Run("数値文字列である", func(t *testing.T) {
+		assert.True(t, IsNumericString("100"))
+		assert.True(t, IsNumericString("100.01"))
+		assert.True(t, IsNumericString("-100"))
+		assert.True(t, IsNumericString("-100.01"))
+		assert.True(t, IsNumericString("0"))
+		assert.True(t, IsNumericString("10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111"))
+	})
+
+	t.Run("数値文字列でない", func(t *testing.T) {
+		assert.False(t, IsNumericString("a"))
+		assert.False(t, IsNumericString("-"))
+		assert.False(t, IsNumericString("."))
+		assert.False(t, IsNumericString("10000000000000000aaa00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111"))
+	})
+}

@@ -1,7 +1,11 @@
 package validators
 
-import "unicode/utf8"
+import (
+	"strconv"
+	"unicode/utf8"
+)
 
+// 空文字チェック
 func IsEmptyString(str string) bool {
 	if utf8.RuneCountInString(str) == 0 {
 		return true
@@ -10,6 +14,16 @@ func IsEmptyString(str string) bool {
 	}
 }
 
+// から文字エラー
+type EmptyStringValidError struct {
+	error
+}
+
+func NewEmptyStringValidError(err error) *EmptyStringValidError {
+	return &EmptyStringValidError{error: err}
+}
+
+// 文字数オーバーチェック
 func IsOverLengthString(str string, maxNum int) bool {
 	if utf8.RuneCountInString(str) <= maxNum {
 		return false
@@ -18,20 +32,30 @@ func IsOverLengthString(str string, maxNum int) bool {
 	}
 }
 
-// から文字エラー
-type EmptyValidError struct {
-	error
-}
-
-func NewEmptyValidError(err error) *EmptyValidError {
-	return &EmptyValidError{error: err}
-}
-
 // 文字数オーバーエラー
-type OverLengthValidError struct {
+type OverLengthStringValidError struct {
 	error
 }
 
-func NewOverLengthValidError(error error) *OverLengthValidError {
-	return &OverLengthValidError{error: error}
+func NewOverLengthStringValidError(error error) *OverLengthStringValidError {
+	return &OverLengthStringValidError{error: error}
+}
+
+// 数値チェック
+func IsNumericString(str string) bool {
+	_, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
+
+// 数値チェックエラー
+type NumericStringValidError struct {
+	error
+}
+
+func NewNumericStringValidError(error error) *NumericStringValidError {
+	return &NumericStringValidError{error: error}
 }
