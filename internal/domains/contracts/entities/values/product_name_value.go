@@ -8,37 +8,37 @@ import (
 	"strings"
 )
 
-const NameMaxLength = 50
+const ProductNameMaxLength = 50
 
 // Name値オブジェクト
-type NameValue struct {
+type ProductNameValue struct {
 	value string
 }
 
-func NewNameValue(value string) (NameValue, error) {
-	validateErrors := NameValidate(value)
+func NewProductNameValue(value string) (ProductNameValue, error) {
+	validateErrors := ProductNameValidate(value)
 	if len(validateErrors) > 0 {
 		var msgs []string
 		for _, msg := range validateErrors {
 			msgs = append(msgs, msg.Error())
 		}
-		return NameValue{}, errors.New(fmt.Sprintf("Nameバリデーションエラー。%v", strings.Join(msgs, ", ")))
+		return ProductNameValue{}, errors.New(fmt.Sprintf("ProductNameバリデーションエラー。%v", strings.Join(msgs, ", ")))
 	}
-	return NameValue{
+	return ProductNameValue{
 		value: value,
 	}, nil
 }
 
-func (v *NameValue) Value() string {
+func (v *ProductNameValue) Value() string {
 	return v.value
 }
 
-func NameValidate(name string) []error {
+func ProductNameValidate(name string) []error {
 	var validErrors []error
 	if validators.IsEmptyString(name) {
 		validErrors = append(validErrors, validators.NewEmptyStringValidError(plain_err.New("空です")))
 	}
-	if validators.IsOverLengthString(name, NameMaxLength) {
+	if validators.IsOverLengthString(name, ProductNameMaxLength) {
 		validErrors = append(validErrors, validators.NewOverLengthStringValidError(plain_err.New(fmt.Sprintf("%v文字より多いです", NameMaxLength))))
 	}
 

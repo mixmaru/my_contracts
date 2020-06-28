@@ -4,7 +4,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
-	"github.com/mixmaru/my_contracts/internal/lib/decimal"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
 	"testing"
@@ -12,45 +12,52 @@ import (
 )
 
 func TestProductApplicationService_Register(t *testing.T) {
-	productEntity := entities.NewProductEntity("商品名", decimal.NewFromFloat(1000))
-	returnProductEntity := entities.NewProductEntityWithData(
+	returnProductEntity, err := entities.NewProductEntityWithData(
 		100,
 		"商品名",
-		decimal.NewFromFloat(1000),
+		"1000",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
+	assert.NoError(t, err)
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	productRepositoryMock := mock_interfaces.NewMockIProductRepository(ctrl)
 	productRepositoryMock.EXPECT().
 		Save(
-			productEntity,
+			gomock.AssignableToTypeOf(&entities.ProductEntity{}),
 			gomock.AssignableToTypeOf(&gorp.Transaction{}),
 		).Return(returnProductEntity, nil).
 		Times(1)
+	productRepositoryMock.EXPECT().
+		GetByName(
+			"商品名",
+			gomock.AssignableToTypeOf(&gorp.Transaction{}),
+		).Return(nil, nil).
+		Times(1)
 
 	productApp := NewProductApplicationServiceWithMock(productRepositoryMock)
-	dto, _, err := productApp.Register("商品名", decimal.NewFromFloat(1000))
+	dto, _, err := productApp.Register("商品名", "1000")
 	assert.NoError(t, err)
 
 	assert.Equal(t, 100, dto.Id)
 	assert.Equal(t, "商品名", dto.Name)
-	assert.True(t, dto.Price.Equal(decimal.NewFromFloat(1000)))
+	assert.Equal(t, "1000", dto.Price)
 	assert.True(t, dto.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
 	assert.True(t, dto.UpdatedAt.Equal(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)))
 }
 
 func TestProductApplicationService_Get(t *testing.T) {
 	t.Run("データがある時", func(t *testing.T) {
-		returnProductEntity := entities.NewProductEntityWithData(
+		returnProductEntity, err := entities.NewProductEntityWithData(
 			100,
 			"商品名",
-			decimal.NewFromFloat(1000),
+			"1000",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		)
+		assert.NoError(t, err)
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -68,7 +75,7 @@ func TestProductApplicationService_Get(t *testing.T) {
 
 		assert.Equal(t, 100, dto.Id)
 		assert.Equal(t, "商品名", dto.Name)
-		assert.True(t, dto.Price.Equal(decimal.NewFromFloat(1000)))
+		assert.Equal(t, "1000", dto.Price)
 		assert.True(t, dto.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
 		assert.True(t, dto.UpdatedAt.Equal(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)))
 	})
@@ -89,5 +96,66 @@ func TestProductApplicationService_Get(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Zero(t, dto)
+	})
+}
+
+func TestProductApplicationService_registerValidation(t *testing.T) {
+	// productデータをすべて削除
+	conn, err := db_connection.GetConnection()
+	assert.NoError(t, err)
+	_, err = conn.Exec("truncate products cascade")
+	assert.NoError(t, err)
+
+	// 既存データの作成
+	app := NewProductApplicationService()
+	_, validationErrors, err := app.Register("既存商品", "1000")
+	assert.NoError(t, err)
+	assert.Zero(t, validationErrors)
+
+	productAppService := NewProductApplicationService()
+
+	t.Run("エラーなし", func(t *testing.T) {
+		validationErrors, err := productAppService.registerValidation("A商品", "1000.01")
+		assert.NoError(t, err)
+		assert.Equal(t, ValidationErrors{}, validationErrors)
+	})
+
+	t.Run("nameが50文字より多い priceがdecimalに変換不可能", func(t *testing.T) {
+		validationErrors, err := productAppService.registerValidation("1234567890123456789012345678901234567890１２３４５６７８９０1", "aaa")
+		assert.NoError(t, err)
+		expect := ValidationErrors{
+			"name": []string{
+				"50文字より多いです",
+			},
+			"price": []string{
+				"数値ではありません",
+			},
+		}
+		assert.Equal(t, expect, validationErrors)
+	})
+
+	t.Run("nameがすでに存在する商品名", func(t *testing.T) {
+		validationErrors, err := productAppService.registerValidation("既存商品", "1000")
+		assert.NoError(t, err)
+		expect := ValidationErrors{
+			"name": []string{
+				"すでに存在します",
+			},
+		}
+		assert.Equal(t, expect, validationErrors)
+	})
+
+	t.Run("nameが空 priceがマイナス", func(t *testing.T) {
+		validationErrors, err := productAppService.registerValidation("", "-1000")
+		assert.NoError(t, err)
+		expect := ValidationErrors{
+			"name": []string{
+				"空です",
+			},
+			"price": []string{
+				"マイナス値です",
+			},
+		}
+		assert.Equal(t, expect, validationErrors)
 	})
 }

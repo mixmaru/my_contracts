@@ -31,6 +31,10 @@ func NewFromString(value string) (Decimal, error) {
 	return Decimal{decimal}, nil
 }
 
+func (d *Decimal) String() string {
+	return d.decimal.String()
+}
+
 func (d *Decimal) Add(decimal Decimal) Decimal {
 	return Decimal{d.decimal.Add(decimal.decimal)}
 }
@@ -49,6 +53,18 @@ func (d *Decimal) Div(decimal Decimal) Decimal {
 
 func (d *Decimal) Equal(decimal Decimal) bool {
 	return d.decimal.Equal(decimal.decimal)
+}
+
+func (d *Decimal) IsPositive() bool {
+	return d.decimal.IsPositive()
+}
+
+func (d *Decimal) IsNegative() bool {
+	return d.decimal.IsNegative()
+}
+
+func (d *Decimal) IsZero() bool {
+	return d.decimal.IsZero()
 }
 
 // Value implements the driver.Valuer interface for database serialization.

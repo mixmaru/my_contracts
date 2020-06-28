@@ -39,13 +39,16 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, transact
 	}
 
 	// エンティティに詰め直し
-	productEntity.LoadData(
+	err = productEntity.LoadData(
 		productRecord.Id,
 		productRecord.Name,
-		productRecord.Price,
+		productRecord.Price.String(),
 		productRecord.CreatedAt,
 		productRecord.UpdatedAt,
 	)
+	if err != nil {
+		return nil, err
+	}
 	return productEntity, nil
 }
 
@@ -61,6 +64,27 @@ func (r *ProductRepository) GetById(id int, transaction *gorp.Transaction) (*ent
 	var productRecord tables.ProductRecord
 	var productEntity entities.ProductEntity
 	noRow, err := selectOne(conn, &productRecord, &productEntity, "select * from products where id = $1", id)
+	if err != nil {
+		return nil, err
+	}
+	if noRow {
+		return nil, nil
+	}
+	return &productEntity, nil
+}
+
+func (r *ProductRepository) GetByName(name string, transaction *gorp.Transaction) (*entities.ProductEntity, error) {
+	// db接続
+	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
+	if err != nil {
+		return nil, err
+	}
+	defer db_connection.CloseConnectionIfNotTransaction(conn)
+
+	// データ取得
+	var productRecord tables.ProductRecord
+	var productEntity entities.ProductEntity
+	noRow, err := selectOne(conn, &productRecord, &productEntity, "select * from products where name = $1", name)
 	if err != nil {
 		return nil, err
 	}

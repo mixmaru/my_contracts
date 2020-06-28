@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -277,6 +278,185 @@ func TestMain_getCorporationUser(t *testing.T) {
 	t.Run("IDに変な値を入れられた時", func(t *testing.T) {
 		router := newRouter()
 		req := httptest.NewRequest("GET", "/corporation_users/aa99fdsa", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		var jsonValues map[string]string
+		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+		assert.NoError(t, err)
+
+		expect := map[string]string{
+			"message": "Not Found",
+		}
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, expect, jsonValues)
+	})
+}
+
+func TestMain_saveProduct(t *testing.T) {
+	// productデータをすべて削除
+	conn, err := db_connection.GetConnection()
+	assert.NoError(t, err)
+	_, err = conn.Exec("truncate products cascade")
+	assert.NoError(t, err)
+
+	t.Run("正常系", func(t *testing.T) {
+		router := newRouter()
+
+		//////// データ登録テスト
+
+		// リクエストパラメータ作成
+		body := url.Values{}
+		body.Set("name", "A商品")
+		body.Set("price", "1000.01")
+
+		// リクエスト実行
+		req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		assert.Equal(t, http.StatusCreated, rec.Code)
+
+		// jsonパース
+		var registeredProduct data_transfer_objects.ProductDto
+		err := json.Unmarshal(rec.Body.Bytes(), &registeredProduct)
+		assert.NoError(t, err)
+
+		assert.Equal(t, "A商品", registeredProduct.Name)
+		assert.Equal(t, "1000.01", registeredProduct.Price)
+	})
+
+	t.Run("バリデーションエラー", func(t *testing.T) {
+		router := newRouter()
+		// リクエストパラメータ作成
+
+		t.Run("空文字", func(t *testing.T) {
+			body := url.Values{}
+			body.Set("contact_person_name", "")
+			body.Set("president_name", "")
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+			// jsonパース
+			var validMessages map[string][]string
+			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+			assert.NoError(t, err)
+
+			expected := application_service.ValidationErrors{
+				"name": []string{
+					"空です",
+				},
+				"price": []string{
+					"空です",
+				},
+			}
+			assert.Equal(t, expected, validMessages)
+		})
+
+		t.Run("文字多すぎ　priceがマイナス値", func(t *testing.T) {
+			body := url.Values{}
+			body.Set("name", "000000000011111111112222222222333333333344444444445")
+			body.Set("price", "-1000")
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+			// jsonパース
+			var validMessages map[string][]string
+			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+			assert.NoError(t, err)
+
+			expected := application_service.ValidationErrors{
+				"name": []string{
+					"50文字より多いです",
+				},
+				"price": []string{
+					"マイナス値です",
+				},
+			}
+			assert.Equal(t, expected, validMessages)
+		})
+	})
+}
+
+func TestMain_getProduct(t *testing.T) {
+	// productデータをすべて削除
+	conn, err := db_connection.GetConnection()
+	assert.NoError(t, err)
+	_, err = conn.Exec("truncate products cascade")
+	assert.NoError(t, err)
+
+	// 検証用データ登録
+	router := newRouter()
+	body := url.Values{}
+	body.Set("name", "A商品")
+	body.Set("price", "1000.001")
+
+	// リクエスト実行
+	req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+	// 検証
+	assert.Equal(t, http.StatusCreated, rec.Code)
+
+	// 保存したデータを取得
+	var registeredProduct data_transfer_objects.ProductDto
+	err = json.Unmarshal(rec.Body.Bytes(), &registeredProduct)
+	assert.NoError(t, err)
+
+	t.Run("正常系", func(t *testing.T) {
+		router := newRouter()
+		req := httptest.NewRequest("GET", fmt.Sprintf("/products/%v", registeredProduct.Id), nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 保存したデータを取得
+		var gotProductData data_transfer_objects.ProductDto
+		err = json.Unmarshal(rec.Body.Bytes(), &gotProductData)
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, registeredProduct, gotProductData)
+	})
+
+	t.Run("指定IDの商品が存在しなかった時", func(t *testing.T) {
+		router := newRouter()
+		req := httptest.NewRequest("GET", "/products/0", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		var jsonValues map[string]string
+		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+		assert.NoError(t, err)
+
+		expect := map[string]string{
+			"message": "Not Found",
+		}
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, expect, jsonValues)
+	})
+
+	t.Run("IDに変な値を入れられた時", func(t *testing.T) {
+		router := newRouter()
+		req := httptest.NewRequest("GET", "/products/aa99fdsa", nil)
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
 

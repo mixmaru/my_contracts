@@ -16,7 +16,8 @@ func TestProductRepository_Save(t *testing.T) {
 	assert.NoError(t, err)
 
 	r := ProductRepository{}
-	productEntity := entities.NewProductEntity("商品名", decimal.NewFromFloat(1000))
+	productEntity, err := entities.NewProductEntity("商品名", "1000")
+	assert.NoError(t, err)
 	_, err = r.Save(productEntity, nil)
 	assert.NoError(t, err)
 	assert.NotEqual(t, 0, productEntity.Id())
@@ -38,7 +39,8 @@ func TestProductRepository_GetById(t *testing.T) {
 
 	t.Run("データがある時", func(t *testing.T) {
 		// データ登録
-		productEntity := entities.NewProductEntity("商品名", decimal.NewFromFloat(1000))
+		productEntity, err := entities.NewProductEntity("商品名", "1000")
+		assert.NoError(t, err)
 		_, err = r.Save(productEntity, nil)
 		assert.NoError(t, err)
 
@@ -57,6 +59,42 @@ func TestProductRepository_GetById(t *testing.T) {
 	t.Run("データがない時", func(t *testing.T) {
 		// データ取得
 		loadedEntity, err := r.GetById(-100, nil)
+		assert.NoError(t, err)
+		assert.Nil(t, loadedEntity)
+	})
+}
+
+func TestProductRepository_GetByName(t *testing.T) {
+	// テーブル事前削除
+	db, err := db_connection.GetConnection()
+	assert.NoError(t, err)
+	_, err = db.Exec("truncate table products cascade")
+	assert.NoError(t, err)
+
+	r := ProductRepository{}
+
+	t.Run("データがある時", func(t *testing.T) {
+		// データ登録
+		productEntity, err := entities.NewProductEntity("商品名", "1000")
+		assert.NoError(t, err)
+		_, err = r.Save(productEntity, nil)
+		assert.NoError(t, err)
+
+		// データ取得
+		loadedEntity, err := r.GetByName("商品名", nil)
+		assert.NoError(t, err)
+
+		assert.Equal(t, productEntity.Id(), loadedEntity.Id())
+		assert.Equal(t, "商品名", loadedEntity.Name())
+		price := loadedEntity.Price()
+		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
+		assert.True(t, loadedEntity.CreatedAt().Equal(productEntity.CreatedAt()))
+		assert.True(t, loadedEntity.UpdatedAt().Equal(productEntity.UpdatedAt()))
+	})
+
+	t.Run("データがない時", func(t *testing.T) {
+		// データ取得
+		loadedEntity, err := r.GetByName("存在しない商品", nil)
 		assert.NoError(t, err)
 		assert.Nil(t, loadedEntity)
 	})
