@@ -1,10 +1,12 @@
 package application_service
 
 import (
+	"fmt"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values/validators"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/pkg/errors"
 )
@@ -66,7 +68,16 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 		validationErrors["name"] = []string{}
 	}
 	for _, validError := range productNameValidErrors {
-		validationErrors["name"] = append(validationErrors["name"], validError.Error())
+		var errorMessage string
+		switch validError {
+		case validators.EmptyStringValidError:
+			errorMessage = "空です"
+		case validators.OverLengthStringValidError:
+			errorMessage = fmt.Sprintf("%v文字より多いです", values.ProductNameMaxLength)
+		default:
+			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorTest(validError)))
+		}
+		validationErrors["name"] = append(validationErrors["name"], errorMessage)
 	}
 
 	// 重複チェック
@@ -87,7 +98,19 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 		validationErrors["price"] = []string{}
 	}
 	for _, validError := range productPriceValidErrors {
-		validationErrors["price"] = append(validationErrors["price"], validError.Error())
+		//validationErrors["price"] = append(validationErrors["price"], validError.Error())
+		var errorMessage string
+		switch validError {
+		case validators.EmptyStringValidError:
+			errorMessage = "空です"
+		case validators.NumericStringValidError:
+			errorMessage = "数値ではありません"
+		case validators.NegativeValidError:
+			errorMessage = "マイナス値です"
+		default:
+			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。price: %v, validErrorText: %v", price, validators.ValidErrorTest(validError)))
+		}
+		validationErrors["price"] = append(validationErrors["price"], errorMessage)
 	}
 
 	return validationErrors, nil

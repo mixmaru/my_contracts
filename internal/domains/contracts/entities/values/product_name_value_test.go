@@ -1,6 +1,7 @@
 package values
 
 import (
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values/validators"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -33,24 +34,24 @@ func TestProductNameValue_NewProductNameValue(t *testing.T) {
 
 func TestProductNameValue_ProductNameValidate(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
-		errs := ProductNameValidate("商品名")
-		assert.Len(t, errs, 0)
+		validErrs := ProductNameValidate("商品名")
+		assert.Len(t, validErrs, 0)
 	})
 
 	t.Run("名前が空文字だった時", func(t *testing.T) {
-		errs := ProductNameValidate("")
-		assert.Len(t, errs, 1)
-		assert.EqualError(t, errs[0], "空です")
+		validErrs := ProductNameValidate("")
+		assert.Len(t, validErrs, 1)
+		assert.Equal(t, validators.EmptyStringValidError, validErrs[0])
 	})
 
 	t.Run("名前が50文字を超えていた時", func(t *testing.T) {
-		errs := ProductNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
-		assert.Len(t, errs, 1)
-		assert.EqualError(t, errs[0], "50文字より多いです")
+		validErrs := ProductNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
+		assert.Len(t, validErrs, 1)
+		assert.Equal(t, validators.OverLengthStringValidError, validErrs[0])
 	})
 
 	t.Run("名前が50文字だった時", func(t *testing.T) {
-		errs := ProductNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789")
-		assert.Len(t, errs, 0)
+		validErrs := ProductNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789")
+		assert.Len(t, validErrs, 0)
 	})
 }

@@ -1,10 +1,12 @@
 package application_service
 
 import (
+	"fmt"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values/validators"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/pkg/errors"
 )
@@ -17,7 +19,10 @@ type UserApplicationService struct {
 // 成功時、登録した個人顧客情報を返却する
 func (s *UserApplicationService) RegisterUserIndividual(name string) (data_transfer_objects.UserIndividualDto, ValidationErrors, error) {
 	// 入力値バリデーション
-	retValidErrors := userIndividualValidation(name)
+	retValidErrors, err := userIndividualValidation(name)
+	if err != nil {
+		return data_transfer_objects.UserIndividualDto{}, nil, err
+	}
 	if len(retValidErrors) > 0 {
 		return data_transfer_objects.UserIndividualDto{}, retValidErrors, nil
 	}
@@ -54,7 +59,7 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (data_trans
 	return userDto, ValidationErrors{}, nil
 }
 
-func userIndividualValidation(name string) ValidationErrors {
+func userIndividualValidation(name string) (ValidationErrors, error) {
 	retValidErrors := ValidationErrors{}
 
 	// 個人顧客名バリデーション
@@ -63,10 +68,19 @@ func userIndividualValidation(name string) ValidationErrors {
 		retValidErrors["name"] = []string{}
 	}
 	for _, validErr := range nameValidErrors {
-		retValidErrors["name"] = append(retValidErrors["name"], validErr.Error())
+		var errorMessage string
+		switch validErr {
+		case validators.EmptyStringValidError:
+			errorMessage = "空です"
+		case validators.OverLengthStringValidError:
+			errorMessage = fmt.Sprintf("%v文字より多いです", values.NameMaxLength)
+		default:
+			return retValidErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorTest(validErr)))
+		}
+		retValidErrors["name"] = append(retValidErrors["name"], errorMessage)
 	}
 
-	return retValidErrors
+	return retValidErrors, nil
 }
 
 // 個人顧客情報を取得して返却する
@@ -111,14 +125,17 @@ func createUserCorporationDtoFromEntity(entity *entities.UserCorporationEntity) 
 // 成功時、登録した法人顧客情報を返却する
 func (s *UserApplicationService) RegisterUserCorporation(contactPersonName string, presidentName string) (data_transfer_objects.UserCorporationDto, ValidationErrors, error) {
 	// 入力値バリデーション
-	validationErrors := registerUserCorporationValidation(contactPersonName, presidentName)
+	validationErrors, err := registerUserCorporationValidation(contactPersonName, presidentName)
+	if err != nil {
+		return data_transfer_objects.UserCorporationDto{}, nil, err
+	}
 	if len(validationErrors) > 0 {
 		return data_transfer_objects.UserCorporationDto{}, validationErrors, nil
 	}
 
 	// リポジトリ登録用にデータ作成
 	entity := entities.NewUserCorporationEntity()
-	err := entity.SetContactPersonName(contactPersonName)
+	err = entity.SetContactPersonName(contactPersonName)
 	if err != nil {
 		return data_transfer_objects.UserCorporationDto{}, validationErrors, err
 	}
@@ -153,7 +170,7 @@ func (s *UserApplicationService) RegisterUserCorporation(contactPersonName strin
 	return userDto, ValidationErrors{}, nil
 }
 
-func registerUserCorporationValidation(contactPersonName string, presidentName string) ValidationErrors {
+func registerUserCorporationValidation(contactPersonName string, presidentName string) (ValidationErrors, error) {
 	validationErrors := ValidationErrors{}
 
 	// 担当者名バリデーション
@@ -162,7 +179,16 @@ func registerUserCorporationValidation(contactPersonName string, presidentName s
 		validationErrors["contact_person_name"] = []string{}
 	}
 	for _, validError := range contactPersonNameValidErrors {
-		validationErrors["contact_person_name"] = append(validationErrors["contact_person_name"], validError.Error())
+		var errorMessage string
+		switch validError {
+		case validators.EmptyStringValidError:
+			errorMessage = "空です"
+		case validators.OverLengthStringValidError:
+			errorMessage = fmt.Sprintf("%v文字より多いです", values.MaxContactPersonNameNum)
+		default:
+			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。contact_person_name: %v, validErrorText: %v", contactPersonName, validators.ValidErrorTest(validError)))
+		}
+		validationErrors["contact_person_name"] = append(validationErrors["contact_person_name"], errorMessage)
 	}
 
 	// 社長名バリデーション
@@ -171,10 +197,20 @@ func registerUserCorporationValidation(contactPersonName string, presidentName s
 		validationErrors["president_name"] = []string{}
 	}
 	for _, validError := range presidentNameValidErrors {
-		validationErrors["president_name"] = append(validationErrors["president_name"], validError.Error())
+		//validationErrors["president_name"] = append(validationErrors["president_name"], validError.Error())
+		var errorMessage string
+		switch validError {
+		case validators.EmptyStringValidError:
+			errorMessage = "空です"
+		case validators.OverLengthStringValidError:
+			errorMessage = fmt.Sprintf("%v文字より多いです", values.MaxPresidentNameNum)
+		default:
+			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。contact_person_name: %v, validErrorText: %v", contactPersonName, validators.ValidErrorTest(validError)))
+		}
+		validationErrors["president_name"] = append(validationErrors["president_name"], errorMessage)
 	}
 
-	return validationErrors
+	return validationErrors, nil
 }
 
 // 法人顧客情報を取得して返却する

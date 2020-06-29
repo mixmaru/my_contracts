@@ -1,6 +1,7 @@
 package values
 
 import (
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values/validators"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -38,20 +39,20 @@ func TestProductPriceValue_ProductPriceValidate(t *testing.T) {
 		validErrs, err := ProductPriceValidate("")
 		assert.NoError(t, err)
 		assert.Len(t, validErrs, 1)
-		assert.EqualError(t, validErrs[0], "空です")
+		assert.Equal(t, validators.EmptyStringValidError, validErrs[0])
 	})
 
 	t.Run("マイナスだったとき", func(t *testing.T) {
 		validErrs, err := ProductPriceValidate("-1")
 		assert.NoError(t, err)
 		assert.Len(t, validErrs, 1)
-		assert.EqualError(t, validErrs[0], "マイナス値です")
+		assert.Equal(t, validators.NegativeValidError, validErrs[0])
 	})
 
 	t.Run("数値じゃなかったとき", func(t *testing.T) {
 		validErrs, err := ProductPriceValidate("aaa")
 		assert.NoError(t, err)
 		assert.Len(t, validErrs, 1)
-		assert.EqualError(t, validErrs[0], "数値ではありません")
+		assert.Equal(t, validators.NumericStringValidError, validErrs[0])
 	})
 }
