@@ -1,7 +1,6 @@
 package values
 
 import (
-	plain_err "errors"
 	"fmt"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values/validators"
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
@@ -22,8 +21,8 @@ func NewProductPriceValue(value string) (ProductPriceValue, error) {
 
 	if len(validateErrors) > 0 {
 		var msgs []string
-		for _, msg := range validateErrors {
-			msgs = append(msgs, msg.Error())
+		for _, validateError := range validateErrors {
+			msgs = append(msgs, validators.ValidErrorTest(validateError))
 		}
 		return ProductPriceValue{}, errors.New(fmt.Sprintf("ProductPriceバリデーションエラー。%v", strings.Join(msgs, ", ")))
 	}
@@ -41,16 +40,16 @@ func (v *ProductPriceValue) Value() decimal.Decimal {
 	return v.value
 }
 
-func ProductPriceValidate(price string) (validErrors []error, err error) {
+func ProductPriceValidate(price string) (validErrors []int, err error) {
 	// 空文字チェック
 	if validators.IsEmptyString(price) {
-		validErrors = append(validErrors, validators.NewEmptyStringValidError(plain_err.New("空です")))
+		validErrors = append(validErrors, validators.EmptyStringValidError)
 		return validErrors, nil
 	}
 
 	// 数値チェック
 	if !validators.IsNumericString(price) {
-		validErrors = append(validErrors, validators.NewNumericStringValidError(plain_err.New("数値ではありません")))
+		validErrors = append(validErrors, validators.NumericStringValidError)
 		return validErrors, nil
 	}
 
@@ -60,7 +59,7 @@ func ProductPriceValidate(price string) (validErrors []error, err error) {
 		return nil, err
 	}
 	if priceDecimal.IsNegative() {
-		validErrors = append(validErrors, validators.NewNegativeValidError(plain_err.New("マイナス値です")))
+		validErrors = append(validErrors, validators.NegativeValidError)
 	}
 
 	return validErrors, nil

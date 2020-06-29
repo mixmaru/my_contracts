@@ -1,6 +1,7 @@
 package values
 
 import (
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values/validators"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -33,24 +34,24 @@ func TestContactPersonNameValue_NewPresidentNameValue(t *testing.T) {
 
 func TestNameValue_PresidentNameValidate(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
-		errs := PresidentNameValidate("社長名")
-		assert.Len(t, errs, 0)
+		validErrs := PresidentNameValidate("社長名")
+		assert.Len(t, validErrs, 0)
 	})
 
 	t.Run("名前が空文字だった時", func(t *testing.T) {
-		errs := PresidentNameValidate("")
-		assert.Len(t, errs, 1)
-		assert.EqualError(t, errs[0], "空です")
+		validErrs := PresidentNameValidate("")
+		assert.Len(t, validErrs, 1)
+		assert.Equal(t, validators.EmptyStringValidError, validErrs[0])
 	})
 
 	t.Run("名前が50文字を超えていた時", func(t *testing.T) {
-		errs := PresidentNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
-		assert.Len(t, errs, 1)
-		assert.EqualError(t, errs[0], "50文字より多いです")
+		validErrs := PresidentNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
+		assert.Len(t, validErrs, 1)
+		assert.Equal(t, validators.OverLengthStringValidError, validErrs[0])
 	})
 
 	t.Run("名前が50文字だった時", func(t *testing.T) {
-		errs := PresidentNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789")
-		assert.Len(t, errs, 0)
+		validErrs := PresidentNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789")
+		assert.Len(t, validErrs, 0)
 	})
 }

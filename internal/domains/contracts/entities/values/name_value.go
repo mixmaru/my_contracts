@@ -1,7 +1,6 @@
 package values
 
 import (
-	plain_err "errors"
 	"fmt"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values/validators"
 	"github.com/pkg/errors"
@@ -19,8 +18,8 @@ func NewNameValue(value string) (NameValue, error) {
 	validateErrors := NameValidate(value)
 	if len(validateErrors) > 0 {
 		var msgs []string
-		for _, msg := range validateErrors {
-			msgs = append(msgs, msg.Error())
+		for _, validateError := range validateErrors {
+			msgs = append(msgs, validators.ValidErrorTest(validateError))
 		}
 		return NameValue{}, errors.New(fmt.Sprintf("Nameバリデーションエラー。%v", strings.Join(msgs, ", ")))
 	}
@@ -33,13 +32,12 @@ func (v *NameValue) Value() string {
 	return v.value
 }
 
-func NameValidate(name string) []error {
-	var validErrors []error
+func NameValidate(name string) (validErrors []int) {
 	if validators.IsEmptyString(name) {
-		validErrors = append(validErrors, validators.NewEmptyStringValidError(plain_err.New("空です")))
+		validErrors = append(validErrors, validators.EmptyStringValidError)
 	}
 	if validators.IsOverLengthString(name, NameMaxLength) {
-		validErrors = append(validErrors, validators.NewOverLengthStringValidError(plain_err.New(fmt.Sprintf("%v文字より多いです", NameMaxLength))))
+		validErrors = append(validErrors, validators.OverLengthStringValidError)
 	}
 
 	return validErrors
