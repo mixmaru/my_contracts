@@ -15,9 +15,9 @@ type ProductApplicationService struct {
 	productRepository interfaces.IProductRepository
 }
 
-func (p *ProductApplicationService) Register(name string, price string) (data_transfer_objects.ProductDto, ValidationErrors, error) {
+func (p *ProductApplicationService) Register(name string, price string) (productDto data_transfer_objects.ProductDto, validationErrors map[string][]string, err error) {
 	// 入力値バリデーション
-	validationErrors, err := p.registerValidation(name, price)
+	validationErrors, err = p.registerValidation(name, price)
 	if err != nil {
 		return data_transfer_objects.ProductDto{}, nil, err
 	}
@@ -59,8 +59,8 @@ func (p *ProductApplicationService) Register(name string, price string) (data_tr
 	return dto, nil, nil
 }
 
-func (p *ProductApplicationService) registerValidation(name string, price string) (ValidationErrors, error) {
-	validationErrors := ValidationErrors{}
+func (p *ProductApplicationService) registerValidation(name string, price string) (validationErrors map[string][]string, err error) {
+	validationErrors = map[string][]string{}
 
 	// 商品名バリデーション
 	productNameValidErrors := values.ProductNameValidate(name)

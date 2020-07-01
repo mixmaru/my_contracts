@@ -17,55 +17,55 @@ type UserApplicationService struct {
 
 // 個人顧客を新規登録する
 // 成功時、登録した個人顧客情報を返却する
-func (s *UserApplicationService) RegisterUserIndividual(name string) (data_transfer_objects.UserIndividualDto, ValidationErrors, error) {
+func (s *UserApplicationService) RegisterUserIndividual(name string) (userIndividualDto data_transfer_objects.UserIndividualDto, validationErrors map[string][]string, err error) {
 	// 入力値バリデーション
-	retValidErrors, err := userIndividualValidation(name)
+	validationErrors, err = userIndividualValidation(name)
 	if err != nil {
 		return data_transfer_objects.UserIndividualDto{}, nil, err
 	}
-	if len(retValidErrors) > 0 {
-		return data_transfer_objects.UserIndividualDto{}, retValidErrors, nil
+	if len(validationErrors) > 0 {
+		return data_transfer_objects.UserIndividualDto{}, validationErrors, nil
 	}
 
 	// エンティティ作成
 	userEntity, err := entities.NewUserIndividualEntity(name)
 	if err != nil {
-		return data_transfer_objects.UserIndividualDto{}, ValidationErrors{}, err
+		return data_transfer_objects.UserIndividualDto{}, nil, err
 	}
 
 	// トランザクション開始
 	dbMap, err := db_connection.GetConnection()
 	if err != nil {
-		return data_transfer_objects.UserIndividualDto{}, ValidationErrors{}, err
+		return data_transfer_objects.UserIndividualDto{}, nil, err
 	}
 	defer dbMap.Db.Close()
 	tran, err := dbMap.Begin()
 	if err != nil {
-		return data_transfer_objects.UserIndividualDto{}, ValidationErrors{}, errors.WithStack(err)
+		return data_transfer_objects.UserIndividualDto{}, nil, errors.WithStack(err)
 	}
 
 	// リポジトリ使って保存
 	userEntity, err = s.userRepository.SaveUserIndividual(userEntity, tran)
 	if err != nil {
-		return data_transfer_objects.UserIndividualDto{}, ValidationErrors{}, err
+		return data_transfer_objects.UserIndividualDto{}, nil, err
 	}
 
 	// コミット
 	err = tran.Commit()
 	if err != nil {
-		return data_transfer_objects.UserIndividualDto{}, ValidationErrors{}, err
+		return data_transfer_objects.UserIndividualDto{}, nil, err
 	}
 	userDto := createUserIndividualDtoFromEntity(userEntity)
-	return userDto, ValidationErrors{}, nil
+	return userDto, nil, nil
 }
 
-func userIndividualValidation(name string) (ValidationErrors, error) {
-	retValidErrors := ValidationErrors{}
+func userIndividualValidation(name string) (validationErrors map[string][]string, err error) {
+	validationErrors = map[string][]string{}
 
 	// 個人顧客名バリデーション
 	nameValidErrors := values.NameValidate(name)
 	if len(nameValidErrors) > 0 {
-		retValidErrors["name"] = []string{}
+		validationErrors["name"] = []string{}
 	}
 	for _, validErr := range nameValidErrors {
 		var errorMessage string
@@ -75,12 +75,12 @@ func userIndividualValidation(name string) (ValidationErrors, error) {
 		case validators.OverLengthStringValidError:
 			errorMessage = fmt.Sprintf("%v文字より多いです", values.NameMaxLength)
 		default:
-			return retValidErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorTest(validErr)))
+			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorTest(validErr)))
 		}
-		retValidErrors["name"] = append(retValidErrors["name"], errorMessage)
+		validationErrors["name"] = append(validationErrors["name"], errorMessage)
 	}
 
-	return retValidErrors, nil
+	return validationErrors, nil
 }
 
 // 個人顧客情報を取得して返却する
@@ -123,9 +123,9 @@ func createUserCorporationDtoFromEntity(entity *entities.UserCorporationEntity) 
 
 // 法人顧客を新規登録する
 // 成功時、登録した法人顧客情報を返却する
-func (s *UserApplicationService) RegisterUserCorporation(contactPersonName string, presidentName string) (data_transfer_objects.UserCorporationDto, ValidationErrors, error) {
+func (s *UserApplicationService) RegisterUserCorporation(contactPersonName string, presidentName string) (userCorporationDto data_transfer_objects.UserCorporationDto, validationErrors map[string][]string, err error) {
 	// 入力値バリデーション
-	validationErrors, err := registerUserCorporationValidation(contactPersonName, presidentName)
+	validationErrors, err = registerUserCorporationValidation(contactPersonName, presidentName)
 	if err != nil {
 		return data_transfer_objects.UserCorporationDto{}, nil, err
 	}
@@ -147,31 +147,31 @@ func (s *UserApplicationService) RegisterUserCorporation(contactPersonName strin
 	// トランザクション開始
 	dbMap, err := db_connection.GetConnection()
 	if err != nil {
-		return data_transfer_objects.UserCorporationDto{}, ValidationErrors{}, err
+		return data_transfer_objects.UserCorporationDto{}, nil, err
 	}
 	defer dbMap.Db.Close()
 	tran, err := dbMap.Begin()
 	if err != nil {
-		return data_transfer_objects.UserCorporationDto{}, ValidationErrors{}, errors.Wrap(err, "トランザクション開始失敗")
+		return data_transfer_objects.UserCorporationDto{}, nil, errors.Wrap(err, "トランザクション開始失敗")
 	}
 
 	// リポジトリつかって保存実行
 	registeredUser, err := s.userRepository.SaveUserCorporation(entity, tran)
 	if err != nil {
-		return data_transfer_objects.UserCorporationDto{}, ValidationErrors{}, errors.WithMessagef(err, "法人顧客データ登録失敗。contractPersonName: %v, presidentName: %v", contactPersonName, presidentName)
+		return data_transfer_objects.UserCorporationDto{}, nil, errors.WithMessagef(err, "法人顧客データ登録失敗。contractPersonName: %v, presidentName: %v", contactPersonName, presidentName)
 	}
 	err = tran.Commit()
 	if err != nil {
-		return data_transfer_objects.UserCorporationDto{}, ValidationErrors{}, errors.WithMessagef(err, "法人顧客データCommit失敗。contractPersonName: %v, presidentName: %v", contactPersonName, presidentName)
+		return data_transfer_objects.UserCorporationDto{}, nil, errors.WithMessagef(err, "法人顧客データCommit失敗。contractPersonName: %v, presidentName: %v", contactPersonName, presidentName)
 	}
 
 	// 登録データを取得してdtoにつめる
 	userDto := createUserCorporationDtoFromEntity(registeredUser)
-	return userDto, ValidationErrors{}, nil
+	return userDto, nil, nil
 }
 
-func registerUserCorporationValidation(contactPersonName string, presidentName string) (ValidationErrors, error) {
-	validationErrors := ValidationErrors{}
+func registerUserCorporationValidation(contactPersonName string, presidentName string) (validationErrors map[string][]string, err error) {
+	validationErrors = map[string][]string{}
 
 	// 担当者名バリデーション
 	contactPersonNameValidErrors := values.ContactPersonNameValidate(contactPersonName)
@@ -228,5 +228,3 @@ func (s *UserApplicationService) GetUserCorporation(userId int) (data_transfer_o
 		return userDto, nil
 	}
 }
-
-type ValidationErrors = map[string][]string

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/stretchr/testify/assert"
@@ -179,7 +178,7 @@ func TestMain_saveCorporationUser(t *testing.T) {
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
 
-			expected := application_service.ValidationErrors{
+			expected := map[string][]string{
 				"contact_person_name": []string{
 					"空です",
 				},
@@ -209,7 +208,7 @@ func TestMain_saveCorporationUser(t *testing.T) {
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
 
-			expected := application_service.ValidationErrors{
+			expected := map[string][]string{
 				"contact_person_name": []string{
 					"50文字より多いです",
 				},
@@ -352,7 +351,7 @@ func TestMain_saveProduct(t *testing.T) {
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
 
-			expected := application_service.ValidationErrors{
+			expected := map[string][]string{
 				"name": []string{
 					"空です",
 				},
@@ -382,7 +381,7 @@ func TestMain_saveProduct(t *testing.T) {
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
 
-			expected := application_service.ValidationErrors{
+			expected := map[string][]string{
 				"name": []string{
 					"50文字より多いです",
 				},

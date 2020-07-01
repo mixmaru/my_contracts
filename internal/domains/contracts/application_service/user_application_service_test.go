@@ -59,7 +59,7 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 		_, validErrs, err := userApp.RegisterUserIndividual("")
 		assert.NoError(t, err)
 
-		expectValidErrs := ValidationErrors{
+		expectValidErrs := map[string][]string{
 			"name": []string{
 				"空です",
 			},
@@ -79,7 +79,7 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 
 		_, validErrs, err := userApp.RegisterUserIndividual("000000000011111111112222222222333333333344444444445")
 		assert.NoError(t, err)
-		expectValidErrs := ValidationErrors{
+		expectValidErrs := map[string][]string{
 			"name": []string{
 				"50文字より多いです",
 			},
@@ -177,7 +177,7 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 
 		_, validErrs, err := userApp.RegisterUserCorporation("", "")
 		assert.NoError(t, err)
-		expectValidErrs := ValidationErrors{
+		expectValidErrs := map[string][]string{
 			"contact_person_name": []string{
 				"空です",
 			},
@@ -200,7 +200,7 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 
 		_, validErrs, err := userApp.RegisterUserCorporation("000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445")
 		assert.NoError(t, err)
-		expectValidErrs := ValidationErrors{
+		expectValidErrs := map[string][]string{
 			"contact_person_name": []string{
 				"50文字より多いです",
 			},
