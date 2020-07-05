@@ -21,7 +21,7 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, transact
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// recordオブジェクトに詰め替え
-	productRecord := data_mappers.ProductRecord{
+	productRecord := data_mappers.ProductMapper{
 		Name:  productEntity.Name(),
 		Price: productEntity.Price(),
 	}
@@ -61,7 +61,7 @@ func (r *ProductRepository) GetById(id int, transaction *gorp.Transaction) (*ent
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// データ取得
-	var productRecord data_mappers.ProductRecord
+	var productRecord data_mappers.ProductMapper
 	var productEntity entities.ProductEntity
 	noRow, err := selectOne(conn, &productRecord, &productEntity, "select * from products where id = $1", id)
 	if err != nil {
@@ -82,7 +82,7 @@ func (r *ProductRepository) GetByName(name string, transaction *gorp.Transaction
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// データ取得
-	var productRecord data_mappers.ProductRecord
+	var productRecord data_mappers.ProductMapper
 	var productEntity entities.ProductEntity
 	noRow, err := selectOne(conn, &productRecord, &productEntity, "select * from products where name = $1", name)
 	if err != nil {

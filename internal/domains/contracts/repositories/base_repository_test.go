@@ -25,7 +25,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 
 	t.Run("データがある時", func(t *testing.T) {
 		// データ取得
-		productRecord := data_mappers.ProductRecord{}
+		productRecord := data_mappers.ProductMapper{}
 		productEntity := entities.ProductEntity{}
 		noRow, err := selectOne(db, &productRecord, &productEntity, "select * from products where id =$1", savedProductEntity.Id())
 		assert.NoError(t, err)
@@ -39,7 +39,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	})
 
 	t.Run("データがない時", func(t *testing.T) {
-		productRecord := data_mappers.ProductRecord{}
+		productRecord := data_mappers.ProductMapper{}
 		productEntity := entities.ProductEntity{}
 		noRow, err := selectOne(db, &productRecord, &productEntity, "select * from products where id =$1", -1000)
 		assert.NoError(t, err)
@@ -47,7 +47,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	})
 
 	t.Run("渡すrecordとentityがアベコベだったとき", func(t *testing.T) {
-		productRecord := data_mappers.ProductRecord{}
+		productRecord := data_mappers.ProductMapper{}
 		userCorporationEntity := entities.UserCorporationEntity{}
 		noRow, err := selectOne(db, &productRecord, &userCorporationEntity, "select * from products where id =$1", savedProductEntity.Id())
 		assert.Error(t, err, "aaa")

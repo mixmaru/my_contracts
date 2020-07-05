@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestUserIndividualRecord_NewUserIndividualRecordFromUserIndividualEntity(t *testing.T) {
+func TestUserIndividualMapper_NewUserIndividualMapperFromUserIndividualEntity(t *testing.T) {
 	// entity用意
 	entity, err := entities.NewUserIndividualEntityWithData(
 		1,
@@ -18,12 +18,12 @@ func TestUserIndividualRecord_NewUserIndividualRecordFromUserIndividualEntity(t 
 	assert.NoError(t, err)
 
 	// 実行
-	resultData := NewUserIndividualRecordFromUserIndividualEntity(entity)
+	resultData := NewUserIndividualMapperFromUserIndividualEntity(entity)
 
-	expect := &UserIndividualRecord{
+	expect := &UserIndividualMapper{
 		UserId: 1,
 		Name:   "担当太郎",
-		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 			CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		},
@@ -33,9 +33,9 @@ func TestUserIndividualRecord_NewUserIndividualRecordFromUserIndividualEntity(t 
 	assert.Equal(t, expect, resultData)
 }
 
-func TestUserIndividualRecord_PreInsert(t *testing.T) {
+func TestUserIndividualMapper_PreInsert(t *testing.T) {
 	// entity用意
-	newUser := UserIndividualRecord{
+	newUser := UserIndividualMapper{
 		UserId: 0,
 		Name:   "担当太郎",
 	}
@@ -47,9 +47,9 @@ func TestUserIndividualRecord_PreInsert(t *testing.T) {
 	assert.NotEqual(t, time.Time{}, newUser.UpdatedAt)
 }
 
-func TestUserIndividualRecord_PreUpdate(t *testing.T) {
+func TestUserIndividualMapper_PreUpdate(t *testing.T) {
 	// entity用意
-	newUser := UserIndividualRecord{
+	newUser := UserIndividualMapper{
 		UserId: 0,
 		Name:   "担当太郎",
 	}

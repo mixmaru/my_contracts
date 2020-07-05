@@ -7,7 +7,7 @@ import (
 )
 
 type UserIndividualView struct {
-	UserRecord
+	UserMapper
 	Name string
 }
 

@@ -22,7 +22,7 @@ func (r *UserRepository) SaveUserIndividual(userEntity *entities.UserIndividualE
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// エンティティからリポジトリ用構造体に値をセットし直す
-	user := data_mappers.NewUserRecordFromUserIndividualEntity(userEntity)
+	user := data_mappers.NewUserMapperFromUserIndividualEntity(userEntity)
 
 	err = conn.Insert(user)
 	if err != nil {
@@ -30,7 +30,7 @@ func (r *UserRepository) SaveUserIndividual(userEntity *entities.UserIndividualE
 	}
 
 	// individualを保存
-	userIndividualDbMap := data_mappers.NewUserIndividualRecordFromUserIndividualEntity(userEntity)
+	userIndividualDbMap := data_mappers.NewUserIndividualMapperFromUserIndividualEntity(userEntity)
 	userIndividualDbMap.UserId = user.Id
 
 	err = conn.Insert(userIndividualDbMap)
@@ -85,7 +85,7 @@ func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporatio
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// userRecord作成
-	userRecord := data_mappers.NewUserRecordFromUserCorporationEntity(userEntity)
+	userRecord := data_mappers.NewUserMapperFromUserCorporationEntity(userEntity)
 
 	// 保存
 	err = conn.Insert(userRecord)
@@ -94,7 +94,7 @@ func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporatio
 	}
 
 	// userCorporationRecord作成
-	userCorporationRecord := data_mappers.NewUserCorporationRecordFromUserCorporationEntity(userEntity)
+	userCorporationRecord := data_mappers.NewUserCorporationMapperFromUserCorporationEntity(userEntity)
 	userCorporationRecord.UserId = userRecord.Id
 
 	// 保存

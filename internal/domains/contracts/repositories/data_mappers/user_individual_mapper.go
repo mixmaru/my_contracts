@@ -4,18 +4,18 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 )
 
-type UserIndividualRecord struct {
+type UserIndividualMapper struct {
 	UserId int    `db:"user_id"`
 	Name   string `db:"name"`
-	CreatedAtUpdatedAt
+	CreatedAtUpdatedAtMapper
 }
 
 // UserIndividualEntity Entityからデータを読み込んでUserIndividual(DBマッピング用)を作成する
-func NewUserIndividualRecordFromUserIndividualEntity(entity *entities.UserIndividualEntity) *UserIndividualRecord {
-	return &UserIndividualRecord{
+func NewUserIndividualMapperFromUserIndividualEntity(entity *entities.UserIndividualEntity) *UserIndividualMapper {
+	return &UserIndividualMapper{
 		UserId: entity.Id(),
 		Name:   entity.Name(),
-		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 			CreatedAt: entity.CreatedAt(),
 			UpdatedAt: entity.UpdatedAt(),
 		},

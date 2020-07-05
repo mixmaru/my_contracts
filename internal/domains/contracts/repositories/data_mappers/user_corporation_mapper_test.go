@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestUserCorporationRecord_NewUserCorporationRecordFromUserCorporationEntity(t *testing.T) {
+func TestUserCorporationMapper_NewUserCorporationMapperFromUserCorporationEntity(t *testing.T) {
 	// entity用意
 	entity, err := entities.NewUserCorporationEntityWithData(
 		1,
@@ -19,13 +19,13 @@ func TestUserCorporationRecord_NewUserCorporationRecordFromUserCorporationEntity
 	assert.NoError(t, err)
 
 	// 実行
-	resultData := NewUserCorporationRecordFromUserCorporationEntity(entity)
+	resultData := NewUserCorporationMapperFromUserCorporationEntity(entity)
 
-	expect := &UserCorporationRecord{
+	expect := &UserCorporationMapper{
 		UserId:            1,
 		ContactParsonName: "担当太郎",
 		PresidentName:     "社長次郎",
-		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 			CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		},
@@ -35,9 +35,9 @@ func TestUserCorporationRecord_NewUserCorporationRecordFromUserCorporationEntity
 	assert.Equal(t, expect, resultData)
 }
 
-func TestUserCorporationRecord_PreInsert(t *testing.T) {
+func TestUserCorporationMapper_PreInsert(t *testing.T) {
 	// entity用意
-	newUser := UserCorporationRecord{
+	newUser := UserCorporationMapper{
 		UserId:            0,
 		ContactParsonName: "担当太郎",
 		PresidentName:     "社長次郎",
@@ -50,9 +50,9 @@ func TestUserCorporationRecord_PreInsert(t *testing.T) {
 	assert.NotEqual(t, time.Time{}, newUser.UpdatedAt)
 }
 
-func TestUserCorporationRecord_PreUpdate(t *testing.T) {
+func TestUserCorporationMapper_PreUpdate(t *testing.T) {
 	// entity用意
-	newUser := UserCorporationRecord{
+	newUser := UserCorporationMapper{
 		UserId:            0,
 		ContactParsonName: "担当太郎",
 		PresidentName:     "社長次郎",

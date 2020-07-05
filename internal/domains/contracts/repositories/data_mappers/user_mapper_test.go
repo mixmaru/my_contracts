@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestUser_NewUserRecordFromUserIndividualEntity(t *testing.T) {
+func TestUser_NewUserMapperFromUserIndividualEntity(t *testing.T) {
 	userEntity, err := entities.NewUserIndividualEntityWithData(
 		1,
 		"個人たろう",
@@ -16,10 +16,10 @@ func TestUser_NewUserRecordFromUserIndividualEntity(t *testing.T) {
 	)
 	assert.NoError(t, err)
 
-	user := NewUserRecordFromUserIndividualEntity(userEntity)
-	expect := &UserRecord{
+	user := NewUserMapperFromUserIndividualEntity(userEntity)
+	expect := &UserMapper{
 		Id: 1,
-		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 			CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		},
@@ -28,7 +28,7 @@ func TestUser_NewUserRecordFromUserIndividualEntity(t *testing.T) {
 	assert.Equal(t, expect, user)
 }
 
-func TestUser_NewUserRecordFromUserCorporationEntity(t *testing.T) {
+func TestUser_NewUserMapperFromUserCorporationEntity(t *testing.T) {
 	userEntity, err := entities.NewUserCorporationEntityWithData(
 		1,
 		"担当たろう",
@@ -38,10 +38,10 @@ func TestUser_NewUserRecordFromUserCorporationEntity(t *testing.T) {
 	)
 	assert.NoError(t, err)
 
-	user := NewUserRecordFromUserCorporationEntity(userEntity)
-	expect := &UserRecord{
+	user := NewUserMapperFromUserCorporationEntity(userEntity)
+	expect := &UserMapper{
 		Id: 1,
-		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 			CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		},
@@ -50,9 +50,9 @@ func TestUser_NewUserRecordFromUserCorporationEntity(t *testing.T) {
 	assert.Equal(t, expect, user)
 }
 
-func TestUserRecord_PreInsert(t *testing.T) {
+func TestUserMapper_PreInsert(t *testing.T) {
 	// entity用意
-	newUser := UserRecord{
+	newUser := UserMapper{
 		Id: 0,
 	}
 
@@ -63,9 +63,9 @@ func TestUserRecord_PreInsert(t *testing.T) {
 	assert.NotEqual(t, time.Time{}, newUser.UpdatedAt)
 }
 
-func TestUserRecord_PreUpdate(t *testing.T) {
+func TestUserMapper_PreUpdate(t *testing.T) {
 	// entity用意
-	newUser := UserRecord{
+	newUser := UserMapper{
 		Id: 0,
 	}
 

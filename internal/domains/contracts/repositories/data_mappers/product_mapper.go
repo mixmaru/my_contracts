@@ -6,14 +6,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-type ProductRecord struct {
+type ProductMapper struct {
 	Id    int             `db:"id"`
 	Name  string          `db:"name"`
 	Price decimal.Decimal `db:"price"`
-	CreatedAtUpdatedAt
+	CreatedAtUpdatedAtMapper
 }
 
-func (p *ProductRecord) SetDataToEntity(entity interface{}) error {
+func (p *ProductMapper) SetDataToEntity(entity interface{}) error {
 	value, ok := entity.(*entities.ProductEntity)
 	if !ok {
 		return errors.New("*entities.ProductEntityではないものが渡された")
