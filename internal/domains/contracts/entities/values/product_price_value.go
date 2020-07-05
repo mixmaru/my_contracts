@@ -14,7 +14,7 @@ type ProductPriceValue struct {
 }
 
 func NewProductPriceValue(value string) (ProductPriceValue, error) {
-	validateErrors, err := ProductPriceValidate(value)
+	validateErrors, err := ProductPriceValue{}.Validate(value)
 	if err != nil {
 		return ProductPriceValue{}, err
 	}
@@ -40,7 +40,15 @@ func (v *ProductPriceValue) Value() decimal.Decimal {
 	return v.value
 }
 
-func ProductPriceValidate(price string) (validErrors []int, err error) {
+func (v ProductPriceValue) Validate(value interface{}) (validErrors []int, err error) {
+	price, ok := value.(string)
+	if !ok {
+		return nil, errors.Errorf("valueをstring型にできませんでした。value: %t", value)
+	}
+	return v.productPriceValidate(price)
+}
+
+func (v *ProductPriceValue) productPriceValidate(price string) (validErrors []int, err error) {
 	// 空文字チェック
 	if validators.IsEmptyString(price) {
 		validErrors = append(validErrors, validators.EmptyStringValidError)

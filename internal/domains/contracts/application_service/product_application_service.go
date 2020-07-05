@@ -94,7 +94,7 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 	}
 
 	// 価格バリデーション
-	productPriceValidErrors, err := values.ProductPriceValidate(price)
+	productPriceValidErrors, err := values.ProductPriceValue{}.Validate(price)
 	if err != nil {
 		return validationErrors, err
 	}
