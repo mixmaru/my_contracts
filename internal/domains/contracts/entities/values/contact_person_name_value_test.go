@@ -34,24 +34,28 @@ func TestContactPersonNameValue_NewContactPersonNameValue(t *testing.T) {
 
 func TestNameValue_ContactPersonNameValidate(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
-		errs := ContactPersonNameValidate("担当者名")
+		errs, err := ContactPersonNameValue{}.Validate("担当者名")
+		assert.NoError(t, err)
 		assert.Len(t, errs, 0)
 	})
 
 	t.Run("名前が空文字だった時", func(t *testing.T) {
-		validErrs := ContactPersonNameValidate("")
+		validErrs, err := ContactPersonNameValue{}.Validate("")
+		assert.NoError(t, err)
 		assert.Len(t, validErrs, 1)
 		assert.Equal(t, validators.EmptyStringValidError, validErrs[0])
 	})
 
 	t.Run("名前が50文字を超えていた時", func(t *testing.T) {
-		validErrs := ContactPersonNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
+		validErrs, err := ContactPersonNameValue{}.Validate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
+		assert.NoError(t, err)
 		assert.Len(t, validErrs, 1)
 		assert.Equal(t, validators.OverLengthStringValidError, validErrs[0])
 	})
 
 	t.Run("名前が50文字だった時", func(t *testing.T) {
-		validErrs := ContactPersonNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789")
+		validErrs, err := ContactPersonNameValue{}.Validate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789")
+		assert.NoError(t, err)
 		assert.Len(t, validErrs, 0)
 	})
 }
