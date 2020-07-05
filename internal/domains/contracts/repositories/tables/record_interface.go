@@ -1,5 +1,5 @@
 package tables
 
-type IRecord interface {
+type EntitySetter interface {
 	SetDataToEntity(entity interface{}) error
 }
