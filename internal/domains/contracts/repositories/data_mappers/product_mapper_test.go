@@ -1,4 +1,4 @@
-package tables
+package data_mappers
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
@@ -10,11 +10,11 @@ import (
 
 func TestProductRecord_SetDataToEntity(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
-		productRecord := ProductRecord{
+		productRecord := ProductMapper{
 			Id:    1,
 			Name:  "名前",
 			Price: decimal.NewFromFloat(1000),
-			CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+			CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 				CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			},
@@ -33,11 +33,11 @@ func TestProductRecord_SetDataToEntity(t *testing.T) {
 	})
 
 	t.Run("違うentityが渡されたとき", func(t *testing.T) {
-		productRecord := ProductRecord{
+		productRecord := ProductMapper{
 			Id:    1,
 			Name:  "名前",
 			Price: decimal.NewFromFloat(1000),
-			CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+			CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 				CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			},

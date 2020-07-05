@@ -3,8 +3,8 @@ package repositories
 import (
 	_ "github.com/lib/pq"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/data_mappers"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/tables"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
 )
@@ -22,7 +22,7 @@ func (r *UserRepository) SaveUserIndividual(userEntity *entities.UserIndividualE
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// エンティティからリポジトリ用構造体に値をセットし直す
-	user := tables.NewUserRecordFromUserIndividualEntity(userEntity)
+	user := data_mappers.NewUserMapperFromUserIndividualEntity(userEntity)
 
 	err = conn.Insert(user)
 	if err != nil {
@@ -30,7 +30,7 @@ func (r *UserRepository) SaveUserIndividual(userEntity *entities.UserIndividualE
 	}
 
 	// individualを保存
-	userIndividualDbMap := tables.NewUserIndividualRecordFromUserIndividualEntity(userEntity)
+	userIndividualDbMap := data_mappers.NewUserIndividualMapperFromUserIndividualEntity(userEntity)
 	userIndividualDbMap.UserId = user.Id
 
 	err = conn.Insert(userIndividualDbMap)
@@ -57,7 +57,7 @@ func (r *UserRepository) GetUserIndividualById(id int, transaction *gorp.Transac
 
 // dbからid指定で個人顧客情報を取得する
 func (r *UserRepository) getUserIndividualEntityById(id int, entity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (*entities.UserIndividualEntity, error) {
-	userIndividualView := tables.UserIndividualView{}
+	userIndividualView := data_mappers.UserIndividualView{}
 	noRow, err := selectOne(
 		executor,
 		&userIndividualView,
@@ -85,7 +85,7 @@ func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporatio
 	defer db_connection.CloseConnectionIfNotTransaction(conn)
 
 	// userRecord作成
-	userRecord := tables.NewUserRecordFromUserCorporationEntity(userEntity)
+	userRecord := data_mappers.NewUserMapperFromUserCorporationEntity(userEntity)
 
 	// 保存
 	err = conn.Insert(userRecord)
@@ -94,7 +94,7 @@ func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporatio
 	}
 
 	// userCorporationRecord作成
-	userCorporationRecord := tables.NewUserCorporationRecordFromUserCorporationEntity(userEntity)
+	userCorporationRecord := data_mappers.NewUserCorporationMapperFromUserCorporationEntity(userEntity)
 	userCorporationRecord.UserId = userRecord.Id
 
 	// 保存
@@ -110,7 +110,7 @@ func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporatio
 // dbからid指定で法人顧客情報を取得する
 func (r *UserRepository) getUserCorporationEntityById(id int, entity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
 	// dbからデータ取得
-	record := tables.UserCorporationView{}
+	record := data_mappers.UserCorporationView{}
 	query := "SELECT u.id, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at " +
 		"FROM users u " +
 		"inner join users_corporation uc on u.id = uc.user_id " +

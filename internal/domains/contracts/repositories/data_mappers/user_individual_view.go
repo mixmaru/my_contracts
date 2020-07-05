@@ -1,4 +1,4 @@
-package tables
+package data_mappers
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 type UserIndividualView struct {
-	UserRecord
+	UserMapper
 	Name string
 }
 

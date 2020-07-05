@@ -1,19 +1,19 @@
-package tables
+package data_mappers
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 )
 
-type UserRecord struct {
+type UserMapper struct {
 	Id int `db:"id"`
-	CreatedAtUpdatedAt
+	CreatedAtUpdatedAtMapper
 }
 
 // UserIndividualEntityからデータを読み込んでUser(DBマッピング用)を作成する
-func NewUserRecordFromUserIndividualEntity(userIndividual *entities.UserIndividualEntity) *UserRecord {
-	return &UserRecord{
+func NewUserMapperFromUserIndividualEntity(userIndividual *entities.UserIndividualEntity) *UserMapper {
+	return &UserMapper{
 		Id: userIndividual.Id(),
-		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 			CreatedAt: userIndividual.CreatedAt(),
 			UpdatedAt: userIndividual.UpdatedAt(),
 		},
@@ -21,10 +21,10 @@ func NewUserRecordFromUserIndividualEntity(userIndividual *entities.UserIndividu
 }
 
 // UserCorporationEntityからデータを読み込んでUser(DBマッピング用)を作成する
-func NewUserRecordFromUserCorporationEntity(userCorporation *entities.UserCorporationEntity) *UserRecord {
-	return &UserRecord{
+func NewUserMapperFromUserCorporationEntity(userCorporation *entities.UserCorporationEntity) *UserMapper {
+	return &UserMapper{
 		Id: userCorporation.Id(),
-		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 			CreatedAt: userCorporation.CreatedAt(),
 			UpdatedAt: userCorporation.UpdatedAt(),
 		},

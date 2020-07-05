@@ -1,4 +1,4 @@
-package tables
+package data_mappers
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
@@ -7,25 +7,23 @@ import (
 	"time"
 )
 
-func TestUserCorporationRecord_NewUserCorporationRecordFromUserCorporationEntity(t *testing.T) {
+func TestUserIndividualMapper_NewUserIndividualMapperFromUserIndividualEntity(t *testing.T) {
 	// entity用意
-	entity, err := entities.NewUserCorporationEntityWithData(
+	entity, err := entities.NewUserIndividualEntityWithData(
 		1,
 		"担当太郎",
-		"社長次郎",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
 	assert.NoError(t, err)
 
 	// 実行
-	resultData := NewUserCorporationRecordFromUserCorporationEntity(entity)
+	resultData := NewUserIndividualMapperFromUserIndividualEntity(entity)
 
-	expect := &UserCorporationRecord{
-		UserId:            1,
-		ContactParsonName: "担当太郎",
-		PresidentName:     "社長次郎",
-		CreatedAtUpdatedAt: CreatedAtUpdatedAt{
+	expect := &UserIndividualMapper{
+		UserId: 1,
+		Name:   "担当太郎",
+		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 			CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		},
@@ -35,12 +33,11 @@ func TestUserCorporationRecord_NewUserCorporationRecordFromUserCorporationEntity
 	assert.Equal(t, expect, resultData)
 }
 
-func TestUserCorporationRecord_PreInsert(t *testing.T) {
+func TestUserIndividualMapper_PreInsert(t *testing.T) {
 	// entity用意
-	newUser := UserCorporationRecord{
-		UserId:            0,
-		ContactParsonName: "担当太郎",
-		PresidentName:     "社長次郎",
+	newUser := UserIndividualMapper{
+		UserId: 0,
+		Name:   "担当太郎",
 	}
 
 	err := newUser.PreInsert(nil)
@@ -50,12 +47,11 @@ func TestUserCorporationRecord_PreInsert(t *testing.T) {
 	assert.NotEqual(t, time.Time{}, newUser.UpdatedAt)
 }
 
-func TestUserCorporationRecord_PreUpdate(t *testing.T) {
+func TestUserIndividualMapper_PreUpdate(t *testing.T) {
 	// entity用意
-	newUser := UserCorporationRecord{
-		UserId:            0,
-		ContactParsonName: "担当太郎",
-		PresidentName:     "社長次郎",
+	newUser := UserIndividualMapper{
+		UserId: 0,
+		Name:   "担当太郎",
 	}
 
 	err := newUser.PreUpdate(nil)

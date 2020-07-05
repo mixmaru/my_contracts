@@ -1,4 +1,4 @@
-package tables
+package data_mappers
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 type UserCorporationView struct {
-	UserRecord
+	UserMapper
 	ContactPersonName string `db:"contact_person_name"`
 	PresidentName     string `db:"president_name"`
 }
