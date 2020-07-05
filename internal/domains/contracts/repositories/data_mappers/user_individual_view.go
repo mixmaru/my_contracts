@@ -1,4 +1,4 @@
-package tables
+package data_mappers
 
 import (
 	"fmt"

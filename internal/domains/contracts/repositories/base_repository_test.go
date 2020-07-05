@@ -2,8 +2,8 @@ package repositories
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/data_mappers"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/tables"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -25,7 +25,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 
 	t.Run("データがある時", func(t *testing.T) {
 		// データ取得
-		productRecord := tables.ProductRecord{}
+		productRecord := data_mappers.ProductRecord{}
 		productEntity := entities.ProductEntity{}
 		noRow, err := selectOne(db, &productRecord, &productEntity, "select * from products where id =$1", savedProductEntity.Id())
 		assert.NoError(t, err)
@@ -39,7 +39,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	})
 
 	t.Run("データがない時", func(t *testing.T) {
-		productRecord := tables.ProductRecord{}
+		productRecord := data_mappers.ProductRecord{}
 		productEntity := entities.ProductEntity{}
 		noRow, err := selectOne(db, &productRecord, &productEntity, "select * from products where id =$1", -1000)
 		assert.NoError(t, err)
@@ -47,7 +47,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	})
 
 	t.Run("渡すrecordとentityがアベコベだったとき", func(t *testing.T) {
-		productRecord := tables.ProductRecord{}
+		productRecord := data_mappers.ProductRecord{}
 		userCorporationEntity := entities.UserCorporationEntity{}
 		noRow, err := selectOne(db, &productRecord, &userCorporationEntity, "select * from products where id =$1", savedProductEntity.Id())
 		assert.Error(t, err, "aaa")

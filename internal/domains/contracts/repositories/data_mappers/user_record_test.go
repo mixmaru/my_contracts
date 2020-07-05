@@ -1,4 +1,4 @@
-package tables
+package data_mappers
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"

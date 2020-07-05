@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/tables"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/data_mappers"
 	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
@@ -34,11 +34,11 @@ func GetConnection() (*gorp.DbMap, error) {
 
 	// add a table, setting the table name to 'posts' and
 	// specifying that the Id property is an auto incrementing PK
-	dbmap.AddTableWithName(tables.UserRecord{}, "users").SetKeys(true, "Id")
-	dbmap.AddTableWithName(tables.UserIndividualRecord{}, "users_individual")
-	dbmap.AddTableWithName(tables.UserCorporationRecord{}, "users_corporation")
+	dbmap.AddTableWithName(data_mappers.UserRecord{}, "users").SetKeys(true, "Id")
+	dbmap.AddTableWithName(data_mappers.UserIndividualRecord{}, "users_individual")
+	dbmap.AddTableWithName(data_mappers.UserCorporationRecord{}, "users_corporation")
 
-	dbmap.AddTableWithName(tables.ProductRecord{}, "products").SetKeys(true, "Id")
+	dbmap.AddTableWithName(data_mappers.ProductRecord{}, "products").SetKeys(true, "Id")
 
 	return dbmap, nil
 }
