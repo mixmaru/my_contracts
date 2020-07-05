@@ -63,7 +63,11 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 	validationErrors = map[string][]string{}
 
 	// 商品名バリデーション
-	productNameValidErrors := values.ProductNameValidate(name)
+	productNameValidErrors, err := values.ProductNameValue{}.Validate(name)
+	if err != nil {
+		return nil, err
+	}
+
 	if len(productNameValidErrors) > 0 {
 		validationErrors["name"] = []string{}
 	}

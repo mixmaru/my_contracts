@@ -15,7 +15,11 @@ type ProductNameValue struct {
 }
 
 func NewProductNameValue(value string) (ProductNameValue, error) {
-	validateErrors := ProductNameValidate(value)
+	validateErrors, err := ProductNameValue{}.Validate(value)
+	if err != nil {
+		return ProductNameValue{}, err
+	}
+
 	if len(validateErrors) > 0 {
 		var msgs []string
 		for _, validateError := range validateErrors {
@@ -32,7 +36,12 @@ func (v *ProductNameValue) Value() string {
 	return v.value
 }
 
-func ProductNameValidate(name string) (validErrors []int) {
+func (v ProductNameValue) Validate(value interface{}) (validErrors []int, err error) {
+	name, ok := value.(string)
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("valueがstring型にできませんでした。value: %v", value))
+	}
+
 	if validators.IsEmptyString(name) {
 		validErrors = append(validErrors, validators.EmptyStringValidError)
 	}
@@ -40,5 +49,5 @@ func ProductNameValidate(name string) (validErrors []int) {
 		validErrors = append(validErrors, validators.OverLengthStringValidError)
 	}
 
-	return validErrors
+	return validErrors, nil
 }
