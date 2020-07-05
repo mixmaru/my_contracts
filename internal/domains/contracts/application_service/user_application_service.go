@@ -196,7 +196,11 @@ func registerUserCorporationValidation(contactPersonName string, presidentName s
 	}
 
 	// 社長名バリデーション
-	presidentNameValidErrors := values.PresidentNameValidate(presidentName)
+	presidentNameValidErrors, err := values.PresidentNameValue{}.Validate(presidentName)
+	if err != nil {
+		return nil, err
+	}
+
 	if len(presidentNameValidErrors) > 0 {
 		validationErrors["president_name"] = []string{}
 	}

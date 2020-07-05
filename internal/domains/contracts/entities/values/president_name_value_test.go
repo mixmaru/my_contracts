@@ -34,24 +34,28 @@ func TestContactPersonNameValue_NewPresidentNameValue(t *testing.T) {
 
 func TestNameValue_PresidentNameValidate(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
-		validErrs := PresidentNameValidate("社長名")
+		validErrs, err := PresidentNameValue{}.Validate("社長名")
+		assert.NoError(t, err)
 		assert.Len(t, validErrs, 0)
 	})
 
 	t.Run("名前が空文字だった時", func(t *testing.T) {
-		validErrs := PresidentNameValidate("")
+		validErrs, err := PresidentNameValue{}.Validate("")
+		assert.NoError(t, err)
 		assert.Len(t, validErrs, 1)
 		assert.Equal(t, validators.EmptyStringValidError, validErrs[0])
 	})
 
 	t.Run("名前が50文字を超えていた時", func(t *testing.T) {
-		validErrs := PresidentNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
+		validErrs, err := PresidentNameValue{}.Validate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789a")
+		assert.NoError(t, err)
 		assert.Len(t, validErrs, 1)
 		assert.Equal(t, validators.OverLengthStringValidError, validErrs[0])
 	})
 
 	t.Run("名前が50文字だった時", func(t *testing.T) {
-		validErrs := PresidentNameValidate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789")
+		validErrs, err := PresidentNameValue{}.Validate("0123456789０１２３４５６７８９0123456789０１２３４５６７８９0123456789")
+		assert.NoError(t, err)
 		assert.Len(t, validErrs, 0)
 	})
 }
