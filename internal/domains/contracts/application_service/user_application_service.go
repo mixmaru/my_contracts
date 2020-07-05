@@ -174,7 +174,11 @@ func registerUserCorporationValidation(contactPersonName string, presidentName s
 	validationErrors = map[string][]string{}
 
 	// 担当者名バリデーション
-	contactPersonNameValidErrors := values.ContactPersonNameValidate(contactPersonName)
+	contactPersonNameValidErrors, err := values.ContactPersonNameValue{}.Validate(contactPersonName)
+	if err != nil {
+		return nil, err
+	}
+
 	if len(contactPersonNameValidErrors) > 0 {
 		validationErrors["contact_person_name"] = []string{}
 	}
@@ -192,7 +196,11 @@ func registerUserCorporationValidation(contactPersonName string, presidentName s
 	}
 
 	// 社長名バリデーション
-	presidentNameValidErrors := values.PresidentNameValidate(presidentName)
+	presidentNameValidErrors, err := values.PresidentNameValue{}.Validate(presidentName)
+	if err != nil {
+		return nil, err
+	}
+
 	if len(presidentNameValidErrors) > 0 {
 		validationErrors["president_name"] = []string{}
 	}

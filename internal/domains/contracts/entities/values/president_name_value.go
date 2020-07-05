@@ -15,7 +15,10 @@ type PresidentNameValue struct {
 const MaxPresidentNameNum = 50
 
 func NewPresidentNameValue(value string) (PresidentNameValue, error) {
-	validateErrors := PresidentNameValidate(value)
+	validateErrors, err := PresidentNameValue{}.Validate(value)
+	if err != nil {
+		return PresidentNameValue{}, err
+	}
 	if len(validateErrors) > 0 {
 		var msgs []string
 		for _, validateError := range validateErrors {
@@ -32,7 +35,15 @@ func (v *PresidentNameValue) Value() string {
 	return v.value
 }
 
-func PresidentNameValidate(name string) (validErrors []int) {
+func (v PresidentNameValue) Validate(value interface{}) (validErrors []int, err error) {
+	name, ok := value.(string)
+	if !ok {
+		return nil, errors.Errorf("valueをstring型にできませんでした。value: %t", value)
+	}
+	return v.presidentNameValidate(name), nil
+}
+
+func (v *PresidentNameValue) presidentNameValidate(name string) (validErrors []int) {
 	if validators.IsEmptyString(name) {
 		validErrors = append(validErrors, validators.EmptyStringValidError)
 	}

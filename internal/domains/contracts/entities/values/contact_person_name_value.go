@@ -15,7 +15,11 @@ type ContactPersonNameValue struct {
 const MaxContactPersonNameNum = 50
 
 func NewContactPersonNameValue(value string) (ContactPersonNameValue, error) {
-	validateErrors := ContactPersonNameValidate(value)
+	validateErrors, err := ContactPersonNameValue{}.Validate(value)
+	if err != nil {
+		return ContactPersonNameValue{}, err
+	}
+
 	if len(validateErrors) > 0 {
 		var msgs []string
 		for _, validateError := range validateErrors {
@@ -32,7 +36,15 @@ func (v *ContactPersonNameValue) Value() string {
 	return v.value
 }
 
-func ContactPersonNameValidate(name string) (validErrors []int) {
+func (v ContactPersonNameValue) Validate(value interface{}) (validErrors []int, err error) {
+	name, ok := value.(string)
+	if !ok {
+		return nil, errors.Errorf("valueをstring型にできませんでした。%t", value)
+	}
+	return v.contactPersonNameValidate(name), nil
+}
+
+func (v *ContactPersonNameValue) contactPersonNameValidate(name string) (validErrors []int) {
 	if validators.IsEmptyString(name) {
 		validErrors = append(validErrors, validators.EmptyStringValidError)
 	}
