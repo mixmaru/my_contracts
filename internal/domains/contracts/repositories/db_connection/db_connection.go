@@ -9,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
 	"os"
-	"reflect"
 )
 
 // gorpのdbMapを作成する
@@ -55,41 +54,4 @@ func getConnectionString(executeMode string) (string, error) {
 	default:
 		return "", errors.New(fmt.Sprintf("考慮されてない値が渡されました。executeMode: %+v", executeMode))
 	}
-
-}
-
-// executorがトランザクションだったらそれをそのまま返す。
-// executorがnilだったら、dbConnectionを返す。
-// ※repository内で、いちいちそれがトランザクションなのか、dbConnectionを取得しないと行けないのかの条件分岐を書く必要性を無くすために用意した
-func GetConnectionIfNotTransaction(executor gorp.SqlExecutor) (gorp.SqlExecutor, error) {
-	if executor == nil || reflect.ValueOf(executor).IsNil() {
-		return GetConnection()
-	}
-
-	tran, ok := executor.(*gorp.Transaction)
-	if ok {
-		return tran, nil
-	}
-
-	return nil, errors.New(fmt.Sprintf("GetConnectionに失敗しました。executorが考慮外 executor: %+v", executor))
-}
-
-// executorがDbMapだったらCloseする
-// executorがトランザクションだったらなにもしない
-// ※repository内で、いちいちそれがトランザクションなのか、DbMapなのかを判断してClose処理のための条件分岐を書く必要性を無くすために用意した
-func CloseConnectionIfNotTransaction(executor gorp.SqlExecutor) error {
-	// dbMapが渡されたらそれをcloseする
-	dbMap, ok := executor.(*gorp.DbMap)
-	if ok {
-		dbMap.Db.Close()
-		return nil
-	}
-
-	// transactionが渡されたら、なにもしない。（トランザクション管理は上位でおこなっているため）
-	_, ok = executor.(*gorp.Transaction)
-	if ok {
-		return nil
-	}
-
-	return errors.New(fmt.Sprintf("CloseConnectionに失敗しました。executorが考慮外 executor: %+v", executor))
 }

@@ -6,7 +6,7 @@ import (
 )
 
 type IProductRepository interface {
-	Save(productEntity *entities.ProductEntity, transaction *gorp.Transaction) (*entities.ProductEntity, error)
-	GetById(id int, transaction *gorp.Transaction) (*entities.ProductEntity, error)
-	GetByName(name string, transaction *gorp.Transaction) (*entities.ProductEntity, error)
+	Save(productEntity *entities.ProductEntity, executor gorp.SqlExecutor) (*entities.ProductEntity, error)
+	GetById(id int, executor gorp.SqlExecutor) (*entities.ProductEntity, error)
+	GetByName(name string, executor gorp.SqlExecutor) (*entities.ProductEntity, error)
 }

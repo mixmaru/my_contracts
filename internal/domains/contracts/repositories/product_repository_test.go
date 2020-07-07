@@ -18,7 +18,7 @@ func TestProductRepository_Save(t *testing.T) {
 	r := ProductRepository{}
 	productEntity, err := entities.NewProductEntity("商品名", "1000")
 	assert.NoError(t, err)
-	_, err = r.Save(productEntity, nil)
+	_, err = r.Save(productEntity, db)
 	assert.NoError(t, err)
 	assert.NotEqual(t, 0, productEntity.Id())
 	assert.Equal(t, "商品名", productEntity.Name())
@@ -41,11 +41,11 @@ func TestProductRepository_GetById(t *testing.T) {
 		// データ登録
 		productEntity, err := entities.NewProductEntity("商品名", "1000")
 		assert.NoError(t, err)
-		_, err = r.Save(productEntity, nil)
+		_, err = r.Save(productEntity, db)
 		assert.NoError(t, err)
 
 		// データ取得
-		loadedEntity, err := r.GetById(productEntity.Id(), nil)
+		loadedEntity, err := r.GetById(productEntity.Id(), db)
 		assert.NoError(t, err)
 
 		assert.Equal(t, productEntity.Id(), loadedEntity.Id())
@@ -58,7 +58,7 @@ func TestProductRepository_GetById(t *testing.T) {
 
 	t.Run("データがない時", func(t *testing.T) {
 		// データ取得
-		loadedEntity, err := r.GetById(-100, nil)
+		loadedEntity, err := r.GetById(-100, db)
 		assert.NoError(t, err)
 		assert.Nil(t, loadedEntity)
 	})
@@ -77,11 +77,11 @@ func TestProductRepository_GetByName(t *testing.T) {
 		// データ登録
 		productEntity, err := entities.NewProductEntity("商品名", "1000")
 		assert.NoError(t, err)
-		_, err = r.Save(productEntity, nil)
+		_, err = r.Save(productEntity, db)
 		assert.NoError(t, err)
 
 		// データ取得
-		loadedEntity, err := r.GetByName("商品名", nil)
+		loadedEntity, err := r.GetByName("商品名", db)
 		assert.NoError(t, err)
 
 		assert.Equal(t, productEntity.Id(), loadedEntity.Id())
@@ -94,7 +94,7 @@ func TestProductRepository_GetByName(t *testing.T) {
 
 	t.Run("データがない時", func(t *testing.T) {
 		// データ取得
-		loadedEntity, err := r.GetByName("存在しない商品", nil)
+		loadedEntity, err := r.GetByName("存在しない商品", db)
 		assert.NoError(t, err)
 		assert.Nil(t, loadedEntity)
 	})

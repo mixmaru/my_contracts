@@ -3,7 +3,6 @@ package repositories
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/data_mappers"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
 )
@@ -12,14 +11,7 @@ type ProductRepository struct {
 }
 
 // 商品エンティティを新規保存する
-func (r *ProductRepository) Save(productEntity *entities.ProductEntity, transaction *gorp.Transaction) (*entities.ProductEntity, error) {
-	// db接続
-	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
-	if err != nil {
-		return nil, err
-	}
-	defer db_connection.CloseConnectionIfNotTransaction(conn)
-
+func (r *ProductRepository) Save(productEntity *entities.ProductEntity, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
 	// recordオブジェクトに詰め替え
 	productRecord := data_mappers.ProductMapper{
 		Name:  productEntity.Name(),
@@ -27,13 +19,13 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, transact
 	}
 
 	// 新規保存実行
-	err = conn.Insert(&productRecord)
+	err := executor.Insert(&productRecord)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	// 再取得
-	err = conn.SelectOne(&productRecord, "select * from products where id = $1", productRecord.Id)
+	err = executor.SelectOne(&productRecord, "select * from products where id = $1", productRecord.Id)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -52,18 +44,11 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, transact
 	return productEntity, nil
 }
 
-func (r *ProductRepository) GetById(id int, transaction *gorp.Transaction) (*entities.ProductEntity, error) {
-	// db接続
-	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
-	if err != nil {
-		return nil, err
-	}
-	defer db_connection.CloseConnectionIfNotTransaction(conn)
-
+func (r *ProductRepository) GetById(id int, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
 	// データ取得
 	var productRecord data_mappers.ProductMapper
 	var productEntity entities.ProductEntity
-	noRow, err := selectOne(conn, &productRecord, &productEntity, "select * from products where id = $1", id)
+	noRow, err := selectOne(executor, &productRecord, &productEntity, "select * from products where id = $1", id)
 	if err != nil {
 		return nil, err
 	}
@@ -73,18 +58,11 @@ func (r *ProductRepository) GetById(id int, transaction *gorp.Transaction) (*ent
 	return &productEntity, nil
 }
 
-func (r *ProductRepository) GetByName(name string, transaction *gorp.Transaction) (*entities.ProductEntity, error) {
-	// db接続
-	conn, err := db_connection.GetConnectionIfNotTransaction(transaction)
-	if err != nil {
-		return nil, err
-	}
-	defer db_connection.CloseConnectionIfNotTransaction(conn)
-
+func (r *ProductRepository) GetByName(name string, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
 	// データ取得
 	var productRecord data_mappers.ProductMapper
 	var productEntity entities.ProductEntity
-	noRow, err := selectOne(conn, &productRecord, &productEntity, "select * from products where name = $1", name)
+	noRow, err := selectOne(executor, &productRecord, &productEntity, "select * from products where name = $1", name)
 	if err != nil {
 		return nil, err
 	}
