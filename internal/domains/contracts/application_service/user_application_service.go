@@ -85,7 +85,13 @@ func userIndividualValidation(name string) (validationErrors map[string][]string
 
 // 個人顧客情報を取得して返却する
 func (s *UserApplicationService) GetUserIndividual(userId int) (data_transfer_objects.UserIndividualDto, error) {
-	user, err := s.userRepository.GetUserIndividualById(userId, nil)
+	conn, err := db_connection.GetConnection()
+	if err != nil {
+		return data_transfer_objects.UserIndividualDto{}, err
+	}
+	defer conn.Db.Close()
+
+	user, err := s.userRepository.GetUserIndividualById(userId, conn)
 	if err != nil {
 		return data_transfer_objects.UserIndividualDto{}, err
 	}
@@ -223,7 +229,13 @@ func registerUserCorporationValidation(contactPersonName string, presidentName s
 
 // 法人顧客情報を取得して返却する
 func (s *UserApplicationService) GetUserCorporation(userId int) (data_transfer_objects.UserCorporationDto, error) {
-	gotUser, err := s.userRepository.GetUserCorporationById(userId, nil)
+	conn, err := db_connection.GetConnection()
+	if err != nil {
+		return data_transfer_objects.UserCorporationDto{}, err
+	}
+	defer conn.Db.Close()
+
+	gotUser, err := s.userRepository.GetUserCorporationById(userId, conn)
 	if err != nil {
 		return data_transfer_objects.UserCorporationDto{}, err
 	}
