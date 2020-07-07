@@ -6,7 +6,7 @@ package mock_interfaces
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
+	entities "github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	gorp "gopkg.in/gorp.v2"
 	reflect "reflect"
 )
@@ -35,61 +35,61 @@ func (m *MockIUserRepository) EXPECT() *MockIUserRepositoryMockRecorder {
 }
 
 // SaveUserIndividual mocks base method.
-func (m *MockIUserRepository) SaveUserIndividual(userEntity *entities.UserIndividualEntity, transaction *gorp.Transaction) (*entities.UserIndividualEntity, error) {
+func (m *MockIUserRepository) SaveUserIndividual(userEntity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (*entities.UserIndividualEntity, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveUserIndividual", userEntity, transaction)
+	ret := m.ctrl.Call(m, "SaveUserIndividual", userEntity, executor)
 	ret0, _ := ret[0].(*entities.UserIndividualEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveUserIndividual indicates an expected call of SaveUserIndividual.
-func (mr *MockIUserRepositoryMockRecorder) SaveUserIndividual(userEntity, transaction interface{}) *gomock.Call {
+func (mr *MockIUserRepositoryMockRecorder) SaveUserIndividual(userEntity, executor interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUserIndividual", reflect.TypeOf((*MockIUserRepository)(nil).SaveUserIndividual), userEntity, transaction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUserIndividual", reflect.TypeOf((*MockIUserRepository)(nil).SaveUserIndividual), userEntity, executor)
 }
 
 // GetUserIndividualById mocks base method.
-func (m *MockIUserRepository) GetUserIndividualById(id int, transaction *gorp.Transaction) (*entities.UserIndividualEntity, error) {
+func (m *MockIUserRepository) GetUserIndividualById(id int, executor gorp.SqlExecutor) (*entities.UserIndividualEntity, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserIndividualById", id, transaction)
+	ret := m.ctrl.Call(m, "GetUserIndividualById", id, executor)
 	ret0, _ := ret[0].(*entities.UserIndividualEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUserIndividualById indicates an expected call of GetUserIndividualById.
-func (mr *MockIUserRepositoryMockRecorder) GetUserIndividualById(id, transaction interface{}) *gomock.Call {
+func (mr *MockIUserRepositoryMockRecorder) GetUserIndividualById(id, executor interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserIndividualById", reflect.TypeOf((*MockIUserRepository)(nil).GetUserIndividualById), id, transaction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserIndividualById", reflect.TypeOf((*MockIUserRepository)(nil).GetUserIndividualById), id, executor)
 }
 
 // SaveUserCorporation mocks base method.
-func (m *MockIUserRepository) SaveUserCorporation(userEntity *entities.UserCorporationEntity, transaction *gorp.Transaction) (*entities.UserCorporationEntity, error) {
+func (m *MockIUserRepository) SaveUserCorporation(userEntity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveUserCorporation", userEntity, transaction)
+	ret := m.ctrl.Call(m, "SaveUserCorporation", userEntity, executor)
 	ret0, _ := ret[0].(*entities.UserCorporationEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveUserCorporation indicates an expected call of SaveUserCorporation.
-func (mr *MockIUserRepositoryMockRecorder) SaveUserCorporation(userEntity, transaction interface{}) *gomock.Call {
+func (mr *MockIUserRepositoryMockRecorder) SaveUserCorporation(userEntity, executor interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUserCorporation", reflect.TypeOf((*MockIUserRepository)(nil).SaveUserCorporation), userEntity, transaction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUserCorporation", reflect.TypeOf((*MockIUserRepository)(nil).SaveUserCorporation), userEntity, executor)
 }
 
 // GetUserCorporationById mocks base method.
-func (m *MockIUserRepository) GetUserCorporationById(id int, transaction *gorp.Transaction) (*entities.UserCorporationEntity, error) {
+func (m *MockIUserRepository) GetUserCorporationById(id int, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserCorporationById", id, transaction)
+	ret := m.ctrl.Call(m, "GetUserCorporationById", id, executor)
 	ret0, _ := ret[0].(*entities.UserCorporationEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUserCorporationById indicates an expected call of GetUserCorporationById.
-func (mr *MockIUserRepositoryMockRecorder) GetUserCorporationById(id, transaction interface{}) *gomock.Call {
+func (mr *MockIUserRepositoryMockRecorder) GetUserCorporationById(id, executor interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserCorporationById", reflect.TypeOf((*MockIUserRepository)(nil).GetUserCorporationById), id, transaction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserCorporationById", reflect.TypeOf((*MockIUserRepository)(nil).GetUserCorporationById), id, executor)
 }

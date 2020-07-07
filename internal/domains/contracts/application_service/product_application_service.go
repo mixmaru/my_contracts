@@ -9,6 +9,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values/validators"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/pkg/errors"
+	"gopkg.in/gorp.v2"
 )
 
 type ProductApplicationService struct {
@@ -16,8 +17,19 @@ type ProductApplicationService struct {
 }
 
 func (p *ProductApplicationService) Register(name string, price string) (productDto data_transfer_objects.ProductDto, validationErrors map[string][]string, err error) {
+	// トランザクション開始
+	conn, err := db_connection.GetConnection()
+	if err != nil {
+		return data_transfer_objects.ProductDto{}, nil, err
+	}
+	defer conn.Db.Close()
+	tran, err := conn.Begin()
+
+	if err != nil {
+		return data_transfer_objects.ProductDto{}, nil, errors.WithStack(err)
+	}
 	// 入力値バリデーション
-	validationErrors, err = p.registerValidation(name, price)
+	validationErrors, err = p.registerValidation(name, price, tran)
 	if err != nil {
 		return data_transfer_objects.ProductDto{}, nil, err
 	}
@@ -29,16 +41,6 @@ func (p *ProductApplicationService) Register(name string, price string) (product
 	entity, err := entities.NewProductEntity(name, price)
 	if err != nil {
 		return data_transfer_objects.ProductDto{}, nil, err
-	}
-
-	// トランザクション開始
-	conn, err := db_connection.GetConnection()
-	if err != nil {
-		return data_transfer_objects.ProductDto{}, nil, err
-	}
-	tran, err := conn.Begin()
-	if err != nil {
-		return data_transfer_objects.ProductDto{}, nil, errors.WithStack(err)
 	}
 
 	// リポジトリで保存
@@ -59,7 +61,7 @@ func (p *ProductApplicationService) Register(name string, price string) (product
 	return dto, nil, nil
 }
 
-func (p *ProductApplicationService) registerValidation(name string, price string) (validationErrors map[string][]string, err error) {
+func (p *ProductApplicationService) registerValidation(name string, price string, executor gorp.SqlExecutor) (validationErrors map[string][]string, err error) {
 	validationErrors = map[string][]string{}
 
 	// 商品名バリデーション
@@ -85,7 +87,7 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 	}
 
 	// 重複チェック
-	productEntity, err := p.productRepository.GetByName(name, nil)
+	productEntity, err := p.productRepository.GetByName(name, executor)
 	if err != nil {
 		return validationErrors, err
 	}

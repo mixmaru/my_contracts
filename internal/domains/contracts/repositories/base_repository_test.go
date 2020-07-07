@@ -20,7 +20,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	// 既存データ登録
 	savedProductEntity, err := entities.NewProductEntity("商品名", "1000")
 	assert.NoError(t, err)
-	_, err = r.Save(savedProductEntity, nil)
+	_, err = r.Save(savedProductEntity, db)
 	assert.NoError(t, err)
 
 	t.Run("データがある時", func(t *testing.T) {

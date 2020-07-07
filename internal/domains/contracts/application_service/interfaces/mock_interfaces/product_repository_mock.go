@@ -35,46 +35,46 @@ func (m *MockIProductRepository) EXPECT() *MockIProductRepositoryMockRecorder {
 }
 
 // Save mocks base method.
-func (m *MockIProductRepository) Save(productEntity *entities.ProductEntity, transaction *gorp.Transaction) (*entities.ProductEntity, error) {
+func (m *MockIProductRepository) Save(productEntity *entities.ProductEntity, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", productEntity, transaction)
+	ret := m.ctrl.Call(m, "Save", productEntity, executor)
 	ret0, _ := ret[0].(*entities.ProductEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockIProductRepositoryMockRecorder) Save(productEntity, transaction interface{}) *gomock.Call {
+func (mr *MockIProductRepositoryMockRecorder) Save(productEntity, executor interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockIProductRepository)(nil).Save), productEntity, transaction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockIProductRepository)(nil).Save), productEntity, executor)
 }
 
 // GetById mocks base method.
-func (m *MockIProductRepository) GetById(id int, transaction *gorp.Transaction) (*entities.ProductEntity, error) {
+func (m *MockIProductRepository) GetById(id int, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetById", id, transaction)
+	ret := m.ctrl.Call(m, "GetById", id, executor)
 	ret0, _ := ret[0].(*entities.ProductEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetById indicates an expected call of GetById.
-func (mr *MockIProductRepositoryMockRecorder) GetById(id, transaction interface{}) *gomock.Call {
+func (mr *MockIProductRepositoryMockRecorder) GetById(id, executor interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockIProductRepository)(nil).GetById), id, transaction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockIProductRepository)(nil).GetById), id, executor)
 }
 
 // GetByName mocks base method.
-func (m *MockIProductRepository) GetByName(name string, transaction *gorp.Transaction) (*entities.ProductEntity, error) {
+func (m *MockIProductRepository) GetByName(name string, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByName", name, transaction)
+	ret := m.ctrl.Call(m, "GetByName", name, executor)
 	ret0, _ := ret[0].(*entities.ProductEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByName indicates an expected call of GetByName.
-func (mr *MockIProductRepositoryMockRecorder) GetByName(name, transaction interface{}) *gomock.Call {
+func (mr *MockIProductRepositoryMockRecorder) GetByName(name, executor interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByName", reflect.TypeOf((*MockIProductRepository)(nil).GetByName), name, transaction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByName", reflect.TypeOf((*MockIProductRepository)(nil).GetByName), name, executor)
 }
