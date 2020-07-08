@@ -65,6 +65,7 @@ func TestUserRepository_SaveUserIndividual(t *testing.T) {
 
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
+	defer db.Db.Close()
 
 	// 実行
 	repo := UserRepository{}
@@ -75,6 +76,7 @@ func TestUserRepository_SaveUserIndividual(t *testing.T) {
 func TestUserRepository_GetUserIndividualById(t *testing.T) {
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
+	defer db.Db.Close()
 
 	//　事前にデータ登録する
 	user, err := entities.NewUserIndividualEntity("個人太郎")
@@ -103,6 +105,7 @@ func TestUserRepository_GetUserIndividualById(t *testing.T) {
 func TestUserRepository_GetUserCorporationById(t *testing.T) {
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
+	defer db.Db.Close()
 
 	//　事前にデータ登録する
 	savingUser := entities.NewUserCorporationEntity()
@@ -136,6 +139,7 @@ func TestUserRepository_GetUserCorporationById(t *testing.T) {
 func TestUserRepository_SaveUserCorporation(t *testing.T) {
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
+	defer db.Db.Close()
 
 	// 保存するデータ作成
 	user := entities.NewUserCorporationEntity()

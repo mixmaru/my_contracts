@@ -12,6 +12,7 @@ func TestProductRepository_Save(t *testing.T) {
 	// テーブル事前削除
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
+	defer db.Db.Close()
 	_, err = db.Exec("truncate table products cascade")
 	assert.NoError(t, err)
 
@@ -32,6 +33,7 @@ func TestProductRepository_GetById(t *testing.T) {
 	// テーブル事前削除
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
+	defer db.Db.Close()
 	_, err = db.Exec("truncate table products cascade")
 	assert.NoError(t, err)
 
@@ -68,6 +70,7 @@ func TestProductRepository_GetByName(t *testing.T) {
 	// テーブル事前削除
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
+	defer db.Db.Close()
 	_, err = db.Exec("truncate table products cascade")
 	assert.NoError(t, err)
 

@@ -294,10 +294,12 @@ func TestMain_getCorporationUser(t *testing.T) {
 }
 
 func TestMain_saveProduct(t *testing.T) {
-	// productデータをすべて削除
+	// 同盟商品は登録できないので予め削除
 	conn, err := db_connection.GetConnection()
 	assert.NoError(t, err)
-	_, err = conn.Exec("truncate products cascade")
+	defer conn.Db.Close()
+
+	_, err = conn.Exec("delete from products where name = 'A商品'")
 	assert.NoError(t, err)
 
 	t.Run("正常系", func(t *testing.T) {
@@ -395,10 +397,12 @@ func TestMain_saveProduct(t *testing.T) {
 }
 
 func TestMain_getProduct(t *testing.T) {
-	// productデータをすべて削除
+	// 重複商品名は登録できないので予め削除
 	conn, err := db_connection.GetConnection()
 	assert.NoError(t, err)
-	_, err = conn.Exec("truncate products cascade")
+	defer conn.Db.Close()
+
+	_, err = conn.Exec("delete from products where name = 'A商品'")
 	assert.NoError(t, err)
 
 	// 検証用データ登録

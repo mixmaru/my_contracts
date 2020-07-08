@@ -12,6 +12,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	// テーブル事前削除
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
+	defer db.Db.Close()
 	_, err = db.Exec("truncate table products cascade")
 	assert.NoError(t, err)
 
