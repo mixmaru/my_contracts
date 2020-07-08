@@ -124,8 +124,14 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 }
 
 func (p *ProductApplicationService) Get(id int) (data_transfer_objects.ProductDto, error) {
+	conn, err := db_connection.GetConnection()
+	if err != nil {
+		return data_transfer_objects.ProductDto{}, err
+	}
+	defer conn.Db.Close()
+
 	// リポジトリつかってデータ取得
-	entity, err := p.productRepository.GetById(id, nil)
+	entity, err := p.productRepository.GetById(id, conn)
 	if err != nil {
 		return data_transfer_objects.ProductDto{}, err
 	}

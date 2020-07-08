@@ -103,6 +103,7 @@ func TestProductApplicationService_registerValidation(t *testing.T) {
 	// productデータをすべて削除
 	conn, err := db_connection.GetConnection()
 	assert.NoError(t, err)
+	defer conn.Db.Close()
 	_, err = conn.Exec("truncate products cascade")
 	assert.NoError(t, err)
 
