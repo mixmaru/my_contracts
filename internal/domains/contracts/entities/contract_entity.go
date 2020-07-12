@@ -1,5 +1,9 @@
 package entities
 
+import (
+	"time"
+)
+
 type ContractEntity struct {
 	BaseEntity
 	userId    int
@@ -31,17 +35,11 @@ func (c *ContractEntity) ProductId() int {
 }
 
 //// 保持データをセットし直す
-//func (p *ProductEntity) LoadData(id int, name string, price string, createdAt time.Time, updatedAt time.Time) error {
-//	nameValue, err := values.NewProductNameValue(name)
-//	if err != nil {
-//		return err
-//	}
-//	priceValue, err := values.NewProductPriceValue(price)
-//
-//	p.id = id
-//	p.name = nameValue
-//	p.price = priceValue
-//	p.createdAt = createdAt
-//	p.updatedAt = updatedAt
-//	return nil
-//}
+func (c *ContractEntity) LoadData(id int, userId int, productId int, createdAt time.Time, updatedAt time.Time) error {
+	c.id = id
+	c.userId = userId
+	c.productId = productId
+	c.createdAt = createdAt
+	c.updatedAt = updatedAt
+	return nil
+}
