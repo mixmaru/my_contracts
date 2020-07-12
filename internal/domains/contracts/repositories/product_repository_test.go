@@ -19,14 +19,10 @@ func TestProductRepository_Save(t *testing.T) {
 	r := NewProductRepository()
 	productEntity, err := entities.NewProductEntity("商品名", "1000")
 	assert.NoError(t, err)
-	_, err = r.Save(productEntity, db)
+	savedId, err := r.Save(productEntity, db)
+
 	assert.NoError(t, err)
-	assert.NotEqual(t, 0, productEntity.Id())
-	assert.Equal(t, "商品名", productEntity.Name())
-	price := productEntity.Price()
-	assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
-	assert.NotZero(t, productEntity.CreatedAt())
-	assert.NotZero(t, productEntity.UpdatedAt())
+	assert.NotEqual(t, 0, savedId)
 }
 
 func TestProductRepository_GetById(t *testing.T) {

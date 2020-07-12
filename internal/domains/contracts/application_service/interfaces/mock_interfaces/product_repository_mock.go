@@ -35,10 +35,10 @@ func (m *MockIProductRepository) EXPECT() *MockIProductRepositoryMockRecorder {
 }
 
 // Save mocks base method.
-func (m *MockIProductRepository) Save(productEntity *entities.ProductEntity, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
+func (m *MockIProductRepository) Save(productEntity *entities.ProductEntity, executor gorp.SqlExecutor) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Save", productEntity, executor)
-	ret0, _ := ret[0].(*entities.ProductEntity)
+	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
