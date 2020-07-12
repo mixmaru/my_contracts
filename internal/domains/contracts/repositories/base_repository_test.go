@@ -21,7 +21,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	// 既存データ登録
 	savedProductEntity, err := entities.NewProductEntity("商品名", "1000")
 	assert.NoError(t, err)
-	_, err = r.Save(savedProductEntity, db)
+	savedId, err := r.Save(savedProductEntity, db)
 	assert.NoError(t, err)
 
 	baseRepository := &BaseRepository{}
@@ -30,15 +30,16 @@ func TestBaseRepository_selectOne(t *testing.T) {
 		// データ取得
 		productRecord := data_mappers.ProductMapper{}
 		productEntity := entities.ProductEntity{}
-		noRow, err := baseRepository.selectOne(db, &productRecord, &productEntity, "select * from products where id =$1", savedProductEntity.Id())
+		noRow, err := baseRepository.selectOne(db, &productRecord, &productEntity, "select * from products where id =$1", savedId)
 		assert.NoError(t, err)
 		assert.False(t, noRow)
 
-		assert.Equal(t, savedProductEntity.Id(), productEntity.Id())
-		assert.Equal(t, savedProductEntity.Name(), productEntity.Name())
-		assert.Equal(t, savedProductEntity.Price(), productEntity.Price())
-		assert.Equal(t, savedProductEntity.CreatedAt(), productEntity.CreatedAt())
-		assert.Equal(t, savedProductEntity.UpdatedAt(), productEntity.UpdatedAt())
+		assert.Equal(t, savedId, productEntity.Id())
+		assert.Equal(t, "商品名", productEntity.Name())
+		price := productEntity.Price()
+		assert.Equal(t, "1000", price.String())
+		assert.NotZero(t, productEntity.CreatedAt())
+		assert.NotZero(t, productEntity.UpdatedAt())
 	})
 
 	t.Run("データがない時", func(t *testing.T) {
@@ -52,7 +53,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	t.Run("渡すrecordとentityがアベコベだったとき", func(t *testing.T) {
 		productRecord := data_mappers.ProductMapper{}
 		userCorporationEntity := entities.UserCorporationEntity{}
-		noRow, err := baseRepository.selectOne(db, &productRecord, &userCorporationEntity, "select * from products where id =$1", savedProductEntity.Id())
+		noRow, err := baseRepository.selectOne(db, &productRecord, &userCorporationEntity, "select * from products where id =$1", savedId)
 		assert.Error(t, err, "aaa")
 		assert.True(t, noRow)
 	})

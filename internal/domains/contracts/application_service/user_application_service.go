@@ -45,7 +45,13 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (userIndivi
 	}
 
 	// リポジトリ使って保存
-	userEntity, err = s.userRepository.SaveUserIndividual(userEntity, tran)
+	savedId, err := s.userRepository.SaveUserIndividual(userEntity, tran)
+	if err != nil {
+		return data_transfer_objects.UserIndividualDto{}, nil, err
+	}
+
+	// 保存データ再読込
+	savedUserEntity, err := s.userRepository.GetUserIndividualById(savedId, tran)
 	if err != nil {
 		return data_transfer_objects.UserIndividualDto{}, nil, err
 	}
@@ -55,7 +61,7 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (userIndivi
 	if err != nil {
 		return data_transfer_objects.UserIndividualDto{}, nil, err
 	}
-	userDto := createUserIndividualDtoFromEntity(userEntity)
+	userDto := createUserIndividualDtoFromEntity(savedUserEntity)
 	return userDto, nil, nil
 }
 
@@ -162,10 +168,17 @@ func (s *UserApplicationService) RegisterUserCorporation(contactPersonName strin
 	}
 
 	// リポジトリつかって保存実行
-	registeredUser, err := s.userRepository.SaveUserCorporation(entity, tran)
+	savedId, err := s.userRepository.SaveUserCorporation(entity, tran)
 	if err != nil {
 		return data_transfer_objects.UserCorporationDto{}, nil, errors.WithMessagef(err, "法人顧客データ登録失敗。contractPersonName: %v, presidentName: %v", contactPersonName, presidentName)
 	}
+
+	// 再読込
+	registeredUser, err := s.userRepository.GetUserCorporationById(savedId, tran)
+	if err != nil {
+		return data_transfer_objects.UserCorporationDto{}, nil, errors.WithMessagef(err, "保存法人顧客データ再読込。contractPersonName: %v, presidentName: %v", contactPersonName, presidentName)
+	}
+
 	err = tran.Commit()
 	if err != nil {
 		return data_transfer_objects.UserCorporationDto{}, nil, errors.WithMessagef(err, "法人顧客データCommit失敗。contractPersonName: %v, presidentName: %v", contactPersonName, presidentName)

@@ -18,7 +18,7 @@ func NewProductRepository() *ProductRepository {
 }
 
 // 商品エンティティを新規保存する
-func (r *ProductRepository) Save(productEntity *entities.ProductEntity, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
+func (r *ProductRepository) Save(productEntity *entities.ProductEntity, executor gorp.SqlExecutor) (savedId int, err error) {
 	// recordオブジェクトに詰め替え
 	productRecord := data_mappers.ProductMapper{
 		Name:  productEntity.Name(),
@@ -26,29 +26,12 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, executor
 	}
 
 	// 新規保存実行
-	err := executor.Insert(&productRecord)
+	err = executor.Insert(&productRecord)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return 0, errors.WithStack(err)
 	}
 
-	// 再取得
-	err = executor.SelectOne(&productRecord, "select * from products where id = $1", productRecord.Id)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	// エンティティに詰め直し
-	err = productEntity.LoadData(
-		productRecord.Id,
-		productRecord.Name,
-		productRecord.Price.String(),
-		productRecord.CreatedAt,
-		productRecord.UpdatedAt,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return productEntity, nil
+	return productRecord.Id, nil
 }
 
 func (r *ProductRepository) GetById(id int, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {

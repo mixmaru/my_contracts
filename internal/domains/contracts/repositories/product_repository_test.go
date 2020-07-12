@@ -19,14 +19,10 @@ func TestProductRepository_Save(t *testing.T) {
 	r := NewProductRepository()
 	productEntity, err := entities.NewProductEntity("商品名", "1000")
 	assert.NoError(t, err)
-	_, err = r.Save(productEntity, db)
+	savedId, err := r.Save(productEntity, db)
+
 	assert.NoError(t, err)
-	assert.NotEqual(t, 0, productEntity.Id())
-	assert.Equal(t, "商品名", productEntity.Name())
-	price := productEntity.Price()
-	assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
-	assert.NotZero(t, productEntity.CreatedAt())
-	assert.NotZero(t, productEntity.UpdatedAt())
+	assert.NotEqual(t, 0, savedId)
 }
 
 func TestProductRepository_GetById(t *testing.T) {
@@ -43,19 +39,19 @@ func TestProductRepository_GetById(t *testing.T) {
 		// データ登録
 		productEntity, err := entities.NewProductEntity("商品名", "1000")
 		assert.NoError(t, err)
-		_, err = r.Save(productEntity, db)
+		savedId, err := r.Save(productEntity, db)
 		assert.NoError(t, err)
 
 		// データ取得
-		loadedEntity, err := r.GetById(productEntity.Id(), db)
+		loadedEntity, err := r.GetById(savedId, db)
 		assert.NoError(t, err)
 
-		assert.Equal(t, productEntity.Id(), loadedEntity.Id())
+		assert.Equal(t, savedId, loadedEntity.Id())
 		assert.Equal(t, "商品名", loadedEntity.Name())
 		price := loadedEntity.Price()
 		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
-		assert.True(t, loadedEntity.CreatedAt().Equal(productEntity.CreatedAt()))
-		assert.True(t, loadedEntity.UpdatedAt().Equal(productEntity.UpdatedAt()))
+		assert.NotZero(t, loadedEntity.CreatedAt())
+		assert.NotZero(t, loadedEntity.UpdatedAt())
 	})
 
 	t.Run("データがない時", func(t *testing.T) {
@@ -80,19 +76,19 @@ func TestProductRepository_GetByName(t *testing.T) {
 		// データ登録
 		productEntity, err := entities.NewProductEntity("商品名", "1000")
 		assert.NoError(t, err)
-		_, err = r.Save(productEntity, db)
+		savedId, err := r.Save(productEntity, db)
 		assert.NoError(t, err)
 
 		// データ取得
 		loadedEntity, err := r.GetByName("商品名", db)
 		assert.NoError(t, err)
 
-		assert.Equal(t, productEntity.Id(), loadedEntity.Id())
+		assert.Equal(t, savedId, loadedEntity.Id())
 		assert.Equal(t, "商品名", loadedEntity.Name())
 		price := loadedEntity.Price()
 		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
-		assert.True(t, loadedEntity.CreatedAt().Equal(productEntity.CreatedAt()))
-		assert.True(t, loadedEntity.UpdatedAt().Equal(productEntity.UpdatedAt()))
+		assert.NotZero(t, loadedEntity.CreatedAt())
+		assert.NotZero(t, loadedEntity.UpdatedAt())
 	})
 
 	t.Run("データがない時", func(t *testing.T) {

@@ -24,7 +24,7 @@ func TestUserRepository_Transaction(t *testing.T) {
 		user, err := entities.NewUserIndividualEntity("個人太郎")
 		assert.NoError(t, err)
 		repo := NewUserRepository()
-		user, err = repo.SaveUserIndividual(user, tran)
+		savedId, err := repo.SaveUserIndividual(user, tran)
 		assert.NoError(t, err)
 
 		// コミット
@@ -32,7 +32,7 @@ func TestUserRepository_Transaction(t *testing.T) {
 		assert.NoError(t, err)
 
 		// データ取得できる
-		_, err = repo.GetUserIndividualById(user.Id(), dbMap)
+		_, err = repo.GetUserIndividualById(savedId, dbMap)
 		assert.NoError(t, err) // sql: no rows in result set エラーが起こらなければ、データが保存されている
 	})
 
@@ -45,7 +45,7 @@ func TestUserRepository_Transaction(t *testing.T) {
 		user, err := entities.NewUserIndividualEntity("個人太郎")
 		assert.NoError(t, err)
 		repo := NewUserRepository()
-		user, err = repo.SaveUserIndividual(user, tran)
+		savedId, err := repo.SaveUserIndividual(user, tran)
 		assert.NoError(t, err)
 
 		// ロールバック
@@ -53,7 +53,7 @@ func TestUserRepository_Transaction(t *testing.T) {
 		assert.NoError(t, err)
 
 		// データ取得できない
-		user, err = repo.GetUserIndividualById(user.Id(), dbMap)
+		user, err = repo.GetUserIndividualById(savedId, dbMap)
 		assert.Nil(t, user)
 	})
 }
@@ -69,7 +69,7 @@ func TestUserRepository_SaveUserIndividual(t *testing.T) {
 
 	// 実行
 	repo := NewUserRepository()
-	user, err = repo.SaveUserIndividual(user, db)
+	_, err = repo.SaveUserIndividual(user, db)
 	assert.NoError(t, err)
 }
 
@@ -82,17 +82,16 @@ func TestUserRepository_GetUserIndividualById(t *testing.T) {
 	user, err := entities.NewUserIndividualEntity("個人太郎")
 	assert.NoError(t, err)
 	repo := NewUserRepository()
-	user, err = repo.SaveUserIndividual(user, db)
+	savedId, err := repo.SaveUserIndividual(user, db)
 	assert.NoError(t, err)
 
 	// idで取得して検証
 	t.Run("データがある時", func(t *testing.T) {
-		result, err := repo.GetUserIndividualById(user.Id(), db)
+		result, err := repo.GetUserIndividualById(savedId, db)
 		assert.NoError(t, err)
-		assert.Equal(t, result.Id(), user.Id())
-		assert.Equal(t, result.Name(), user.Name())
-		assert.NotEqual(t, time.Time{}, user.CreatedAt())
-		assert.NotEqual(t, time.Time{}, user.UpdatedAt())
+		assert.Equal(t, user.Name(), result.Name())
+		assert.NotEqual(t, time.Time{}, result.CreatedAt())
+		assert.NotEqual(t, time.Time{}, result.UpdatedAt())
 	})
 
 	t.Run("データが無い時", func(t *testing.T) {
@@ -115,14 +114,14 @@ func TestUserRepository_GetUserCorporationById(t *testing.T) {
 	assert.NoError(t, err)
 
 	repo := NewUserRepository()
-	savedUser, err := repo.SaveUserCorporation(savingUser, db)
+	savedId, err := repo.SaveUserCorporation(savingUser, db)
 	assert.NoError(t, err)
 
 	// idで取得して検証
 	t.Run("データがある時", func(t *testing.T) {
-		result, err := repo.GetUserCorporationById(savedUser.Id(), db)
+		result, err := repo.GetUserCorporationById(savedId, db)
 		assert.NoError(t, err)
-		assert.Equal(t, savedUser.Id(), result.Id())
+		assert.Equal(t, savedId, result.Id())
 		assert.Equal(t, "担当　太郎", result.ContactPersonName())
 		assert.Equal(t, "社長　太郎", result.PresidentName())
 		assert.NotEqual(t, time.Time{}, result.CreatedAt())
@@ -148,7 +147,7 @@ func TestUserRepository_SaveUserCorporation(t *testing.T) {
 
 	// 保存実行
 	repo := NewUserRepository()
-	user, err = repo.SaveUserCorporation(user, db)
+	_, err = repo.SaveUserCorporation(user, db)
 	assert.NoError(t, err)
 }
 
@@ -163,17 +162,17 @@ func TestUserRepository_getUserCorporationViewById(t *testing.T) {
 	user.SetContactPersonName("担当太郎")
 	user.SetPresidentName("社長次郎")
 	repo := NewUserRepository()
-	user, err = repo.SaveUserCorporation(user, dbMap)
+	savedId, err := repo.SaveUserCorporation(user, dbMap)
 	assert.NoError(t, err)
 
 	// idで取得する
-	result, err := repo.getUserCorporationEntityById(user.Id(), &entities.UserCorporationEntity{}, dbMap)
+	result, err := repo.getUserCorporationEntityById(savedId, &entities.UserCorporationEntity{}, dbMap)
 	assert.NoError(t, err)
 
 	// 検証
-	assert.Equal(t, result.Id(), user.Id())
-	assert.Equal(t, "担当太郎", user.ContactPersonName())
-	assert.Equal(t, "社長次郎", user.PresidentName())
-	assert.NotEqual(t, time.Time{}, user.CreatedAt())
-	assert.NotEqual(t, time.Time{}, user.UpdatedAt())
+	assert.Equal(t, result.Id(), savedId)
+	assert.Equal(t, "担当太郎", result.ContactPersonName())
+	assert.Equal(t, "社長次郎", result.PresidentName())
+	assert.NotEqual(t, time.Time{}, result.CreatedAt())
+	assert.NotEqual(t, time.Time{}, result.UpdatedAt())
 }

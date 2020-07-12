@@ -44,7 +44,13 @@ func (p *ProductApplicationService) Register(name string, price string) (product
 	}
 
 	// リポジトリで保存
-	savedEntity, err := p.productRepository.Save(entity, tran)
+	savedId, err := p.productRepository.Save(entity, tran)
+	if err != nil {
+		return data_transfer_objects.ProductDto{}, nil, err
+	}
+
+	// 再読込
+	savedEntity, err := p.productRepository.GetById(savedId, tran)
 	if err != nil {
 		return data_transfer_objects.ProductDto{}, nil, err
 	}

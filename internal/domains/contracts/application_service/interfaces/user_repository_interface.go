@@ -6,9 +6,9 @@ import (
 )
 
 type IUserRepository interface {
-	SaveUserIndividual(userEntity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (*entities.UserIndividualEntity, error)
+	SaveUserIndividual(userEntity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (savedId int, err error)
 	GetUserIndividualById(id int, executor gorp.SqlExecutor) (*entities.UserIndividualEntity, error)
 
-	SaveUserCorporation(userEntity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error)
+	SaveUserCorporation(userEntity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (savedId int, err error)
 	GetUserCorporationById(id int, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error)
 }
