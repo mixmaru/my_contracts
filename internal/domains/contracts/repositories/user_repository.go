@@ -19,13 +19,13 @@ func NewUserRepository() *UserRepository {
 }
 
 // 個人顧客エンティティを保存する
-func (r *UserRepository) SaveUserIndividual(userEntity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (*entities.UserIndividualEntity, error) {
+func (r *UserRepository) SaveUserIndividual(userEntity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (savedId int, err error) {
 	// エンティティからリポジトリ用構造体に値をセットし直す
 	user := data_mappers.NewUserMapperFromUserIndividualEntity(userEntity)
 
-	err := executor.Insert(user)
+	err = executor.Insert(user)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return 0, errors.WithStack(err)
 	}
 
 	// individualを保存
@@ -34,11 +34,10 @@ func (r *UserRepository) SaveUserIndividual(userEntity *entities.UserIndividualE
 
 	err = executor.Insert(userIndividualDbMap)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return 0, errors.WithStack(err)
 	}
 
-	// dbから再読込してentityに詰め直す
-	return r.getUserIndividualEntityById(user.Id, userEntity, executor)
+	return user.Id, nil
 }
 
 // Idで個人顧客情報を取得する。データがなければnilを返す
@@ -68,14 +67,14 @@ func (r *UserRepository) getUserIndividualEntityById(id int, entity *entities.Us
 }
 
 // 法人顧客エンティティを保存する
-func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
+func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (savedId int, err error) {
 	// userRecord作成
 	userRecord := data_mappers.NewUserMapperFromUserCorporationEntity(userEntity)
 
 	// 保存
-	err := executor.Insert(userRecord)
+	err = executor.Insert(userRecord)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return 0, errors.WithStack(err)
 	}
 
 	// userCorporationRecord作成
@@ -85,11 +84,11 @@ func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporatio
 	// 保存
 	err = executor.Insert(userCorporationRecord)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return 0, errors.WithStack(err)
 	}
 
-	// 再読込する
-	return r.getUserCorporationEntityById(userRecord.Id, userEntity, executor)
+	return userRecord.Id, nil
+
 }
 
 // dbからid指定で法人顧客情報を取得する
