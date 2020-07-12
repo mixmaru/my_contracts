@@ -23,7 +23,7 @@ func TestUserRepository_Transaction(t *testing.T) {
 		//データ保存
 		user, err := entities.NewUserIndividualEntity("個人太郎")
 		assert.NoError(t, err)
-		repo := UserRepository{}
+		repo := NewUserRepository()
 		user, err = repo.SaveUserIndividual(user, tran)
 		assert.NoError(t, err)
 
@@ -44,7 +44,7 @@ func TestUserRepository_Transaction(t *testing.T) {
 		//データ保存
 		user, err := entities.NewUserIndividualEntity("個人太郎")
 		assert.NoError(t, err)
-		repo := UserRepository{}
+		repo := NewUserRepository()
 		user, err = repo.SaveUserIndividual(user, tran)
 		assert.NoError(t, err)
 
@@ -68,7 +68,7 @@ func TestUserRepository_SaveUserIndividual(t *testing.T) {
 	defer db.Db.Close()
 
 	// 実行
-	repo := UserRepository{}
+	repo := NewUserRepository()
 	user, err = repo.SaveUserIndividual(user, db)
 	assert.NoError(t, err)
 }
@@ -81,7 +81,7 @@ func TestUserRepository_GetUserIndividualById(t *testing.T) {
 	//　事前にデータ登録する
 	user, err := entities.NewUserIndividualEntity("個人太郎")
 	assert.NoError(t, err)
-	repo := &UserRepository{}
+	repo := NewUserRepository()
 	user, err = repo.SaveUserIndividual(user, db)
 	assert.NoError(t, err)
 
@@ -114,7 +114,7 @@ func TestUserRepository_GetUserCorporationById(t *testing.T) {
 	err = savingUser.SetPresidentName("社長　太郎")
 	assert.NoError(t, err)
 
-	repo := &UserRepository{}
+	repo := NewUserRepository()
 	savedUser, err := repo.SaveUserCorporation(savingUser, db)
 	assert.NoError(t, err)
 
@@ -147,7 +147,7 @@ func TestUserRepository_SaveUserCorporation(t *testing.T) {
 	user.SetPresidentName("社長次郎")
 
 	// 保存実行
-	repo := &UserRepository{}
+	repo := NewUserRepository()
 	user, err = repo.SaveUserCorporation(user, db)
 	assert.NoError(t, err)
 }
@@ -162,7 +162,7 @@ func TestUserRepository_getUserCorporationViewById(t *testing.T) {
 	user := entities.NewUserCorporationEntity()
 	user.SetContactPersonName("担当太郎")
 	user.SetPresidentName("社長次郎")
-	repo := &UserRepository{}
+	repo := NewUserRepository()
 	user, err = repo.SaveUserCorporation(user, dbMap)
 	assert.NoError(t, err)
 

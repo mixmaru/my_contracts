@@ -9,6 +9,13 @@ import (
 )
 
 type UserRepository struct {
+	*BaseRepository
+}
+
+func NewUserRepository() *UserRepository {
+	return &UserRepository{
+		&BaseRepository{},
+	}
 }
 
 // 個人顧客エンティティを保存する
@@ -43,7 +50,7 @@ func (r *UserRepository) GetUserIndividualById(id int, executor gorp.SqlExecutor
 // dbからid指定で個人顧客情報を取得する
 func (r *UserRepository) getUserIndividualEntityById(id int, entity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (*entities.UserIndividualEntity, error) {
 	userIndividualView := data_mappers.UserIndividualView{}
-	noRow, err := selectOne(
+	noRow, err := r.selectOne(
 		executor,
 		&userIndividualView,
 		entity,
@@ -93,7 +100,7 @@ func (r *UserRepository) getUserCorporationEntityById(id int, entity *entities.U
 		"FROM users u " +
 		"inner join users_corporation uc on u.id = uc.user_id " +
 		"WHERE id = $1"
-	noRow, err := selectOne(executor, &record, entity, query, id)
+	noRow, err := r.selectOne(executor, &record, entity, query, id)
 	if err != nil {
 		return nil, err
 	}

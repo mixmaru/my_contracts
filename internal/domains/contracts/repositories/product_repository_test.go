@@ -16,7 +16,7 @@ func TestProductRepository_Save(t *testing.T) {
 	_, err = db.Exec("truncate table products cascade")
 	assert.NoError(t, err)
 
-	r := ProductRepository{}
+	r := NewProductRepository()
 	productEntity, err := entities.NewProductEntity("商品名", "1000")
 	assert.NoError(t, err)
 	_, err = r.Save(productEntity, db)
@@ -37,7 +37,7 @@ func TestProductRepository_GetById(t *testing.T) {
 	_, err = db.Exec("truncate table products cascade")
 	assert.NoError(t, err)
 
-	r := ProductRepository{}
+	r := NewProductRepository()
 
 	t.Run("データがある時", func(t *testing.T) {
 		// データ登録
@@ -74,7 +74,7 @@ func TestProductRepository_GetByName(t *testing.T) {
 	_, err = db.Exec("truncate table products cascade")
 	assert.NoError(t, err)
 
-	r := ProductRepository{}
+	r := NewProductRepository()
 
 	t.Run("データがある時", func(t *testing.T) {
 		// データ登録

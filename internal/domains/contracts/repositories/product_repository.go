@@ -8,6 +8,13 @@ import (
 )
 
 type ProductRepository struct {
+	*BaseRepository
+}
+
+func NewProductRepository() *ProductRepository {
+	return &ProductRepository{
+		&BaseRepository{},
+	}
 }
 
 // 商品エンティティを新規保存する
@@ -48,7 +55,7 @@ func (r *ProductRepository) GetById(id int, executor gorp.SqlExecutor) (*entitie
 	// データ取得
 	var productRecord data_mappers.ProductMapper
 	var productEntity entities.ProductEntity
-	noRow, err := selectOne(executor, &productRecord, &productEntity, "select * from products where id = $1", id)
+	noRow, err := r.selectOne(executor, &productRecord, &productEntity, "select * from products where id = $1", id)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +69,7 @@ func (r *ProductRepository) GetByName(name string, executor gorp.SqlExecutor) (*
 	// データ取得
 	var productRecord data_mappers.ProductMapper
 	var productEntity entities.ProductEntity
-	noRow, err := selectOne(executor, &productRecord, &productEntity, "select * from products where name = $1", name)
+	noRow, err := r.selectOne(executor, &productRecord, &productEntity, "select * from products where name = $1", name)
 	if err != nil {
 		return nil, err
 	}

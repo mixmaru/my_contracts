@@ -16,7 +16,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	_, err = db.Exec("truncate table products cascade")
 	assert.NoError(t, err)
 
-	r := ProductRepository{}
+	r := NewProductRepository()
 
 	// 既存データ登録
 	savedProductEntity, err := entities.NewProductEntity("商品名", "1000")
@@ -24,11 +24,13 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	_, err = r.Save(savedProductEntity, db)
 	assert.NoError(t, err)
 
+	baseRepository := &BaseRepository{}
+
 	t.Run("データがある時", func(t *testing.T) {
 		// データ取得
 		productRecord := data_mappers.ProductMapper{}
 		productEntity := entities.ProductEntity{}
-		noRow, err := selectOne(db, &productRecord, &productEntity, "select * from products where id =$1", savedProductEntity.Id())
+		noRow, err := baseRepository.selectOne(db, &productRecord, &productEntity, "select * from products where id =$1", savedProductEntity.Id())
 		assert.NoError(t, err)
 		assert.False(t, noRow)
 
@@ -42,7 +44,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	t.Run("データがない時", func(t *testing.T) {
 		productRecord := data_mappers.ProductMapper{}
 		productEntity := entities.ProductEntity{}
-		noRow, err := selectOne(db, &productRecord, &productEntity, "select * from products where id =$1", -1000)
+		noRow, err := baseRepository.selectOne(db, &productRecord, &productEntity, "select * from products where id =$1", -1000)
 		assert.NoError(t, err)
 		assert.True(t, noRow)
 	})
@@ -50,7 +52,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 	t.Run("渡すrecordとentityがアベコベだったとき", func(t *testing.T) {
 		productRecord := data_mappers.ProductMapper{}
 		userCorporationEntity := entities.UserCorporationEntity{}
-		noRow, err := selectOne(db, &productRecord, &userCorporationEntity, "select * from products where id =$1", savedProductEntity.Id())
+		noRow, err := baseRepository.selectOne(db, &productRecord, &userCorporationEntity, "select * from products where id =$1", savedProductEntity.Id())
 		assert.Error(t, err, "aaa")
 		assert.True(t, noRow)
 	})

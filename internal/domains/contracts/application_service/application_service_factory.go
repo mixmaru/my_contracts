@@ -7,7 +7,7 @@ import (
 
 // UserApplicationService
 func NewUserApplicationService() *UserApplicationService {
-	return &UserApplicationService{userRepository: &repositories.UserRepository{}}
+	return &UserApplicationService{userRepository: repositories.NewUserRepository()}
 }
 
 func NewUserApplicationServiceWithMock(userRepository interfaces.IUserRepository) *UserApplicationService {
@@ -16,7 +16,7 @@ func NewUserApplicationServiceWithMock(userRepository interfaces.IUserRepository
 
 // ProductApplicationService
 func NewProductApplicationService() *ProductApplicationService {
-	return &ProductApplicationService{productRepository: &repositories.ProductRepository{}}
+	return &ProductApplicationService{productRepository: repositories.NewProductRepository()}
 }
 
 func NewProductApplicationServiceWithMock(prodcutRepository interfaces.IProductRepository) *ProductApplicationService {
