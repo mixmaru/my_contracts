@@ -32,6 +32,12 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 			SaveUserIndividual(
 				saveUserEntity,
 				gomock.AssignableToTypeOf(&gorp.Transaction{}),
+			).Return(1, nil).
+			Times(1)
+		userRepositoryMock.EXPECT().
+			GetUserIndividualById(
+				1,
+				gomock.AssignableToTypeOf(&gorp.Transaction{}),
 			).Return(returnUserEntity, nil).
 			Times(1)
 
@@ -149,6 +155,12 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		userRepositoryMock.EXPECT().
 			SaveUserCorporation(
 				saveUserEntity,
+				gomock.AssignableToTypeOf(&gorp.Transaction{}),
+			).Return(1, nil).
+			Times(1)
+		userRepositoryMock.EXPECT().
+			GetUserCorporationById(
+				1,
 				gomock.AssignableToTypeOf(&gorp.Transaction{}),
 			).Return(returnUserEntity, nil).
 			Times(1)
