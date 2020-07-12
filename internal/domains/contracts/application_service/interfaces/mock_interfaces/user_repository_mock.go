@@ -35,10 +35,10 @@ func (m *MockIUserRepository) EXPECT() *MockIUserRepositoryMockRecorder {
 }
 
 // SaveUserIndividual mocks base method.
-func (m *MockIUserRepository) SaveUserIndividual(userEntity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (*entities.UserIndividualEntity, error) {
+func (m *MockIUserRepository) SaveUserIndividual(userEntity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveUserIndividual", userEntity, executor)
-	ret0, _ := ret[0].(*entities.UserIndividualEntity)
+	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,10 +65,10 @@ func (mr *MockIUserRepositoryMockRecorder) GetUserIndividualById(id, executor in
 }
 
 // SaveUserCorporation mocks base method.
-func (m *MockIUserRepository) SaveUserCorporation(userEntity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
+func (m *MockIUserRepository) SaveUserCorporation(userEntity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveUserCorporation", userEntity, executor)
-	ret0, _ := ret[0].(*entities.UserCorporationEntity)
+	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
