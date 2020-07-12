@@ -10,11 +10,11 @@ type ContractEntity struct {
 	productId int
 }
 
-func NewContractEntity(userId int, productId int) (*ContractEntity, error) {
+func NewContractEntity(userId int, productId int) *ContractEntity {
 	return &ContractEntity{
 		userId:    userId,
 		productId: productId,
-	}, nil
+	}
 }
 
 //func NewProductEntityWithData(id int, name string, price string, createdAt, updatedAt time.Time) (*ProductEntity, error) {

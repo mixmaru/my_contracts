@@ -9,8 +9,7 @@ import (
 // UserIndividualのインスタンス化をテスト
 func TestContractEntity_NewContractEntity(t *testing.T) {
 	// インスタンス化
-	entity, err := NewContractEntity(1, 2)
-	assert.NoError(t, err)
+	entity := NewContractEntity(1, 2)
 
 	// テスト
 	assert.Equal(t, 1, entity.UserId())

@@ -19,10 +19,10 @@ func (c *ContractMapper) SetDataToEntity(entity interface{}) error {
 	}
 	err := value.LoadData(
 		c.Id,
-		p.Name,
-		p.Price.String(),
-		p.CreatedAt,
-		p.UpdatedAt,
+		c.UserId,
+		c.ProductId,
+		c.CreatedAt,
+		c.UpdatedAt,
 	)
 	if err != nil {
 		return err
