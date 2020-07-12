@@ -32,12 +32,11 @@ func TestContractEntity_NewContractEntity(t *testing.T) {
 //}
 
 func TestContractEntity_LoadData(t *testing.T) {
-	contractEntity, err := NewContractEntity(100, 200)
-	assert.NoError(t, err)
+	contractEntity := NewContractEntity(100, 200)
 
 	createdAt := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 	updateAt := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
-	err = contractEntity.LoadData(
+	err := contractEntity.LoadData(
 		1,
 		2,
 		3,

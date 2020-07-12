@@ -2,7 +2,6 @@ package data_mappers
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
-	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
