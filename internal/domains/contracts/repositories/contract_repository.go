@@ -35,21 +35,20 @@ func (r *ContractRepository) Create(contractEntity *entities.ContractEntity, exe
 	return contractMapper.Id, nil
 }
 
-//
-//func (r *ProductRepository) GetById(id int, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
-//	// データ取得
-//	var productRecord data_mappers.ProductMapper
-//	var productEntity entities.ProductEntity
-//	noRow, err := r.selectOne(executor, &productRecord, &productEntity, "select * from products where id = $1", id)
-//	if err != nil {
-//		return nil, err
-//	}
-//	if noRow {
-//		return nil, nil
-//	}
-//	return &productEntity, nil
-//}
-//
+func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (*entities.ContractEntity, error) {
+	// データ取得
+	var mapper data_mappers.ContractMapper
+	var entity entities.ContractEntity
+	noRow, err := r.selectOne(executor, &mapper, &entity, "select * from contracts where id = $1", id)
+	if err != nil {
+		return nil, err
+	}
+	if noRow {
+		return nil, nil
+	}
+	return &entity, nil
+}
+
 //func (r *ProductRepository) GetByName(name string, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
 //	// データ取得
 //	var productRecord data_mappers.ProductMapper
