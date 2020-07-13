@@ -17,14 +17,14 @@ func NewContractEntity(userId int, productId int) *ContractEntity {
 	}
 }
 
-//func NewProductEntityWithData(id int, name string, price string, createdAt, updatedAt time.Time) (*ProductEntity, error) {
-//	productEntity := ProductEntity{}
-//	err := productEntity.LoadData(id, name, price, createdAt, updatedAt)
-//	if err != nil {
-//		return nil, err
-//	}
-//	return &productEntity, nil
-//}
+func NewContractEntityWithData(id int, userId int, productId int, createdAt, updatedAt time.Time) (*ContractEntity, error) {
+	entity := ContractEntity{}
+	err := entity.LoadData(id, userId, productId, createdAt, updatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &entity, nil
+}
 
 func (c *ContractEntity) UserId() int {
 	return c.userId
