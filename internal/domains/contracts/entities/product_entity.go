@@ -52,6 +52,9 @@ func (p *ProductEntity) LoadData(id int, name string, price string, createdAt ti
 		return err
 	}
 	priceValue, err := values.NewProductPriceValue(price)
+	if err != nil {
+		return err
+	}
 
 	p.id = id
 	p.name = nameValue

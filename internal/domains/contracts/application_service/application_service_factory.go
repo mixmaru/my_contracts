@@ -22,3 +22,12 @@ func NewProductApplicationService() *ProductApplicationService {
 func NewProductApplicationServiceWithMock(prodcutRepository interfaces.IProductRepository) *ProductApplicationService {
 	return &ProductApplicationService{productRepository: prodcutRepository}
 }
+
+// ContractApplicationService
+func NewContractApplicationService() *ContractApplicationService {
+	return &ContractApplicationService{ContractRepository: repositories.NewContractRepository()}
+}
+
+func NewContractApplicationServiceWithMock(contractRepository interfaces.IContractRepository) *ContractApplicationService {
+	return &ContractApplicationService{ContractRepository: contractRepository}
+}

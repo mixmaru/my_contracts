@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/stretchr/testify/assert"
@@ -474,4 +475,126 @@ func TestMain_getProduct(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, rec.Code)
 		assert.Equal(t, expect, jsonValues)
 	})
+}
+func TestMain_saveContract(t *testing.T) {
+	conn, err := db_connection.GetConnection()
+	assert.NoError(t, err)
+	defer conn.Db.Close()
+
+	// 同盟商品は登録できないので予め契約とともに削除
+	_, err = conn.Exec(
+		"delete from contracts " +
+			"using products " +
+			"where products.id = contracts.product_id " +
+			"and products.name = 'ab商品' ")
+	assert.NoError(t, err)
+	_, err = conn.Exec("delete from products where name = 'ab商品'")
+	assert.NoError(t, err)
+
+	// 商品登録
+	productApp := application_service.NewProductApplicationService()
+	productDto, validErrs, err := productApp.Register("ab商品", "200")
+	assert.NoError(t, err)
+	assert.Len(t, validErrs, 0)
+	// ユーザー登録
+	userApp := application_service.NewUserApplicationService()
+	userDto, validErrs, err := userApp.RegisterUserIndividual("太郎くん")
+	assert.NoError(t, err)
+	assert.Len(t, validErrs, 0)
+
+	t.Run("正常系", func(t *testing.T) {
+		router := newRouter()
+
+		//////// データ登録テスト
+
+		// リクエストパラメータ作成
+		body := url.Values{}
+		body.Set("user_id", strconv.Itoa(userDto.Id))
+		body.Set("product_id", strconv.Itoa(productDto.Id))
+
+		// リクエスト実行
+		req := httptest.NewRequest("POST", "/contracts/", strings.NewReader(body.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		assert.Equal(t, http.StatusCreated, rec.Code)
+
+		// jsonパース
+		var registeredContract data_transfer_objects.ContractDto
+		err := json.Unmarshal(rec.Body.Bytes(), &registeredContract)
+		assert.NoError(t, err)
+
+		assert.Equal(t, userDto.Id, registeredContract.UserId)
+		assert.Equal(t, productDto.Id, registeredContract.ProductId)
+		assert.NotZero(t, registeredContract.Id)
+		assert.NotZero(t, registeredContract.CreatedAt)
+		assert.NotZero(t, registeredContract.UpdatedAt)
+	})
+
+	//t.Run("バリデーションエラー", func(t *testing.T) {
+	//	router := newRouter()
+	//	// リクエストパラメータ作成
+	//
+	//	t.Run("空文字", func(t *testing.T) {
+	//		body := url.Values{}
+	//		body.Set("contact_person_name", "")
+	//		body.Set("president_name", "")
+	//
+	//		// リクエスト実行
+	//		req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
+	//		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+	//		rec := httptest.NewRecorder()
+	//		router.ServeHTTP(rec, req)
+	//
+	//		// 検証
+	//		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	//
+	//		// jsonパース
+	//		var validMessages map[string][]string
+	//		err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+	//		assert.NoError(t, err)
+	//
+	//		expected := map[string][]string{
+	//			"name": []string{
+	//				"空です",
+	//			},
+	//			"price": []string{
+	//				"空です",
+	//			},
+	//		}
+	//		assert.Equal(t, expected, validMessages)
+	//	})
+	//
+	//	t.Run("文字多すぎ　priceがマイナス値", func(t *testing.T) {
+	//		body := url.Values{}
+	//		body.Set("name", "000000000011111111112222222222333333333344444444445")
+	//		body.Set("price", "-1000")
+	//
+	//		// リクエスト実行
+	//		req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
+	//		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+	//		rec := httptest.NewRecorder()
+	//		router.ServeHTTP(rec, req)
+	//
+	//		// 検証
+	//		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	//
+	//		// jsonパース
+	//		var validMessages map[string][]string
+	//		err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+	//		assert.NoError(t, err)
+	//
+	//		expected := map[string][]string{
+	//			"name": []string{
+	//				"50文字より多いです",
+	//			},
+	//			"price": []string{
+	//				"マイナス値です",
+	//			},
+	//		}
+	//		assert.Equal(t, expected, validMessages)
+	//	})
+	//})
 }

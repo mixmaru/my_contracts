@@ -43,3 +43,22 @@ func TestApplicationServiceFactory_NewProductApplicationServiceWithMock(t *testi
 	assert.IsType(t, &ProductApplicationService{}, productApp)
 
 }
+
+////// ContractApplicationService
+func TestApplicationServiceFactory_NewContractApplicationService(t *testing.T) {
+	// インスタンス化テスト
+	app := NewContractApplicationService()
+	assert.IsType(t, &ContractApplicationService{}, app)
+}
+
+func TestApplicationServiceFactory_NewContractApplicationServiceWithMock(t *testing.T) {
+	// mock作成
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	repositoryMock := mock_interfaces.NewMockIContractRepository(ctrl)
+
+	// インスタンス化テスト
+	app := NewContractApplicationServiceWithMock(repositoryMock)
+	assert.IsType(t, &ContractApplicationService{}, app)
+
+}
