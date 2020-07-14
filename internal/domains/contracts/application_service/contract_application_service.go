@@ -12,7 +12,7 @@ type ContractApplicationService struct {
 	ContractRepository interfaces.IContractRepository
 }
 
-func (c *ContractApplicationService) Register(userId int, produtId int) (productDto data_transfer_objects.ContractDto, validationErrors map[string][]string, err error) {
+func (c *ContractApplicationService) Register(userId int, productId int) (productDto data_transfer_objects.ContractDto, validationErrors map[string][]string, err error) {
 	// トランザクション開始
 	conn, err := db_connection.GetConnection()
 	if err != nil {
@@ -34,7 +34,7 @@ func (c *ContractApplicationService) Register(userId int, produtId int) (product
 	//}
 
 	// entityを作成
-	entity := entities.NewContractEntity(userId, produtId)
+	entity := entities.NewContractEntity(userId, productId)
 
 	// リポジトリで保存
 	savedId, err := c.ContractRepository.Create(entity, tran)

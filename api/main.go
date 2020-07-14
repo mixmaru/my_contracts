@@ -37,6 +37,8 @@ func newRouter() *echo.Echo {
 	e.POST("/products/", saveProduct)
 	// 商品情報取得
 	e.GET("/products/:id", getProduct)
+	// 契約登録
+	e.POST("/contracts/", saveContract)
 
 	return e
 }
@@ -227,4 +229,41 @@ func getProduct(c echo.Context) error {
 
 	// 返却
 	return c.JSON(http.StatusOK, product)
+}
+
+// 契約新規登録
+// params:
+// user_id string
+// product_id string
+// curl -F "user_id=1" -F "product_id=2" http://localhost:1323/contracts
+func saveContract(c echo.Context) error {
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	// Get name and email
+	userId, err := strconv.Atoi(c.FormValue("user_id"))
+	if err != nil {
+		// user_idに変な値が渡された
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+	}
+	productId, err := strconv.Atoi(c.FormValue("product_id"))
+	if err != nil {
+		// product_idに変な値が渡された
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+	}
+
+	app := application_service.NewContractApplicationService()
+	contract, validErrs, err := app.Register(userId, productId)
+	if err != nil {
+		logger.Sugar().Errorw("契約データ登録に失敗。", "userId", userId, "productId", productId, "err", err)
+		c.Error(err)
+		return err
+	}
+	if len(validErrs) > 0 {
+		return c.JSON(http.StatusBadRequest, validErrs)
+	}
+
+	return c.JSON(http.StatusCreated, contract)
 }
