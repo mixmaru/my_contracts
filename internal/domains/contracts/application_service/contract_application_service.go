@@ -121,27 +121,36 @@ func (c *ContractApplicationService) Register(userId int, productId int) (produc
 //	return validationErrors, nil
 //
 //}
-//
-//func (p *ProductApplicationService) Get(id int) (data_transfer_objects.ProductDto, error) {
-//	conn, err := db_connection.GetConnection()
-//	if err != nil {
-//		return data_transfer_objects.ProductDto{}, err
-//	}
-//	defer conn.Db.Close()
-//
-//	// リポジトリつかってデータ取得
-//	entity, err := p.productRepository.GetById(id, conn)
-//	if err != nil {
-//		return data_transfer_objects.ProductDto{}, err
-//	}
-//	if entity == nil {
-//		// データがない
-//		return data_transfer_objects.ProductDto{}, nil
-//	}
-//
-//	// dtoにつめる
-//	dto := data_transfer_objects.NewProductDtoFromEntity(entity)
-//
-//	// 返却
-//	return dto, nil
-//}
+
+func (c *ContractApplicationService) GetById(id int) (contractDto data_transfer_objects.ContractDto, productDto data_transfer_objects.ProductDto, userDto interface{}, err error) {
+	conn, err := db_connection.GetConnection()
+	if err != nil {
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, err
+	}
+	defer conn.Db.Close()
+
+	// リポジトリつかってデータ取得
+	contractEntity, productEntity, userEntity, err := c.ContractRepository.GetById(id, conn)
+	if err != nil {
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, err
+	}
+	if contractEntity == nil {
+		// データがない
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, nil
+	}
+
+	// dtoにつめる
+	contractDto = data_transfer_objects.NewContractDtoFromEntity(contractEntity)
+	productDto = data_transfer_objects.NewProductDtoFromEntity(productEntity)
+	switch userEntity.(type) {
+	case *entities.UserIndividualEntity:
+		userDto = data_transfer_objects.NewUserIndividualDtoFromEntity(userEntity.(*entities.UserIndividualEntity))
+	case *entities.UserCorporationEntity:
+		userDto = data_transfer_objects.NewUserCorporationDtoFromEntity(userEntity.(*entities.UserCorporationEntity))
+	default:
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, errors.Errorf("意図しないUser型が来た。userEntity: %t", userEntity)
+	}
+
+	// 返却
+	return contractDto, productDto, userDto, nil
+}
