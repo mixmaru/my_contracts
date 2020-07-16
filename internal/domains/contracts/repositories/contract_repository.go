@@ -106,17 +106,3 @@ where c.id = $1`
 
 	return contract, product, user, nil
 }
-
-//func (r *ProductRepository) GetByName(name string, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
-//	// データ取得
-//	var productRecord data_mappers.ProductMapper
-//	var productEntity entities.ProductEntity
-//	noRow, err := r.selectOne(executor, &productRecord, &productEntity, "select * from products where name = $1", name)
-//	if err != nil {
-//		return nil, err
-//	}
-//	if noRow {
-//		return nil, nil
-//	}
-//	return &productEntity, nil
-//}
