@@ -43,7 +43,7 @@ func (c *ContractApplicationService) Register(userId int, productId int) (produc
 	}
 
 	// 再読込
-	savedEntity, err := c.ContractRepository.GetById(savedId, tran)
+	savedEntity, _, _, err := c.ContractRepository.GetById(savedId, tran)
 	if err != nil {
 		return data_transfer_objects.ContractDto{}, nil, err
 	}

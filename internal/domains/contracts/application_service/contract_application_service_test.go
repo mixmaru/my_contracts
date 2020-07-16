@@ -11,7 +11,7 @@ import (
 )
 
 func TestContractApplicationService_Register(t *testing.T) {
-	returnProductEntity, err := entities.NewContractEntityWithData(
+	returnContractEntity, err := entities.NewContractEntityWithData(
 		100,
 		2,
 		3,
@@ -19,6 +19,23 @@ func TestContractApplicationService_Register(t *testing.T) {
 		time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 	)
 	assert.NoError(t, err)
+
+	returnProductEntity, err := entities.NewProductEntityWithData(
+		3,
+		"商品A",
+		"2000",
+		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
+	)
+	assert.NoError(t, err)
+
+	returnUserEntity, err := entities.NewUserCorporationEntityWithData(
+		2,
+		"担当太郎",
+		"社長次郎",
+		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
+	)
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -33,7 +50,7 @@ func TestContractApplicationService_Register(t *testing.T) {
 		GetById(
 			100,
 			gomock.AssignableToTypeOf(&gorp.Transaction{}),
-		).Return(returnProductEntity, nil).
+		).Return(returnContractEntity, returnProductEntity, returnUserEntity, nil).
 		Times(1)
 
 	app := NewContractApplicationServiceWithMock(contractRepositoryMock)
