@@ -128,23 +128,25 @@ func TestContractApplicationService_GetById(t *testing.T) {
 		assert.True(t, userDto.UpdatedAt.Equal(time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)))
 	})
 
-	//t.Run("データがない時", func(t *testing.T) {
-	//	ctrl := gomock.NewController(t)
-	//	defer ctrl.Finish()
-	//	productRepositoryMock := mock_interfaces.NewMockIProductRepository(ctrl)
-	//	productRepositoryMock.EXPECT().
-	//		GetById(
-	//			100,
-	//			gomock.Any(),
-	//		).Return(nil, nil).
-	//		Times(1)
-	//
-	//	productApp := NewProductApplicationServiceWithMock(productRepositoryMock)
-	//	dto, err := productApp.Get(100)
-	//	assert.NoError(t, err)
-	//
-	//	assert.Zero(t, dto)
-	//})
+	t.Run("データがない時", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		repositoryMock := mock_interfaces.NewMockIContractRepository(ctrl)
+		repositoryMock.EXPECT().
+			GetById(
+				100,
+				gomock.Any(),
+			).Return(nil, nil, nil, nil).
+			Times(1)
+
+		contractApp := NewContractApplicationServiceWithMock(repositoryMock)
+		contract, product, user, err := contractApp.GetById(100)
+		assert.NoError(t, err)
+
+		assert.Zero(t, contract)
+		assert.Zero(t, product)
+		assert.Nil(t, user)
+	})
 }
 
 //func TestContractApplicationService_registerValidation(t *testing.T) {
