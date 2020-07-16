@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"database/sql"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/data_mappers"
 	"github.com/pkg/errors"
@@ -71,7 +72,11 @@ where c.id = $1`
 	// sqlとデータマッパーでクエリ実行
 	err = executor.SelectOne(&mapper, query, id)
 	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "契約情報取得失敗。id: %v", id)
+		if err == sql.ErrNoRows {
+			return nil, nil, nil, nil
+		} else {
+			return nil, nil, nil, errors.Wrapf(err, "契約情報取得失敗。id: %v", id)
+		}
 	}
 	// productエンティティにデータを詰める
 	product, err = entities.NewProductEntityWithData(mapper.ProductId, mapper.ProductName, mapper.ProductPrice.String(), mapper.ProductCreatedAt, mapper.ProductUpdatedAt)

@@ -124,13 +124,15 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.NotZero(t, user.UpdatedAt())
 	})
 
-	//t.Run("データがない時", func(t *testing.T) {
-	//	r := NewContractRepository()
-	//	// データ取得
-	//	loadedEntity, err := r.GetById(-100, db)
-	//	assert.NoError(t, err)
-	//	assert.Nil(t, loadedEntity)
-	//})
+	t.Run("データがない時", func(t *testing.T) {
+		r := NewContractRepository()
+		// データ取得
+		loadedContract, loadedProduct, loadedUser, err := r.GetById(-100, db)
+		assert.NoError(t, err)
+		assert.Nil(t, loadedContract)
+		assert.Nil(t, loadedProduct)
+		assert.Nil(t, loadedUser)
+	})
 }
 
 //func TestContractRepository_GetByName(t *testing.T) {
