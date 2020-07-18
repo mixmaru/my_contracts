@@ -598,3 +598,103 @@ func TestMain_saveContract(t *testing.T) {
 	//	})
 	//})
 }
+func TestMain_getContract(t *testing.T) {
+	// 重複商品名は登録できないので予め削除
+	conn, err := db_connection.GetConnection()
+	assert.NoError(t, err)
+	defer conn.Db.Close()
+
+	// 同盟商品は登録できないので予め契約とともに削除
+	_, err = conn.Exec(
+		"delete from contracts " +
+			"using products " +
+			"where products.id = contracts.product_id " +
+			"and products.name = '契約取得用商品'")
+	assert.NoError(t, err)
+	_, err = conn.Exec("delete from products where name = '契約取得用商品'")
+	assert.NoError(t, err)
+
+	// 検証用データ(商品)登録
+	productAppService := application_service.NewProductApplicationService()
+	product, validErrs, err := productAppService.Register("契約取得用商品", "100")
+	assert.NoError(t, err)
+	assert.Len(t, validErrs, 0)
+
+	// 検証用データ(user)登録
+	userAppService := application_service.NewUserApplicationService()
+	user, validErrs, err := userAppService.RegisterUserCorporation("契約取得用顧客担当", "契約取得用社長")
+	assert.NoError(t, err)
+	assert.Len(t, validErrs, 0)
+
+	// 検証用データ(契約)登録
+	contractAppService := application_service.NewContractApplicationService()
+	contract, validErrs, err := contractAppService.Register(user.Id, product.Id)
+	assert.NoError(t, err)
+	assert.Len(t, validErrs, 0)
+
+	t.Run("正常系", func(t *testing.T) {
+		router := newRouter()
+		req := httptest.NewRequest("GET", fmt.Sprintf("/contracts/%v", contract.Id), nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+
+		// 保存したデータを取得
+		var gotContractData contractDataForUserCorporation
+		err = json.Unmarshal(rec.Body.Bytes(), &gotContractData)
+		assert.NoError(t, err)
+
+		assert.NotZero(t, gotContractData.Id)
+		assert.NotZero(t, gotContractData.CreatedAt)
+		assert.NotZero(t, gotContractData.UpdatedAt)
+
+		assert.Equal(t, user.Id, gotContractData.User.Id)
+		assert.Equal(t, "契約取得用顧客担当", gotContractData.User.ContactPersonName)
+		assert.Equal(t, "契約取得用社長", gotContractData.User.PresidentName)
+		assert.NotZero(t, gotContractData.User.CreatedAt)
+		assert.NotZero(t, gotContractData.User.UpdatedAt)
+
+		assert.Equal(t, product.Id, gotContractData.Product.Id)
+		assert.Equal(t, "契約取得用商品", gotContractData.Product.Name)
+		assert.Equal(t, "100", gotContractData.Product.Price)
+		assert.NotZero(t, gotContractData.Product.CreatedAt)
+		assert.NotZero(t, gotContractData.Product.UpdatedAt)
+	})
+
+	//t.Run("指定IDの商品が存在しなかった時", func(t *testing.T) {
+	//	router := newRouter()
+	//	req := httptest.NewRequest("GET", "/products/0", nil)
+	//	rec := httptest.NewRecorder()
+	//	router.ServeHTTP(rec, req)
+	//
+	//	// 検証
+	//	var jsonValues map[string]string
+	//	err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+	//	assert.NoError(t, err)
+	//
+	//	expect := map[string]string{
+	//		"message": "Not Found",
+	//	}
+	//	assert.Equal(t, http.StatusNotFound, rec.Code)
+	//	assert.Equal(t, expect, jsonValues)
+	//})
+	//
+	//t.Run("IDに変な値を入れられた時", func(t *testing.T) {
+	//	router := newRouter()
+	//	req := httptest.NewRequest("GET", "/products/aa99fdsa", nil)
+	//	rec := httptest.NewRecorder()
+	//	router.ServeHTTP(rec, req)
+	//
+	//	// 検証
+	//	var jsonValues map[string]string
+	//	err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+	//	assert.NoError(t, err)
+	//
+	//	expect := map[string]string{
+	//		"message": "Not Found",
+	//	}
+	//	assert.Equal(t, http.StatusNotFound, rec.Code)
+	//	assert.Equal(t, expect, jsonValues)
+	//})
+}

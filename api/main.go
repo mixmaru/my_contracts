@@ -4,9 +4,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/utils/my_logger"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func main() {
@@ -39,6 +41,8 @@ func newRouter() *echo.Echo {
 	e.GET("/products/:id", getProduct)
 	// 契約登録
 	e.POST("/contracts/", saveContract)
+	// 契約情報取得
+	e.GET("/contracts/:id", getContract)
 
 	return e
 }
@@ -266,4 +270,75 @@ func saveContract(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, contract)
+}
+
+// 商品情報取得
+// curl http://localhost:1323/contracts/1
+func getContract(c echo.Context) error {
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	contractId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		// idに変な値が渡された
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+	}
+
+	// サービスインスタンス化
+	//productAppService := application_service.NewProductApplicationService()
+	contractAppService := application_service.NewContractApplicationService()
+	// データ取得
+	contract, product, user, err := contractAppService.GetById(contractId)
+	if err != nil {
+		logger.Sugar().Errorw("商品データ取得に失敗。", "contractId", contractId, "err", err)
+		c.Error(err)
+		return err
+	}
+
+	// データがない
+	if contract.Id == 0 {
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+	}
+
+	// 返却データを用意
+	switch user.(type) {
+	case data_transfer_objects.UserIndividualDto:
+		retContract := contractDataForUserIndividual{}
+		retContract.Id = contract.Id
+		retContract.CreatedAt = contract.CreatedAt
+		retContract.UpdatedAt = contract.UpdatedAt
+		retContract.User = user.(data_transfer_objects.UserIndividualDto)
+		retContract.Product = product
+		return c.JSON(http.StatusOK, retContract)
+	case data_transfer_objects.UserCorporationDto:
+		retContract := contractDataForUserCorporation{}
+		retContract.Id = contract.Id
+		retContract.CreatedAt = contract.CreatedAt
+		retContract.UpdatedAt = contract.UpdatedAt
+		retContract.User = user.(data_transfer_objects.UserCorporationDto)
+		retContract.Product = product
+		return c.JSON(http.StatusOK, retContract)
+	default:
+		logger.Sugar().Errorw("商品データ取得に失敗。userDtoが想定の型ではない。", "user", user, "err", err)
+		c.Error(err)
+		return err
+	}
+}
+
+type contractDataForUserCorporation struct {
+	Id        int
+	User      data_transfer_objects.UserCorporationDto
+	Product   data_transfer_objects.ProductDto
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type contractDataForUserIndividual struct {
+	Id        int
+	User      data_transfer_objects.UserIndividualDto
+	Product   data_transfer_objects.ProductDto
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
