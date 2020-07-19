@@ -4,6 +4,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
@@ -106,18 +107,23 @@ func TestProductApplicationService_Get(t *testing.T) {
 }
 
 func TestProductApplicationService_registerValidation(t *testing.T) {
-	// productデータをすべて削除
 	conn, err := db_connection.GetConnection()
 	assert.NoError(t, err)
-	defer conn.Db.Close()
-	_, err = conn.Exec("truncate products cascade")
+	tran, err := conn.Begin()
 	assert.NoError(t, err)
 
-	// 既存データの作成
-	app := NewProductApplicationService()
-	_, validationErrors, err := app.Register("既存商品", "1000")
+	// 既存商品データがなければ登録しておく
+	productRep := repositories.NewProductRepository()
+	product, err := productRep.GetByName("既存商品", tran)
 	assert.NoError(t, err)
-	assert.Zero(t, validationErrors)
+	if product == nil {
+		product, err = entities.NewProductEntity("既存商品", "2000")
+		assert.NoError(t, err)
+		_, err = productRep.Save(product, tran)
+		assert.NoError(t, err)
+	}
+	err = tran.Commit()
+	assert.NoError(t, err)
 
 	productAppService := NewProductApplicationService()
 
