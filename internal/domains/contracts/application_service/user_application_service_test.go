@@ -139,11 +139,6 @@ func TestUserApplicationService_GetUserIndividual(t *testing.T) {
 
 func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
-		// リポジトリのSaveUserCorporation()が受け取る引数を用意
-		saveUserEntity := entities.NewUserCorporationEntity()
-		saveUserEntity.SetPresidentName("社長太郎")
-		saveUserEntity.SetContactPersonName("担当太郎")
-
 		now := time.Now()
 		returnUserEntity, err := entities.NewUserCorporationEntityWithData(1, "担当太郎", "社長太郎", now, now)
 		assert.NoError(t, err)
@@ -154,7 +149,7 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		userRepositoryMock := mock_interfaces.NewMockIUserRepository(ctrl)
 		userRepositoryMock.EXPECT().
 			SaveUserCorporation(
-				saveUserEntity,
+				gomock.Any(),
 				gomock.AssignableToTypeOf(&gorp.Transaction{}),
 			).Return(1, nil).
 			Times(1)

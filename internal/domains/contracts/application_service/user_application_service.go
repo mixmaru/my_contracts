@@ -146,12 +146,7 @@ func (s *UserApplicationService) RegisterUserCorporation(contactPersonName strin
 	}
 
 	// リポジトリ登録用にデータ作成
-	entity := entities.NewUserCorporationEntity()
-	err = entity.SetContactPersonName(contactPersonName)
-	if err != nil {
-		return data_transfer_objects.UserCorporationDto{}, validationErrors, err
-	}
-	err = entity.SetPresidentName(presidentName)
+	entity, err := entities.NewUserCorporationEntity(contactPersonName, presidentName)
 	if err != nil {
 		return data_transfer_objects.UserCorporationDto{}, validationErrors, err
 	}
