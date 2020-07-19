@@ -2,14 +2,18 @@ package data_transfer_objects
 
 import "github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 
+const userCorporationDtoType = "corporation"
+
 type UserCorporationDto struct {
 	ContactPersonName string
 	PresidentName     string
+	Type              string
 	BaseDto
 }
 
 func NewUserCorporationDtoFromEntity(entity *entities.UserCorporationEntity) UserCorporationDto {
 	dto := UserCorporationDto{}
+	dto.Type = userCorporationDtoType
 	dto.Id = entity.Id()
 	dto.ContactPersonName = entity.ContactPersonName()
 	dto.PresidentName = entity.PresidentName()

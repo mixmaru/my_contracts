@@ -650,6 +650,7 @@ func TestMain_getContract(t *testing.T) {
 		assert.NotZero(t, gotContractData.UpdatedAt)
 
 		assert.Equal(t, user.Id, gotContractData.User.Id)
+		assert.Equal(t, "corporation", gotContractData.User.Type)
 		assert.Equal(t, "契約取得用顧客担当", gotContractData.User.ContactPersonName)
 		assert.Equal(t, "契約取得用社長", gotContractData.User.PresidentName)
 		assert.NotZero(t, gotContractData.User.CreatedAt)

@@ -305,20 +305,10 @@ func getContract(c echo.Context) error {
 	// 返却データを用意
 	switch user.(type) {
 	case data_transfer_objects.UserIndividualDto:
-		retContract := contractDataForUserIndividual{}
-		retContract.Id = contract.Id
-		retContract.CreatedAt = contract.CreatedAt
-		retContract.UpdatedAt = contract.UpdatedAt
-		retContract.User = user.(data_transfer_objects.UserIndividualDto)
-		retContract.Product = product
+		retContract := newContractDataForUserIndividual(contract.Id, product, user.(data_transfer_objects.UserIndividualDto), contract.CreatedAt, contract.UpdatedAt)
 		return c.JSON(http.StatusOK, retContract)
 	case data_transfer_objects.UserCorporationDto:
-		retContract := contractDataForUserCorporation{}
-		retContract.Id = contract.Id
-		retContract.CreatedAt = contract.CreatedAt
-		retContract.UpdatedAt = contract.UpdatedAt
-		retContract.User = user.(data_transfer_objects.UserCorporationDto)
-		retContract.Product = product
+		retContract := newContractDataForUserCorporation(contract.Id, product, user.(data_transfer_objects.UserCorporationDto), contract.CreatedAt, contract.UpdatedAt)
 		return c.JSON(http.StatusOK, retContract)
 	default:
 		logger.Sugar().Errorw("商品データ取得に失敗。userDtoが想定の型ではない。", "user", user, "err", err)
@@ -328,16 +318,37 @@ func getContract(c echo.Context) error {
 }
 
 type contractDataForUserCorporation struct {
-	Id        int
-	User      data_transfer_objects.UserCorporationDto
-	Product   data_transfer_objects.ProductDto
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	contractData
+	User data_transfer_objects.UserCorporationDto
+}
+
+func newContractDataForUserCorporation(id int, product data_transfer_objects.ProductDto, user data_transfer_objects.UserCorporationDto, createdAt time.Time, updatedAt time.Time) contractDataForUserCorporation {
+	c := contractDataForUserCorporation{}
+	c.Id = id
+	c.User = user
+	c.Product = product
+	c.CreatedAt = createdAt
+	c.UpdatedAt = updatedAt
+	return c
 }
 
 type contractDataForUserIndividual struct {
+	contractData
+	User data_transfer_objects.UserIndividualDto
+}
+
+func newContractDataForUserIndividual(id int, product data_transfer_objects.ProductDto, user data_transfer_objects.UserIndividualDto, createdAt time.Time, updatedAt time.Time) contractDataForUserIndividual {
+	c := contractDataForUserIndividual{}
+	c.Id = id
+	c.User = user
+	c.Product = product
+	c.CreatedAt = createdAt
+	c.UpdatedAt = updatedAt
+	return c
+}
+
+type contractData struct {
 	Id        int
-	User      data_transfer_objects.UserIndividualDto
 	Product   data_transfer_objects.ProductDto
 	CreatedAt time.Time
 	UpdatedAt time.Time
