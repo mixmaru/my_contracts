@@ -246,16 +246,23 @@ func saveContract(c echo.Context) error {
 		return err
 	}
 
-	// Get name and email
+	validErrs := map[string][]string{}
 	userId, err := strconv.Atoi(c.FormValue("user_id"))
 	if err != nil {
 		// user_idに変な値が渡された
-		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+		validErrs["user_id"] = []string{
+			"数値ではありません",
+		}
 	}
 	productId, err := strconv.Atoi(c.FormValue("product_id"))
 	if err != nil {
 		// product_idに変な値が渡された
-		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+		validErrs["product_id"] = []string{
+			"数値ではありません",
+		}
+	}
+	if len(validErrs) > 0 {
+		return c.JSON(http.StatusBadRequest, validErrs)
 	}
 
 	app := application_service.NewContractApplicationService()

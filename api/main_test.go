@@ -533,70 +533,99 @@ func TestMain_saveContract(t *testing.T) {
 		assert.NotZero(t, registeredContract.UpdatedAt)
 	})
 
-	//t.Run("バリデーションエラー", func(t *testing.T) {
-	//	router := newRouter()
-	//	// リクエストパラメータ作成
-	//
-	//	t.Run("空文字", func(t *testing.T) {
-	//		body := url.Values{}
-	//		body.Set("contact_person_name", "")
-	//		body.Set("president_name", "")
-	//
-	//		// リクエスト実行
-	//		req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
-	//		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-	//		rec := httptest.NewRecorder()
-	//		router.ServeHTTP(rec, req)
-	//
-	//		// 検証
-	//		assert.Equal(t, http.StatusBadRequest, rec.Code)
-	//
-	//		// jsonパース
-	//		var validMessages map[string][]string
-	//		err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
-	//		assert.NoError(t, err)
-	//
-	//		expected := map[string][]string{
-	//			"name": []string{
-	//				"空です",
-	//			},
-	//			"price": []string{
-	//				"空です",
-	//			},
-	//		}
-	//		assert.Equal(t, expected, validMessages)
-	//	})
-	//
-	//	t.Run("文字多すぎ　priceがマイナス値", func(t *testing.T) {
-	//		body := url.Values{}
-	//		body.Set("name", "000000000011111111112222222222333333333344444444445")
-	//		body.Set("price", "-1000")
-	//
-	//		// リクエスト実行
-	//		req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
-	//		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-	//		rec := httptest.NewRecorder()
-	//		router.ServeHTTP(rec, req)
-	//
-	//		// 検証
-	//		assert.Equal(t, http.StatusBadRequest, rec.Code)
-	//
-	//		// jsonパース
-	//		var validMessages map[string][]string
-	//		err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
-	//		assert.NoError(t, err)
-	//
-	//		expected := map[string][]string{
-	//			"name": []string{
-	//				"50文字より多いです",
-	//			},
-	//			"price": []string{
-	//				"マイナス値です",
-	//			},
-	//		}
-	//		assert.Equal(t, expected, validMessages)
-	//	})
-	//})
+	t.Run("バリデーションエラー", func(t *testing.T) {
+		router := newRouter()
+		// リクエストパラメータ作成
+
+		t.Run("与えられたproduct_idとuser_idが存在しない値だった場合", func(t *testing.T) {
+			body := url.Values{}
+			body.Set("user_id", "-100")
+			body.Set("product_id", "-200")
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/contracts/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+			// jsonパース
+			var validMessages map[string][]string
+			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+			assert.NoError(t, err)
+
+			expected := map[string][]string{
+				"user_id": []string{
+					"存在しません",
+				},
+				"product_id": []string{
+					"存在しません",
+				},
+			}
+			assert.Equal(t, expected, validMessages)
+		})
+
+		t.Run("product_idとuser_idが与えられなかった場合", func(t *testing.T) {
+			body := url.Values{}
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/contracts/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+			// jsonパース
+			var validMessages map[string][]string
+			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+			assert.NoError(t, err)
+
+			expected := map[string][]string{
+				"user_id": []string{
+					"数値ではありません",
+				},
+				"product_id": []string{
+					"数値ではありません",
+				},
+			}
+			assert.Equal(t, expected, validMessages)
+		})
+
+		t.Run("product_idとuser_idに数値でないものが与えられた場合", func(t *testing.T) {
+			body := url.Values{}
+			body.Set("user_id", "aaa")
+			body.Set("product_id", "-2a00")
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/contracts/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+			// jsonパース
+			var validMessages map[string][]string
+			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+			assert.NoError(t, err)
+
+			expected := map[string][]string{
+				"user_id": []string{
+					"数値ではありません",
+				},
+				"product_id": []string{
+					"数値ではありません",
+				},
+			}
+			assert.Equal(t, expected, validMessages)
+
+		})
+	})
 }
 func TestMain_getContract(t *testing.T) {
 	// 重複商品名は登録できないので予め削除
