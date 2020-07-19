@@ -107,10 +107,7 @@ func TestUserRepository_GetUserCorporationById(t *testing.T) {
 	defer db.Db.Close()
 
 	//　事前にデータ登録する
-	savingUser := entities.NewUserCorporationEntity()
-	err = savingUser.SetContactPersonName("担当　太郎")
-	assert.NoError(t, err)
-	err = savingUser.SetPresidentName("社長　太郎")
+	savingUser, err := entities.NewUserCorporationEntity("担当　太郎", "社長　太郎")
 	assert.NoError(t, err)
 
 	repo := NewUserRepository()
@@ -141,9 +138,8 @@ func TestUserRepository_SaveUserCorporation(t *testing.T) {
 	defer db.Db.Close()
 
 	// 保存するデータ作成
-	user := entities.NewUserCorporationEntity()
-	user.SetContactPersonName("担当太郎")
-	user.SetPresidentName("社長次郎")
+	user, err := entities.NewUserCorporationEntity("担当太郎", "社長次郎")
+	assert.NoError(t, err)
 
 	// 保存実行
 	repo := NewUserRepository()
@@ -158,9 +154,8 @@ func TestUserRepository_getUserCorporationViewById(t *testing.T) {
 	defer dbMap.Db.Close()
 
 	// 事前にデータ登録
-	user := entities.NewUserCorporationEntity()
-	user.SetContactPersonName("担当太郎")
-	user.SetPresidentName("社長次郎")
+	user, err := entities.NewUserCorporationEntity("担当太郎", "社長次郎")
+	assert.NoError(t, err)
 	repo := NewUserRepository()
 	savedId, err := repo.SaveUserCorporation(user, dbMap)
 	assert.NoError(t, err)
@@ -182,25 +177,61 @@ func TestUserRepository_GetUserById(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Db.Close()
 
-	//　事前にデータ登録する
-	user, err := entities.NewUserIndividualEntity("個人太郎")
+	//　事前にデータ登録する。個人顧客
+	userIndividual, err := entities.NewUserIndividualEntity("個人太郎")
 	assert.NoError(t, err)
 	repo := NewUserRepository()
-	savedId, err := repo.SaveUserIndividual(user, db)
+	savedIndividualId, err := repo.SaveUserIndividual(userIndividual, db)
+	assert.NoError(t, err)
+
+	//　事前にデータ登録する。法人顧客
+	userCorporation, err := entities.NewUserCorporationEntity("担当太郎", "社長太郎")
+	assert.NoError(t, err)
+	repo = NewUserRepository()
+	savedCorporationId, err := repo.SaveUserCorporation(userCorporation, db)
 	assert.NoError(t, err)
 
 	// idで取得して検証
-	t.Run("データがある時", func(t *testing.T) {
-		result, err := repo.GetUserById(savedId, db)
-		assert.NoError(t, err)
-		assert.Equal(t, savedId, result.Id())
-		assert.NotZero(t, result.CreatedAt())
-		assert.NotZero(t, result.UpdatedAt())
+	t.Run("個人顧客データ取得", func(t *testing.T) {
+		t.Run("データがある時", func(t *testing.T) {
+			result, err := repo.GetUserById(savedIndividualId, db)
+			assert.NoError(t, err)
+
+			loadedIndividual, ok := result.(*entities.UserIndividualEntity)
+			assert.True(t, ok)
+
+			assert.Equal(t, savedIndividualId, loadedIndividual.Id())
+			assert.Equal(t, "個人太郎", loadedIndividual.Name())
+			assert.NotZero(t, loadedIndividual.CreatedAt())
+			assert.NotZero(t, loadedIndividual.UpdatedAt())
+		})
+
+		t.Run("データが無い時", func(t *testing.T) {
+			user, err := repo.GetUserById(-1, db)
+			assert.NoError(t, err)
+			assert.Nil(t, user)
+		})
 	})
 
-	t.Run("データが無い時", func(t *testing.T) {
-		user, err := repo.GetUserById(-1, db)
-		assert.NoError(t, err)
-		assert.Nil(t, user)
+	t.Run("法人顧客データ取得", func(t *testing.T) {
+		t.Run("データがある時", func(t *testing.T) {
+			result, err := repo.GetUserById(savedCorporationId, db)
+			assert.NoError(t, err)
+
+			loadedCorporation, ok := result.(*entities.UserCorporationEntity)
+			assert.True(t, ok)
+
+			assert.Equal(t, savedCorporationId, loadedCorporation.Id())
+			assert.Equal(t, "担当太郎", loadedCorporation.ContactPersonName())
+			assert.Equal(t, "社長太郎", loadedCorporation.PresidentName())
+			assert.NotZero(t, loadedCorporation.CreatedAt())
+			assert.NotZero(t, loadedCorporation.UpdatedAt())
+		})
+
+		t.Run("データが無い時", func(t *testing.T) {
+			user, err := repo.GetUserById(-1, db)
+			assert.NoError(t, err)
+			assert.Nil(t, user)
+		})
 	})
 }
