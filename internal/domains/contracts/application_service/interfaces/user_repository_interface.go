@@ -6,6 +6,8 @@ import (
 )
 
 type IUserRepository interface {
+	GetUserById(id int, executor gorp.SqlExecutor) (*entities.UserEntity, error)
+
 	SaveUserIndividual(userEntity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (savedId int, err error)
 	GetUserIndividualById(id int, executor gorp.SqlExecutor) (*entities.UserIndividualEntity, error)
 

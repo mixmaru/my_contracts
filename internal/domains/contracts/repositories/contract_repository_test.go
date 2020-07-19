@@ -99,58 +99,38 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.NoError(t, err)
 
 		// データ取得
-		loadedEntity, err := r.GetById(savedId, db)
+		loadedContract, loadedProduct, loadedUser, err := r.GetById(savedId, db)
 		assert.NoError(t, err)
 
-		assert.Equal(t, savedId, loadedEntity.Id())
-		assert.Equal(t, savedUserId, loadedEntity.UserId())
-		assert.Equal(t, savedProductId, loadedEntity.ProductId())
-		assert.NotZero(t, loadedEntity.CreatedAt())
-		assert.NotZero(t, loadedEntity.UpdatedAt())
+		// contractテスト
+		assert.Equal(t, savedId, loadedContract.Id())
+		assert.Equal(t, savedUserId, loadedContract.UserId())
+		assert.Equal(t, savedProductId, loadedContract.ProductId())
+		assert.NotZero(t, loadedContract.CreatedAt())
+		assert.NotZero(t, loadedContract.UpdatedAt())
+		// productテスト
+		assert.Equal(t, savedProductId, loadedProduct.Id())
+		assert.Equal(t, "商品名", loadedProduct.Name())
+		price := loadedProduct.Price()
+		assert.Equal(t, "1000", price.String())
+		assert.NotZero(t, loadedProduct.CreatedAt())
+		assert.NotZero(t, loadedProduct.UpdatedAt())
+		// userテスト
+		user, ok := loadedUser.(*entities.UserIndividualEntity)
+		assert.True(t, ok)
+		assert.Equal(t, savedUserId, user.Id())
+		assert.Equal(t, "担当太郎", user.Name())
+		assert.NotZero(t, user.CreatedAt())
+		assert.NotZero(t, user.UpdatedAt())
 	})
 
 	t.Run("データがない時", func(t *testing.T) {
 		r := NewContractRepository()
 		// データ取得
-		loadedEntity, err := r.GetById(-100, db)
+		loadedContract, loadedProduct, loadedUser, err := r.GetById(-100, db)
 		assert.NoError(t, err)
-		assert.Nil(t, loadedEntity)
+		assert.Nil(t, loadedContract)
+		assert.Nil(t, loadedProduct)
+		assert.Nil(t, loadedUser)
 	})
 }
-
-//func TestContractRepository_GetByName(t *testing.T) {
-//	// テーブル事前削除
-//	db, err := db_connection.GetConnection()
-//	assert.NoError(t, err)
-//	defer db.Db.Close()
-//	_, err = db.Exec("truncate table products cascade")
-//	assert.NoError(t, err)
-//
-//	r := NewProductRepository()
-//
-//	t.Run("データがある時", func(t *testing.T) {
-//		// データ登録
-//		productEntity, err := entities.NewProductEntity("商品名", "1000")
-//		assert.NoError(t, err)
-//		savedId, err := r.Save(productEntity, db)
-//		assert.NoError(t, err)
-//
-//		// データ取得
-//		loadedEntity, err := r.GetByName("商品名", db)
-//		assert.NoError(t, err)
-//
-//		assert.Equal(t, savedId, loadedEntity.Id())
-//		assert.Equal(t, "商品名", loadedEntity.Name())
-//		price := loadedEntity.Price()
-//		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
-//		assert.NotZero(t, loadedEntity.CreatedAt())
-//		assert.NotZero(t, loadedEntity.UpdatedAt())
-//	})
-//
-//	t.Run("データがない時", func(t *testing.T) {
-//		// データ取得
-//		loadedEntity, err := r.GetByName("存在しない商品", db)
-//		assert.NoError(t, err)
-//		assert.Nil(t, loadedEntity)
-//	})
-//}

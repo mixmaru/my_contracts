@@ -176,3 +176,31 @@ func TestUserRepository_getUserCorporationViewById(t *testing.T) {
 	assert.NotEqual(t, time.Time{}, result.CreatedAt())
 	assert.NotEqual(t, time.Time{}, result.UpdatedAt())
 }
+
+func TestUserRepository_GetUserById(t *testing.T) {
+	db, err := db_connection.GetConnection()
+	assert.NoError(t, err)
+	defer db.Db.Close()
+
+	//　事前にデータ登録する
+	user, err := entities.NewUserIndividualEntity("個人太郎")
+	assert.NoError(t, err)
+	repo := NewUserRepository()
+	savedId, err := repo.SaveUserIndividual(user, db)
+	assert.NoError(t, err)
+
+	// idで取得して検証
+	t.Run("データがある時", func(t *testing.T) {
+		result, err := repo.GetUserById(savedId, db)
+		assert.NoError(t, err)
+		assert.Equal(t, savedId, result.Id())
+		assert.NotZero(t, result.CreatedAt())
+		assert.NotZero(t, result.UpdatedAt())
+	})
+
+	t.Run("データが無い時", func(t *testing.T) {
+		user, err := repo.GetUserById(-1, db)
+		assert.NoError(t, err)
+		assert.Nil(t, user)
+	})
+}

@@ -34,6 +34,21 @@ func (m *MockIUserRepository) EXPECT() *MockIUserRepositoryMockRecorder {
 	return m.recorder
 }
 
+// GetUserById mocks base method.
+func (m *MockIUserRepository) GetUserById(id int, executor gorp.SqlExecutor) (*entities.UserEntity, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserById", id, executor)
+	ret0, _ := ret[0].(*entities.UserEntity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserById indicates an expected call of GetUserById.
+func (mr *MockIUserRepositoryMockRecorder) GetUserById(id, executor interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockIUserRepository)(nil).GetUserById), id, executor)
+}
+
 // SaveUserIndividual mocks base method.
 func (m *MockIUserRepository) SaveUserIndividual(userEntity *entities.UserIndividualEntity, executor gorp.SqlExecutor) (int, error) {
 	m.ctrl.T.Helper()

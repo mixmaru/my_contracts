@@ -75,3 +75,18 @@ func TestUserMapper_PreUpdate(t *testing.T) {
 	assert.Equal(t, time.Time{}, newUser.CreatedAt)
 	assert.NotEqual(t, time.Time{}, newUser.UpdatedAt)
 }
+
+func TestUserMapper_SetDataToEntity(t *testing.T) {
+	userMapper := UserMapper{}
+	userMapper.Id = 1
+	userMapper.CreatedAt = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+	userMapper.UpdatedAt = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	var userEntity entities.UserEntity
+	err := userMapper.SetDataToEntity(&userEntity)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 1, userEntity.Id())
+	assert.True(t, userEntity.CreatedAt().Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
+	assert.True(t, userEntity.UpdatedAt().Equal(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)))
+}

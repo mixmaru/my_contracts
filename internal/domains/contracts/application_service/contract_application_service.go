@@ -6,10 +6,13 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/pkg/errors"
+	"gopkg.in/gorp.v2"
 )
 
 type ContractApplicationService struct {
 	ContractRepository interfaces.IContractRepository
+	UserRepository     interfaces.IUserRepository
+	ProductRepository  interfaces.IProductRepository
 }
 
 func (c *ContractApplicationService) Register(userId int, productId int) (productDto data_transfer_objects.ContractDto, validationErrors map[string][]string, err error) {
@@ -25,13 +28,13 @@ func (c *ContractApplicationService) Register(userId int, productId int) (produc
 	}
 
 	// 入力値バリデーション
-	//validationErrors, err = c.registerValidation(userId, productId, tran)
-	//if err != nil {
-	//	return data_transfer_objects.ContractDto{}, nil, err
-	//}
-	//if len(validationErrors) > 0 {
-	//	return data_transfer_objects.ContractDto{}, validationErrors, nil
-	//}
+	validationErrors, err = c.registerValidation(userId, productId, tran)
+	if err != nil {
+		return data_transfer_objects.ContractDto{}, nil, err
+	}
+	if len(validationErrors) > 0 {
+		return data_transfer_objects.ContractDto{}, validationErrors, nil
+	}
 
 	// entityを作成
 	entity := entities.NewContractEntity(userId, productId)
@@ -43,7 +46,7 @@ func (c *ContractApplicationService) Register(userId int, productId int) (produc
 	}
 
 	// 再読込
-	savedEntity, err := c.ContractRepository.GetById(savedId, tran)
+	savedEntity, _, _, err := c.ContractRepository.GetById(savedId, tran)
 	if err != nil {
 		return data_transfer_objects.ContractDto{}, nil, err
 	}
@@ -60,88 +63,121 @@ func (c *ContractApplicationService) Register(userId int, productId int) (produc
 	return dto, nil, nil
 }
 
-//func (p *ProductApplicationService) registerValidation(name string, price string, executor gorp.SqlExecutor) (validationErrors map[string][]string, err error) {
-//	validationErrors = map[string][]string{}
-//
-//	// 商品名バリデーション
-//	productNameValidErrors, err := values.ProductNameValue{}.Validate(name)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	if len(productNameValidErrors) > 0 {
-//		validationErrors["name"] = []string{}
-//	}
-//	for _, validError := range productNameValidErrors {
-//		var errorMessage string
-//		switch validError {
-//		case validators.EmptyStringValidError:
-//			errorMessage = "空です"
-//		case validators.OverLengthStringValidError:
-//			errorMessage = fmt.Sprintf("%v文字より多いです", values.ProductNameMaxLength)
-//		default:
-//			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorTest(validError)))
-//		}
-//		validationErrors["name"] = append(validationErrors["name"], errorMessage)
-//	}
-//
-//	// 重複チェック
-//	productEntity, err := p.productRepository.GetByName(name, executor)
-//	if err != nil {
-//		return validationErrors, err
-//	}
-//	if productEntity != nil {
-//		validationErrors["name"] = append(validationErrors["name"], "すでに存在します")
-//	}
-//
-//	// 価格バリデーション
-//	productPriceValidErrors, err := values.ProductPriceValue{}.Validate(price)
-//	if err != nil {
-//		return validationErrors, err
-//	}
-//	if len(productPriceValidErrors) > 0 {
-//		validationErrors["price"] = []string{}
-//	}
-//	for _, validError := range productPriceValidErrors {
-//		//validationErrors["price"] = append(validationErrors["price"], validError.Error())
-//		var errorMessage string
-//		switch validError {
-//		case validators.EmptyStringValidError:
-//			errorMessage = "空です"
-//		case validators.NumericStringValidError:
-//			errorMessage = "数値ではありません"
-//		case validators.NegativeValidError:
-//			errorMessage = "マイナス値です"
-//		default:
-//			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。price: %v, validErrorText: %v", price, validators.ValidErrorTest(validError)))
-//		}
-//		validationErrors["price"] = append(validationErrors["price"], errorMessage)
-//	}
-//
-//	return validationErrors, nil
-//
-//}
-//
-//func (p *ProductApplicationService) Get(id int) (data_transfer_objects.ProductDto, error) {
-//	conn, err := db_connection.GetConnection()
-//	if err != nil {
-//		return data_transfer_objects.ProductDto{}, err
-//	}
-//	defer conn.Db.Close()
-//
-//	// リポジトリつかってデータ取得
-//	entity, err := p.productRepository.GetById(id, conn)
-//	if err != nil {
-//		return data_transfer_objects.ProductDto{}, err
-//	}
-//	if entity == nil {
-//		// データがない
-//		return data_transfer_objects.ProductDto{}, nil
-//	}
-//
-//	// dtoにつめる
-//	dto := data_transfer_objects.NewProductDtoFromEntity(entity)
-//
-//	// 返却
-//	return dto, nil
-//}
+func (c *ContractApplicationService) registerValidation(userId int, productId int, executor gorp.SqlExecutor) (validationErrors map[string][]string, err error) {
+	validationErrors = map[string][]string{}
+
+	// userの存在チェック
+	user, err := c.UserRepository.GetUserById(userId, executor)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		validationErrors["user_id"] = []string{
+			"存在しません",
+		}
+	}
+
+	// productの存在チェック
+	product, err := c.ProductRepository.GetById(productId, executor)
+	if err != nil {
+		return nil, err
+	}
+	if product == nil {
+		validationErrors["product_id"] = []string{
+			"存在しません",
+		}
+	}
+
+	return validationErrors, nil
+
+	// 商品名バリデーション
+	//productNameValidErrors, err := values.ProductNameValue{}.Validate(name)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//if len(productNameValidErrors) > 0 {
+	//	validationErrors["name"] = []string{}
+	//}
+	//for _, validError := range productNameValidErrors {
+	//	var errorMessage string
+	//	switch validError {
+	//	case validators.EmptyStringValidError:
+	//		errorMessage = "空です"
+	//	case validators.OverLengthStringValidError:
+	//		errorMessage = fmt.Sprintf("%v文字より多いです", values.ProductNameMaxLength)
+	//	default:
+	//		return validationErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorTest(validError)))
+	//	}
+	//	validationErrors["name"] = append(validationErrors["name"], errorMessage)
+	//}
+
+	// 重複チェック
+	//productEntity, err := p.productRepository.GetByName(name, executor)
+	//if err != nil {
+	//	return validationErrors, err
+	//}
+	//if productEntity != nil {
+	//	validationErrors["name"] = append(validationErrors["name"], "すでに存在します")
+	//}
+	//
+	//// 価格バリデーション
+	//productPriceValidErrors, err := values.ProductPriceValue{}.Validate(price)
+	//if err != nil {
+	//	return validationErrors, err
+	//}
+	//if len(productPriceValidErrors) > 0 {
+	//	validationErrors["price"] = []string{}
+	//}
+	//for _, validError := range productPriceValidErrors {
+	//	//validationErrors["price"] = append(validationErrors["price"], validError.Error())
+	//	var errorMessage string
+	//	switch validError {
+	//	case validators.EmptyStringValidError:
+	//		errorMessage = "空です"
+	//	case validators.NumericStringValidError:
+	//		errorMessage = "数値ではありません"
+	//	case validators.NegativeValidError:
+	//		errorMessage = "マイナス値です"
+	//	default:
+	//		return validationErrors, errors.New(fmt.Sprintf("想定外エラー。price: %v, validErrorText: %v", price, validators.ValidErrorTest(validError)))
+	//	}
+	//	validationErrors["price"] = append(validationErrors["price"], errorMessage)
+	//}
+	//
+	//return validationErrors, nil
+	//
+}
+
+func (c *ContractApplicationService) GetById(id int) (contractDto data_transfer_objects.ContractDto, productDto data_transfer_objects.ProductDto, userDto interface{}, err error) {
+	conn, err := db_connection.GetConnection()
+	if err != nil {
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, err
+	}
+	defer conn.Db.Close()
+
+	// リポジトリつかってデータ取得
+	contractEntity, productEntity, userEntity, err := c.ContractRepository.GetById(id, conn)
+	if err != nil {
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, err
+	}
+	if contractEntity == nil {
+		// データがない
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, nil
+	}
+
+	// dtoにつめる
+	contractDto = data_transfer_objects.NewContractDtoFromEntity(contractEntity)
+	productDto = data_transfer_objects.NewProductDtoFromEntity(productEntity)
+	switch userEntity.(type) {
+	case *entities.UserIndividualEntity:
+		userDto = data_transfer_objects.NewUserIndividualDtoFromEntity(userEntity.(*entities.UserIndividualEntity))
+	case *entities.UserCorporationEntity:
+		userDto = data_transfer_objects.NewUserCorporationDtoFromEntity(userEntity.(*entities.UserCorporationEntity))
+	default:
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, errors.Errorf("意図しないUser型が来た。userEntity: %t", userEntity)
+	}
+
+	// 返却
+	return contractDto, productDto, userDto, nil
+}
