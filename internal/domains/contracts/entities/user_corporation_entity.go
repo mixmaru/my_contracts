@@ -11,23 +11,31 @@ type UserCorporationEntity struct {
 	presidentName     values.PresidentNameValue     //社長名
 }
 
-func NewUserCorporationEntity() *UserCorporationEntity {
-	return &UserCorporationEntity{
-		UserEntity: &UserEntity{},
+func NewUserCorporationEntity(contactPersonName string, presidentName string) (*UserCorporationEntity, error) {
+	contactPersonNameValue, err := values.NewContactPersonNameValue(contactPersonName)
+	if err != nil {
+		return nil, err
 	}
+
+	presidentNameValue, err := values.NewPresidentNameValue(presidentName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &UserCorporationEntity{
+		UserEntity:        &UserEntity{},
+		contactPersonName: contactPersonNameValue,
+		presidentName:     presidentNameValue,
+	}, nil
 }
 
 func NewUserCorporationEntityWithData(id int, contractPersonName, presidentName string, createdAt, updatedAt time.Time) (*UserCorporationEntity, error) {
-	user := NewUserCorporationEntity()
+	user, err := NewUserCorporationEntity(contractPersonName, presidentName)
+	if err != nil {
+		return nil, err
+	}
+
 	user.id = id
-	err := user.SetContactPersonName(contractPersonName)
-	if err != nil {
-		return nil, err
-	}
-	err = user.SetPresidentName(presidentName)
-	if err != nil {
-		return nil, err
-	}
 	user.createdAt = createdAt
 	user.updatedAt = updatedAt
 	return user, nil

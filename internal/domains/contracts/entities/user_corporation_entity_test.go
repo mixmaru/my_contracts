@@ -22,10 +22,7 @@ func TestUserCorporationEntity_Instantiate(t *testing.T) {
 
 func TestUserCorporationEntity_NewUserCorporationEntity(t *testing.T) {
 	// インスタンス化
-	user := NewUserCorporationEntity()
-	err := user.SetContactPersonName("担当太郎")
-	assert.NoError(t, err)
-	err = user.SetPresidentName("社長次郎")
+	user, err := NewUserCorporationEntity("担当太郎", "社長次郎")
 	assert.NoError(t, err)
 
 	// テスト
@@ -57,7 +54,7 @@ func TestUserCorporationEntity_NewUserCorporationEntityWithData(t *testing.T) {
 
 func TestUserCorporationEntity_LoadData(t *testing.T) {
 	// インスタンス化
-	user := NewUserCorporationEntity()
+	user := &UserCorporationEntity{}
 	err := user.LoadData(
 		1,
 		"担当太郎",
