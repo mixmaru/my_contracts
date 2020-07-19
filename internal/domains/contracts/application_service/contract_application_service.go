@@ -6,10 +6,12 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/pkg/errors"
+	"gopkg.in/gorp.v2"
 )
 
 type ContractApplicationService struct {
 	ContractRepository interfaces.IContractRepository
+	UserRepository     interfaces.IUserRepository
 }
 
 func (c *ContractApplicationService) Register(userId int, productId int) (productDto data_transfer_objects.ContractDto, validationErrors map[string][]string, err error) {
@@ -25,13 +27,13 @@ func (c *ContractApplicationService) Register(userId int, productId int) (produc
 	}
 
 	// 入力値バリデーション
-	//validationErrors, err = c.registerValidation(userId, productId, tran)
-	//if err != nil {
-	//	return data_transfer_objects.ContractDto{}, nil, err
-	//}
-	//if len(validationErrors) > 0 {
-	//	return data_transfer_objects.ContractDto{}, validationErrors, nil
-	//}
+	validationErrors, err = c.registerValidation(userId, productId, tran)
+	if err != nil {
+		return data_transfer_objects.ContractDto{}, nil, err
+	}
+	if len(validationErrors) > 0 {
+		return data_transfer_objects.ContractDto{}, validationErrors, nil
+	}
 
 	// entityを作成
 	entity := entities.NewContractEntity(userId, productId)
@@ -60,67 +62,80 @@ func (c *ContractApplicationService) Register(userId int, productId int) (produc
 	return dto, nil, nil
 }
 
-//func (p *ProductApplicationService) registerValidation(name string, price string, executor gorp.SqlExecutor) (validationErrors map[string][]string, err error) {
-//	validationErrors = map[string][]string{}
-//
-//	// 商品名バリデーション
-//	productNameValidErrors, err := values.ProductNameValue{}.Validate(name)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	if len(productNameValidErrors) > 0 {
-//		validationErrors["name"] = []string{}
-//	}
-//	for _, validError := range productNameValidErrors {
-//		var errorMessage string
-//		switch validError {
-//		case validators.EmptyStringValidError:
-//			errorMessage = "空です"
-//		case validators.OverLengthStringValidError:
-//			errorMessage = fmt.Sprintf("%v文字より多いです", values.ProductNameMaxLength)
-//		default:
-//			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorTest(validError)))
-//		}
-//		validationErrors["name"] = append(validationErrors["name"], errorMessage)
-//	}
-//
-//	// 重複チェック
-//	productEntity, err := p.productRepository.GetByName(name, executor)
-//	if err != nil {
-//		return validationErrors, err
-//	}
-//	if productEntity != nil {
-//		validationErrors["name"] = append(validationErrors["name"], "すでに存在します")
-//	}
-//
-//	// 価格バリデーション
-//	productPriceValidErrors, err := values.ProductPriceValue{}.Validate(price)
-//	if err != nil {
-//		return validationErrors, err
-//	}
-//	if len(productPriceValidErrors) > 0 {
-//		validationErrors["price"] = []string{}
-//	}
-//	for _, validError := range productPriceValidErrors {
-//		//validationErrors["price"] = append(validationErrors["price"], validError.Error())
-//		var errorMessage string
-//		switch validError {
-//		case validators.EmptyStringValidError:
-//			errorMessage = "空です"
-//		case validators.NumericStringValidError:
-//			errorMessage = "数値ではありません"
-//		case validators.NegativeValidError:
-//			errorMessage = "マイナス値です"
-//		default:
-//			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。price: %v, validErrorText: %v", price, validators.ValidErrorTest(validError)))
-//		}
-//		validationErrors["price"] = append(validationErrors["price"], errorMessage)
-//	}
-//
-//	return validationErrors, nil
-//
-//}
+func (c *ContractApplicationService) registerValidation(userId int, productId int, executor gorp.SqlExecutor) (validationErrors map[string][]string, err error) {
+	validationErrors = map[string][]string{}
+
+	// userの存在チェック
+	user, err := c.UserRepository.GetUserById(userId, executor)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		validationErrors["user_id"] = []string{
+			"存在しません",
+		}
+	}
+
+	return validationErrors, nil
+
+	// 商品名バリデーション
+	//productNameValidErrors, err := values.ProductNameValue{}.Validate(name)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//if len(productNameValidErrors) > 0 {
+	//	validationErrors["name"] = []string{}
+	//}
+	//for _, validError := range productNameValidErrors {
+	//	var errorMessage string
+	//	switch validError {
+	//	case validators.EmptyStringValidError:
+	//		errorMessage = "空です"
+	//	case validators.OverLengthStringValidError:
+	//		errorMessage = fmt.Sprintf("%v文字より多いです", values.ProductNameMaxLength)
+	//	default:
+	//		return validationErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorTest(validError)))
+	//	}
+	//	validationErrors["name"] = append(validationErrors["name"], errorMessage)
+	//}
+
+	// 重複チェック
+	//productEntity, err := p.productRepository.GetByName(name, executor)
+	//if err != nil {
+	//	return validationErrors, err
+	//}
+	//if productEntity != nil {
+	//	validationErrors["name"] = append(validationErrors["name"], "すでに存在します")
+	//}
+	//
+	//// 価格バリデーション
+	//productPriceValidErrors, err := values.ProductPriceValue{}.Validate(price)
+	//if err != nil {
+	//	return validationErrors, err
+	//}
+	//if len(productPriceValidErrors) > 0 {
+	//	validationErrors["price"] = []string{}
+	//}
+	//for _, validError := range productPriceValidErrors {
+	//	//validationErrors["price"] = append(validationErrors["price"], validError.Error())
+	//	var errorMessage string
+	//	switch validError {
+	//	case validators.EmptyStringValidError:
+	//		errorMessage = "空です"
+	//	case validators.NumericStringValidError:
+	//		errorMessage = "数値ではありません"
+	//	case validators.NegativeValidError:
+	//		errorMessage = "マイナス値です"
+	//	default:
+	//		return validationErrors, errors.New(fmt.Sprintf("想定外エラー。price: %v, validErrorText: %v", price, validators.ValidErrorTest(validError)))
+	//	}
+	//	validationErrors["price"] = append(validationErrors["price"], errorMessage)
+	//}
+	//
+	//return validationErrors, nil
+	//
+}
 
 func (c *ContractApplicationService) GetById(id int) (contractDto data_transfer_objects.ContractDto, productDto data_transfer_objects.ProductDto, userDto interface{}, err error) {
 	conn, err := db_connection.GetConnection()

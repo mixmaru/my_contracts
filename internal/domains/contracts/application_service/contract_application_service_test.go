@@ -5,6 +5,8 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
 	"testing"
@@ -149,64 +151,61 @@ func TestContractApplicationService_GetById(t *testing.T) {
 	})
 }
 
-//func TestContractApplicationService_registerValidation(t *testing.T) {
-//	// productデータをすべて削除
-//	conn, err := db_connection.GetConnection()
-//	assert.NoError(t, err)
-//	defer conn.Db.Close()
-//	_, err = conn.Exec("truncate products cascade")
-//	assert.NoError(t, err)
-//
-//	// 既存データの作成
-//	app := NewProductApplicationService()
-//	_, validationErrors, err := app.Register("既存商品", "1000")
-//	assert.NoError(t, err)
-//	assert.Zero(t, validationErrors)
-//
-//	productAppService := NewProductApplicationService()
-//
-//	t.Run("エラーなし", func(t *testing.T) {
-//		validationErrors, err := productAppService.registerValidation("A商品", "1000.01", conn)
-//		assert.NoError(t, err)
-//		assert.Equal(t, map[string][]string{}, validationErrors)
-//	})
-//
-//	t.Run("nameが50文字より多い priceがdecimalに変換不可能", func(t *testing.T) {
-//		validationErrors, err := productAppService.registerValidation("1234567890123456789012345678901234567890１２３４５６７８９０1", "aaa", conn)
-//		assert.NoError(t, err)
-//		expect := map[string][]string{
-//			"name": []string{
-//				"50文字より多いです",
-//			},
-//			"price": []string{
-//				"数値ではありません",
-//			},
-//		}
-//		assert.Equal(t, expect, validationErrors)
-//	})
-//
-//	t.Run("nameがすでに存在する商品名", func(t *testing.T) {
-//		validationErrors, err := productAppService.registerValidation("既存商品", "1000", conn)
-//		assert.NoError(t, err)
-//		expect := map[string][]string{
-//			"name": []string{
-//				"すでに存在します",
-//			},
-//		}
-//		assert.Equal(t, expect, validationErrors)
-//	})
-//
-//	t.Run("nameが空 priceがマイナス", func(t *testing.T) {
-//		validationErrors, err := productAppService.registerValidation("", "-1000", conn)
-//		assert.NoError(t, err)
-//		expect := map[string][]string{
-//			"name": []string{
-//				"空です",
-//			},
-//			"price": []string{
-//				"マイナス値です",
-//			},
-//		}
-//		assert.Equal(t, expect, validationErrors)
-//	})
-//}
+func TestContractApplicationService_registerValidation(t *testing.T) {
+	conn, err := db_connection.GetConnection()
+	assert.NoError(t, err)
+	tran, err := conn.Begin()
+	assert.NoError(t, err)
+
+	productRep := repositories.NewProductRepository()
+
+	// productがあればそれを使用する。なければ登録。同名商品は登録できないため
+	product, err := productRep.GetByName("バリデーションテスト商品", tran)
+	assert.NoError(t, err)
+	savedProductId := 0
+	if product == nil {
+		product, err = entities.NewProductEntity("バリデーションテスト商品", "2000")
+		assert.NoError(t, err)
+		savedProductId, err = productRep.Save(product, tran)
+		assert.NoError(t, err)
+	} else {
+		savedProductId = product.Id()
+	}
+
+	// userを新規登録
+	userRep := repositories.NewUserRepository()
+	user, err := entities.NewUserIndividualEntity("個人たろう")
+	assert.NoError(t, err)
+	savedUserId, err := userRep.SaveUserIndividual(user, tran)
+	assert.NoError(t, err)
+
+	err = tran.Commit()
+	assert.NoError(t, err)
+
+	contractAppService := NewContractApplicationService()
+
+	t.Run("エラーなし", func(t *testing.T) {
+		validationErrors, err := contractAppService.registerValidation(savedUserId, savedProductId, conn)
+		assert.NoError(t, err)
+		assert.Equal(t, map[string][]string{}, validationErrors)
+	})
+
+	t.Run("指定されたUserが存在しない", func(t *testing.T) {
+		validationErrors, err := contractAppService.registerValidation(-100, savedProductId, conn)
+		assert.NoError(t, err)
+		assert.Len(t, validationErrors, 1)
+		assert.Len(t, validationErrors["user_id"], 1)
+		assert.Equal(t, "存在しません", validationErrors["user_id"][0])
+	})
+
+	t.Run("指定されたProductが存在しない", func(t *testing.T) {
+		//validationErrors, err := productAppService.registerValidation("既存商品", "1000", conn)
+		//assert.NoError(t, err)
+		//expect := map[string][]string{
+		//	"name": []string{
+		//		"すでに存在します",
+		//	},
+		//}
+		//assert.Equal(t, expect, validationErrors)
+	})
+}

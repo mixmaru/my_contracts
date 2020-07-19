@@ -25,7 +25,10 @@ func NewProductApplicationServiceWithMock(prodcutRepository interfaces.IProductR
 
 // ContractApplicationService
 func NewContractApplicationService() *ContractApplicationService {
-	return &ContractApplicationService{ContractRepository: repositories.NewContractRepository()}
+	return &ContractApplicationService{
+		ContractRepository: repositories.NewContractRepository(),
+		UserRepository:     repositories.NewUserRepository(),
+	}
 }
 
 func NewContractApplicationServiceWithMock(contractRepository interfaces.IContractRepository) *ContractApplicationService {
