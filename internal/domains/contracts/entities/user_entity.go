@@ -12,9 +12,8 @@ type UserEntity struct {
 }
 
 // 保持データをセットし直す
-func (u *UserEntity) LoadData(id int, createdAt time.Time, updatedAt time.Time) error {
+func (u *UserEntity) LoadData(id int, createdAt time.Time, updatedAt time.Time) {
 	u.id = id
 	u.createdAt = createdAt
 	u.updatedAt = updatedAt
-	return nil
 }
