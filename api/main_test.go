@@ -692,39 +692,39 @@ func TestMain_getContract(t *testing.T) {
 		assert.NotZero(t, gotContractData.Product.UpdatedAt)
 	})
 
-	//t.Run("指定IDの商品が存在しなかった時", func(t *testing.T) {
-	//	router := newRouter()
-	//	req := httptest.NewRequest("GET", "/products/0", nil)
-	//	rec := httptest.NewRecorder()
-	//	router.ServeHTTP(rec, req)
-	//
-	//	// 検証
-	//	var jsonValues map[string]string
-	//	err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
-	//	assert.NoError(t, err)
-	//
-	//	expect := map[string]string{
-	//		"message": "Not Found",
-	//	}
-	//	assert.Equal(t, http.StatusNotFound, rec.Code)
-	//	assert.Equal(t, expect, jsonValues)
-	//})
-	//
-	//t.Run("IDに変な値を入れられた時", func(t *testing.T) {
-	//	router := newRouter()
-	//	req := httptest.NewRequest("GET", "/products/aa99fdsa", nil)
-	//	rec := httptest.NewRecorder()
-	//	router.ServeHTTP(rec, req)
-	//
-	//	// 検証
-	//	var jsonValues map[string]string
-	//	err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
-	//	assert.NoError(t, err)
-	//
-	//	expect := map[string]string{
-	//		"message": "Not Found",
-	//	}
-	//	assert.Equal(t, http.StatusNotFound, rec.Code)
-	//	assert.Equal(t, expect, jsonValues)
-	//})
+	t.Run("指定IDの契約が存在しなかった時", func(t *testing.T) {
+		router := newRouter()
+		req := httptest.NewRequest("GET", "/contracts/0", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		var jsonValues map[string]string
+		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+		assert.NoError(t, err)
+
+		expect := map[string]string{
+			"message": "Not Found",
+		}
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, expect, jsonValues)
+	})
+
+	t.Run("IDに変な値を入れられた時", func(t *testing.T) {
+		router := newRouter()
+		req := httptest.NewRequest("GET", "/contracts/aa99fdsa", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		var jsonValues map[string]string
+		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+		assert.NoError(t, err)
+
+		expect := map[string]string{
+			"message": "Not Found",
+		}
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, expect, jsonValues)
+	})
 }

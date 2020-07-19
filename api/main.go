@@ -294,7 +294,6 @@ func getContract(c echo.Context) error {
 	}
 
 	// サービスインスタンス化
-	//productAppService := application_service.NewProductApplicationService()
 	contractAppService := application_service.NewContractApplicationService()
 	// データ取得
 	contract, product, user, err := contractAppService.GetById(contractId)
