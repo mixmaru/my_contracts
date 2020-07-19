@@ -40,6 +40,21 @@ func (r *UserRepository) SaveUserIndividual(userEntity *entities.UserIndividualE
 	return user.Id, nil
 }
 
+// Idで顧客情報を取得する。データがなければnilを返す
+func (r *UserRepository) GetUserById(id int, executor gorp.SqlExecutor) (*entities.UserEntity, error) {
+	var mapper data_mappers.UserMapper
+	var entity entities.UserEntity
+	query := "select * from users where id = $1"
+	noRow, err := r.selectOne(executor, &mapper, &entity, query, id)
+	if err != nil {
+		return nil, err
+	}
+	if noRow {
+		return nil, nil
+	}
+	return &entity, nil
+}
+
 // Idで個人顧客情報を取得する。データがなければnilを返す
 func (r *UserRepository) GetUserIndividualById(id int, executor gorp.SqlExecutor) (*entities.UserIndividualEntity, error) {
 	// dbからデータ取得
