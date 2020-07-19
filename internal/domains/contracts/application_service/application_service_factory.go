@@ -28,6 +28,7 @@ func NewContractApplicationService() *ContractApplicationService {
 	return &ContractApplicationService{
 		ContractRepository: repositories.NewContractRepository(),
 		UserRepository:     repositories.NewUserRepository(),
+		ProductRepository:  repositories.NewProductRepository(),
 	}
 }
 

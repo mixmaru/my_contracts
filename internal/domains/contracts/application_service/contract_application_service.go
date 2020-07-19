@@ -12,6 +12,7 @@ import (
 type ContractApplicationService struct {
 	ContractRepository interfaces.IContractRepository
 	UserRepository     interfaces.IUserRepository
+	ProductRepository  interfaces.IProductRepository
 }
 
 func (c *ContractApplicationService) Register(userId int, productId int) (productDto data_transfer_objects.ContractDto, validationErrors map[string][]string, err error) {
@@ -72,6 +73,17 @@ func (c *ContractApplicationService) registerValidation(userId int, productId in
 	}
 	if user == nil {
 		validationErrors["user_id"] = []string{
+			"存在しません",
+		}
+	}
+
+	// productの存在チェック
+	product, err := c.ProductRepository.GetById(productId, executor)
+	if err != nil {
+		return nil, err
+	}
+	if product == nil {
+		validationErrors["product_id"] = []string{
 			"存在しません",
 		}
 	}

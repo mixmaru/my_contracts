@@ -199,13 +199,10 @@ func TestContractApplicationService_registerValidation(t *testing.T) {
 	})
 
 	t.Run("指定されたProductが存在しない", func(t *testing.T) {
-		//validationErrors, err := productAppService.registerValidation("既存商品", "1000", conn)
-		//assert.NoError(t, err)
-		//expect := map[string][]string{
-		//	"name": []string{
-		//		"すでに存在します",
-		//	},
-		//}
-		//assert.Equal(t, expect, validationErrors)
+		validationErrors, err := contractAppService.registerValidation(savedUserId, -100, conn)
+		assert.NoError(t, err)
+		assert.Len(t, validationErrors, 1)
+		assert.Len(t, validationErrors["product_id"], 1)
+		assert.Equal(t, "存在しません", validationErrors["product_id"][0])
 	})
 }
