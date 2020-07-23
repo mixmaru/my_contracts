@@ -15,7 +15,7 @@ func TestUserCorporationView_SetDataToEntity(t *testing.T) {
 	record.CreatedAt = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	record.UpdatedAt = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 
-	entity := entities.NewUserCorporationEntity()
+	entity := &entities.UserCorporationEntity{}
 	err := record.SetDataToEntity(entity)
 	assert.NoError(t, err)
 
