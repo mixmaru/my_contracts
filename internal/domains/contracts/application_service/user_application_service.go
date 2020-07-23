@@ -256,3 +256,32 @@ func (s *UserApplicationService) GetUserCorporation(userId int) (data_transfer_o
 		return userDto, nil
 	}
 }
+
+func (s *UserApplicationService) GetUserById(userId int) (usrDto interface{}, err error) {
+	conn, err := db_connection.GetConnection()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Db.Close()
+
+	gotUser, err := s.userRepository.GetUserById(userId, conn)
+	if err != nil {
+		return nil, err
+	}
+
+	if gotUser == nil {
+		// データがない場合
+		return nil, nil
+	}
+
+	switch gotUser.(type) {
+	case *entities.UserIndividualEntity:
+		userDto := data_transfer_objects.NewUserIndividualDtoFromEntity(gotUser.(*entities.UserIndividualEntity))
+		return userDto, nil
+	case *entities.UserCorporationEntity:
+		userDto := data_transfer_objects.NewUserCorporationDtoFromEntity(gotUser.(*entities.UserCorporationEntity))
+		return userDto, nil
+	default:
+		return nil, errors.Errorf("考慮していないtypeが来た。type: %t, userId: %v", gotUser, userId)
+	}
+}
