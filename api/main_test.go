@@ -88,44 +88,45 @@ func TestMain_saveIndividualUser_getIndividualUser(t *testing.T) {
 		assert.Equal(t, expect, validMessages)
 	})
 }
-func TestMain_getIndividualUser(t *testing.T) {
-	// 正常系はTestMain_saveIndividualUser_getIndividualUserでテスト済
-	t.Run("指定IDの個人顧客が存在しなかった時", func(t *testing.T) {
-		router := newRouter()
-		req := httptest.NewRequest("GET", "/individual_users/0", nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
 
-		// 検証
-		var jsonValues map[string]string
-		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
-		assert.NoError(t, err)
-
-		expect := map[string]string{
-			"message": "Not Found",
-		}
-		assert.Equal(t, http.StatusNotFound, rec.Code)
-		assert.Equal(t, expect, jsonValues)
-	})
-
-	t.Run("IDに変な値を入れられた時", func(t *testing.T) {
-		router := newRouter()
-		req := httptest.NewRequest("GET", "/individual_users/aa1aa", nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-
-		// 検証
-		var jsonValues map[string]string
-		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
-		assert.NoError(t, err)
-
-		expect := map[string]string{
-			"message": "Not Found",
-		}
-		assert.Equal(t, http.StatusNotFound, rec.Code)
-		assert.Equal(t, expect, jsonValues)
-	})
-}
+//func TestMain_getIndividualUser(t *testing.T) {
+//	// 正常系はTestMain_saveIndividualUser_getIndividualUserでテスト済
+//	t.Run("指定IDの個人顧客が存在しなかった時", func(t *testing.T) {
+//		router := newRouter()
+//		req := httptest.NewRequest("GET", "/individual_users/0", nil)
+//		rec := httptest.NewRecorder()
+//		router.ServeHTTP(rec, req)
+//
+//		// 検証
+//		var jsonValues map[string]string
+//		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+//		assert.NoError(t, err)
+//
+//		expect := map[string]string{
+//			"message": "Not Found",
+//		}
+//		assert.Equal(t, http.StatusNotFound, rec.Code)
+//		assert.Equal(t, expect, jsonValues)
+//	})
+//
+//	t.Run("IDに変な値を入れられた時", func(t *testing.T) {
+//		router := newRouter()
+//		req := httptest.NewRequest("GET", "/individual_users/aa1aa", nil)
+//		rec := httptest.NewRecorder()
+//		router.ServeHTTP(rec, req)
+//
+//		// 検証
+//		var jsonValues map[string]string
+//		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+//		assert.NoError(t, err)
+//
+//		expect := map[string]string{
+//			"message": "Not Found",
+//		}
+//		assert.Equal(t, http.StatusNotFound, rec.Code)
+//		assert.Equal(t, expect, jsonValues)
+//	})
+//}
 
 func TestMain_saveCorporationUser(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
@@ -222,75 +223,172 @@ func TestMain_saveCorporationUser(t *testing.T) {
 	})
 }
 
-func TestMain_getCorporationUser(t *testing.T) {
-	// 検証用データ登録
-	router := newRouter()
-	body := url.Values{}
-	body.Set("contact_person_name", "担当　太郎")
-	body.Set("president_name", "社長　太郎")
+//func TestMain_getCorporationUser(t *testing.T) {
+//	// 検証用データ登録
+//	router := newRouter()
+//	body := url.Values{}
+//	body.Set("contact_person_name", "担当　太郎")
+//	body.Set("president_name", "社長　太郎")
+//
+//	// リクエスト実行
+//	req := httptest.NewRequest("POST", "/corporation_users/", strings.NewReader(body.Encode()))
+//	req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+//	rec := httptest.NewRecorder()
+//	router.ServeHTTP(rec, req)
+//	// 検証
+//	assert.Equal(t, http.StatusCreated, rec.Code)
+//
+//	// 保存したデータを取得
+//	var registeredUser data_transfer_objects.UserCorporationDto
+//	err := json.Unmarshal(rec.Body.Bytes(), &registeredUser)
+//	assert.NoError(t, err)
+//
+//	t.Run("正常系", func(t *testing.T) {
+//		router := newRouter()
+//		req := httptest.NewRequest("GET", fmt.Sprintf("/corporation_users/%v", registeredUser.Id), nil)
+//		rec := httptest.NewRecorder()
+//		router.ServeHTTP(rec, req)
+//
+//		// 保存したデータを取得
+//		var gotUserData data_transfer_objects.UserCorporationDto
+//		err = json.Unmarshal(rec.Body.Bytes(), &gotUserData)
+//		assert.NoError(t, err)
+//
+//		assert.Equal(t, http.StatusOK, rec.Code)
+//		assert.Equal(t, registeredUser, gotUserData)
+//	})
+//
+//	t.Run("指定IDの個人顧客が存在しなかった時", func(t *testing.T) {
+//		router := newRouter()
+//		req := httptest.NewRequest("GET", "/corporation_users/0", nil)
+//		rec := httptest.NewRecorder()
+//		router.ServeHTTP(rec, req)
+//
+//		// 検証
+//		var jsonValues map[string]string
+//		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+//		assert.NoError(t, err)
+//
+//		expect := map[string]string{
+//			"message": "Not Found",
+//		}
+//		assert.Equal(t, http.StatusNotFound, rec.Code)
+//		assert.Equal(t, expect, jsonValues)
+//	})
+//
+//	t.Run("IDに変な値を入れられた時", func(t *testing.T) {
+//		router := newRouter()
+//		req := httptest.NewRequest("GET", "/corporation_users/aa99fdsa", nil)
+//		rec := httptest.NewRecorder()
+//		router.ServeHTTP(rec, req)
+//
+//		// 検証
+//		var jsonValues map[string]string
+//		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+//		assert.NoError(t, err)
+//
+//		expect := map[string]string{
+//			"message": "Not Found",
+//		}
+//		assert.Equal(t, http.StatusNotFound, rec.Code)
+//		assert.Equal(t, expect, jsonValues)
+//	})
+//}
 
-	// リクエスト実行
-	req := httptest.NewRequest("POST", "/corporation_users/", strings.NewReader(body.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-	rec := httptest.NewRecorder()
-	router.ServeHTTP(rec, req)
-	// 検証
-	assert.Equal(t, http.StatusCreated, rec.Code)
-
-	// 保存したデータを取得
-	var registeredUser data_transfer_objects.UserCorporationDto
-	err := json.Unmarshal(rec.Body.Bytes(), &registeredUser)
+func TestMain_getUser(t *testing.T) {
+	userAppService := application_service.NewUserApplicationService()
+	// 個人ユーザー登録
+	savedIndividualUser, validErrors, err := userAppService.RegisterUserIndividual("個人たたろう")
 	assert.NoError(t, err)
+	assert.Len(t, validErrors, 0)
 
-	t.Run("正常系", func(t *testing.T) {
-		router := newRouter()
-		req := httptest.NewRequest("GET", fmt.Sprintf("/corporation_users/%v", registeredUser.Id), nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
+	// 法人ユーザー登録
+	savedCorporationUser, validErrors, err := userAppService.RegisterUserCorporation("法人担当者", "社長次郎")
+	assert.NoError(t, err)
+	assert.Len(t, validErrors, 0)
 
-		// 保存したデータを取得
-		var gotUserData data_transfer_objects.UserCorporationDto
-		err = json.Unmarshal(rec.Body.Bytes(), &gotUserData)
-		assert.NoError(t, err)
+	t.Run("個人ユーザー取得", func(t *testing.T) {
+		t.Run("正常系", func(t *testing.T) {
+			router := newRouter()
+			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", savedIndividualUser.Id), nil)
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
 
-		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, registeredUser, gotUserData)
+			// 検証
+			var loadedUser data_transfer_objects.UserIndividualDto
+			// jsonパース
+			err = json.Unmarshal(rec.Body.Bytes(), &loadedUser)
+			assert.NoError(t, err)
+
+			assert.Equal(t, savedIndividualUser.Id, loadedUser.Id)
+			assert.Equal(t, "individual", loadedUser.Type)
+			assert.Equal(t, "個人たたろう", loadedUser.Name)
+			assert.NotZero(t, loadedUser.CreatedAt)
+			assert.NotZero(t, loadedUser.UpdatedAt)
+		})
+
+		t.Run("指定IDのユーザーが存在しなかったときNotFoundを返す", func(t *testing.T) {
+			router := newRouter()
+			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", -100), nil)
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusNotFound, rec.Code)
+
+			// jsonパース
+			var jsonValues map[string]string
+			err = json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+			assert.NoError(t, err)
+
+			expect := map[string]string{
+				"message": "Not Found",
+			}
+			assert.Equal(t, expect, jsonValues)
+		})
+
+		t.Run("数値ではない適当な値を入れられたときはNotFoundを返す", func(t *testing.T) {
+			router := newRouter()
+			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", "1a00"), nil)
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusNotFound, rec.Code)
+
+			// jsonパース
+			var jsonValues map[string]string
+			err = json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+			assert.NoError(t, err)
+
+			expect := map[string]string{
+				"message": "Not Found",
+			}
+			assert.Equal(t, expect, jsonValues)
+		})
 	})
 
-	t.Run("指定IDの個人顧客が存在しなかった時", func(t *testing.T) {
-		router := newRouter()
-		req := httptest.NewRequest("GET", "/corporation_users/0", nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
+	t.Run("法人ユーザー取得", func(t *testing.T) {
+		t.Run("正常系", func(t *testing.T) {
+			router := newRouter()
+			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", savedCorporationUser.Id), nil)
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
 
-		// 検証
-		var jsonValues map[string]string
-		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
-		assert.NoError(t, err)
+			// 検証
+			var jsonValues map[string]string
+			err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+			assert.NoError(t, err)
 
-		expect := map[string]string{
-			"message": "Not Found",
-		}
-		assert.Equal(t, http.StatusNotFound, rec.Code)
-		assert.Equal(t, expect, jsonValues)
-	})
+			expect := map[string]string{
+				"message": "Not Found",
+			}
+			assert.Equal(t, http.StatusNotFound, rec.Code)
+			assert.Equal(t, expect, jsonValues)
 
-	t.Run("IDに変な値を入れられた時", func(t *testing.T) {
-		router := newRouter()
-		req := httptest.NewRequest("GET", "/corporation_users/aa99fdsa", nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
+		})
+		t.Run("指定IDのユーザーが存在しなかったときNotFoundを返す", func(t *testing.T) {
 
-		// 検証
-		var jsonValues map[string]string
-		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
-		assert.NoError(t, err)
+		})
+		t.Run("数値ではない適当な値を入れられたときはNotFoundを返す", func(t *testing.T) {
 
-		expect := map[string]string{
-			"message": "Not Found",
-		}
-		assert.Equal(t, http.StatusNotFound, rec.Code)
-		assert.Equal(t, expect, jsonValues)
+		})
 	})
 }
 

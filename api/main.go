@@ -35,6 +35,7 @@ func newRouter() *echo.Echo {
 	e.POST("/corporation_users/", saveCorporationUser)
 	// 法人顧客情報取得
 	e.GET("/corporation_users/:id", getCorporationUser)
+	e.GET("/users/:id", getUser)
 	// 商品登録
 	e.POST("/products/", saveProduct)
 	// 商品情報取得
@@ -142,7 +143,38 @@ func saveCorporationUser(c echo.Context) error {
 // contact_person_name string 担当者名
 // president_name string 社長名
 // curl http://localhost:1323/individual_users/1
-func getCorporationUser(c echo.Context) error {
+//func getCorporationUser(c echo.Context) error {
+//	logger, err := my_logger.GetLogger()
+//	if err != nil {
+//		return err
+//	}
+//
+//	userId, err := strconv.Atoi(c.Param("id"))
+//	if err != nil {
+//		// idに変な値が渡された
+//		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+//	}
+//
+//	// サービスインスタンス化
+//	userAppService := application_service.NewUserApplicationService()
+//	// データ取得
+//	user, err := userAppService.GetUserCorporation(userId)
+//	if err != nil {
+//		logger.Sugar().Errorw("法人顧客データ取得に失敗。", "userId", userId, "err", err)
+//		c.Error(err)
+//		return err
+//	}
+//
+//	// データがない
+//	if user.Id == 0 {
+//		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+//	}
+//
+//	// 返却
+//	return c.JSON(http.StatusOK, user)
+//}
+
+func getUser(c echo.Context) error {
 	logger, err := my_logger.GetLogger()
 	if err != nil {
 		return err
@@ -157,15 +189,15 @@ func getCorporationUser(c echo.Context) error {
 	// サービスインスタンス化
 	userAppService := application_service.NewUserApplicationService()
 	// データ取得
-	user, err := userAppService.GetUserCorporation(userId)
+	user, err := userAppService.GetUserById(userId)
 	if err != nil {
-		logger.Sugar().Errorw("法人顧客データ取得に失敗。", "userId", userId, "err", err)
+		logger.Sugar().Errorw("顧客データ取得に失敗。", "userId", userId, "err", err)
 		c.Error(err)
 		return err
 	}
 
 	// データがない
-	if user.Id == 0 {
+	if user == nil {
 		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
 	}
 
