@@ -89,27 +89,6 @@ func userIndividualValidation(name string) (validationErrors map[string][]string
 	return validationErrors, nil
 }
 
-// 個人顧客情報を取得して返却する
-func (s *UserApplicationService) GetUserIndividual(userId int) (data_transfer_objects.UserIndividualDto, error) {
-	conn, err := db_connection.GetConnection()
-	if err != nil {
-		return data_transfer_objects.UserIndividualDto{}, err
-	}
-	defer conn.Db.Close()
-
-	user, err := s.userRepository.GetUserIndividualById(userId, conn)
-	if err != nil {
-		return data_transfer_objects.UserIndividualDto{}, err
-	}
-	if user == nil {
-		// データがない場合、空データ構造体を返す
-		return data_transfer_objects.UserIndividualDto{}, nil
-	} else {
-		userDto := createUserIndividualDtoFromEntity(user)
-		return userDto, nil
-	}
-}
-
 func createUserIndividualDtoFromEntity(entity *entities.UserIndividualEntity) data_transfer_objects.UserIndividualDto {
 	return data_transfer_objects.UserIndividualDto{
 		Name: entity.Name(),
@@ -233,28 +212,6 @@ func registerUserCorporationValidation(contactPersonName string, presidentName s
 	}
 
 	return validationErrors, nil
-}
-
-// 法人顧客情報を取得して返却する
-func (s *UserApplicationService) GetUserCorporation(userId int) (data_transfer_objects.UserCorporationDto, error) {
-	conn, err := db_connection.GetConnection()
-	if err != nil {
-		return data_transfer_objects.UserCorporationDto{}, err
-	}
-	defer conn.Db.Close()
-
-	gotUser, err := s.userRepository.GetUserCorporationById(userId, conn)
-	if err != nil {
-		return data_transfer_objects.UserCorporationDto{}, err
-	}
-
-	if gotUser == nil {
-		// データがない場合、空データ構造体を返す
-		return data_transfer_objects.UserCorporationDto{}, nil
-	} else {
-		userDto := createUserCorporationDtoFromEntity(gotUser)
-		return userDto, nil
-	}
 }
 
 func (s *UserApplicationService) GetUserById(userId int) (usrDto interface{}, err error) {
