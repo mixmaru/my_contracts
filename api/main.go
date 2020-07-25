@@ -30,11 +30,11 @@ func newRouter() *echo.Echo {
 	// 個人顧客新規登録
 	e.POST("/individual_users/", saveIndividualUser)
 	// 個人顧客情報取得
-	e.GET("/individual_users/:id", getIndividualUser)
+	//e.GET("/individual_users/:id", getIndividualUser)
 	// 個人顧客新規登録
 	e.POST("/corporation_users/", saveCorporationUser)
 	// 法人顧客情報取得
-	e.GET("/corporation_users/:id", getCorporationUser)
+	//e.GET("/corporation_users/:id", getCorporationUser)
 	e.GET("/users/:id", getUser)
 	// 商品登録
 	e.POST("/products/", saveProduct)

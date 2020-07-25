@@ -44,7 +44,7 @@ func TestMain_saveIndividualUser_getIndividualUser(t *testing.T) {
 		///////// データ取得テスト
 		// リクエスト実行
 		registeredId := strconv.Itoa(registeredUser.Id)
-		req = httptest.NewRequest("GET", "/individual_users/"+registeredId, nil)
+		req = httptest.NewRequest("GET", "/users/"+registeredId, nil)
 		rec = httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
 
@@ -56,7 +56,7 @@ func TestMain_saveIndividualUser_getIndividualUser(t *testing.T) {
 		err = json.Unmarshal(rec.Body.Bytes(), &loadedUser)
 		assert.NoError(t, err)
 
-		assert.Equal(t, registeredUser, loadedUser)
+		assert.Equal(t, registeredUser.Id, loadedUser.Id)
 	})
 
 	t.Run("バリデーションエラー", func(t *testing.T) {
@@ -372,22 +372,53 @@ func TestMain_getUser(t *testing.T) {
 			router.ServeHTTP(rec, req)
 
 			// 検証
+			var loadedUser data_transfer_objects.UserCorporationDto
+			// jsonパース
+			err = json.Unmarshal(rec.Body.Bytes(), &loadedUser)
+			assert.NoError(t, err)
+
+			assert.Equal(t, savedCorporationUser.Id, loadedUser.Id)
+			assert.Equal(t, "corporation", loadedUser.Type)
+			assert.Equal(t, "法人担当者", loadedUser.ContactPersonName)
+			assert.Equal(t, "社長次郎", loadedUser.PresidentName)
+			assert.NotZero(t, loadedUser.CreatedAt)
+			assert.NotZero(t, loadedUser.UpdatedAt)
+		})
+
+		t.Run("指定IDのユーザーが存在しなかったときNotFoundを返す", func(t *testing.T) {
+			router := newRouter()
+			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", -100), nil)
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusNotFound, rec.Code)
+
+			// jsonパース
 			var jsonValues map[string]string
-			err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+			err = json.Unmarshal(rec.Body.Bytes(), &jsonValues)
 			assert.NoError(t, err)
 
 			expect := map[string]string{
 				"message": "Not Found",
 			}
-			assert.Equal(t, http.StatusNotFound, rec.Code)
 			assert.Equal(t, expect, jsonValues)
-
 		})
-		t.Run("指定IDのユーザーが存在しなかったときNotFoundを返す", func(t *testing.T) {
 
-		})
 		t.Run("数値ではない適当な値を入れられたときはNotFoundを返す", func(t *testing.T) {
+			router := newRouter()
+			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", "1a00"), nil)
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusNotFound, rec.Code)
 
+			// jsonパース
+			var jsonValues map[string]string
+			err = json.Unmarshal(rec.Body.Bytes(), &jsonValues)
+			assert.NoError(t, err)
+
+			expect := map[string]string{
+				"message": "Not Found",
+			}
+			assert.Equal(t, expect, jsonValues)
 		})
 	})
 }
