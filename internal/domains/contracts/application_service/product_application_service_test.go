@@ -122,13 +122,26 @@ func TestProductApplicationService_registerValidation(t *testing.T) {
 		_, err = productRep.Save(product, tran)
 		assert.NoError(t, err)
 	}
+
+	// 「まだ登録されていない商品」がもし存在するなら削除しておく
+	product, err = productRep.GetByName("まだ登録されていない商品", tran)
+	assert.NoError(t, err)
+	if product != nil {
+		a, err := tran.Exec("delete from contracts where product_id = $1", product.Id())
+		println(a)
+		assert.NoError(t, err)
+		b, err := tran.Exec("delete from products where id = $1", product.Id())
+		println(b)
+		assert.NoError(t, err)
+	}
+
 	err = tran.Commit()
 	assert.NoError(t, err)
 
 	productAppService := NewProductApplicationService()
 
 	t.Run("エラーなし", func(t *testing.T) {
-		validationErrors, err := productAppService.registerValidation("A商品", "1000.01", conn)
+		validationErrors, err := productAppService.registerValidation("まだ登録されていない商品", "1000.01", conn)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string][]string{}, validationErrors)
 	})

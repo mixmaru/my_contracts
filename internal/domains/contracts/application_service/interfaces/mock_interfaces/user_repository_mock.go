@@ -35,10 +35,10 @@ func (m *MockIUserRepository) EXPECT() *MockIUserRepositoryMockRecorder {
 }
 
 // GetUserById mocks base method.
-func (m *MockIUserRepository) GetUserById(id int, executor gorp.SqlExecutor) (*entities.UserEntity, error) {
+func (m *MockIUserRepository) GetUserById(id int, executor gorp.SqlExecutor) (interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserById", id, executor)
-	ret0, _ := ret[0].(*entities.UserEntity)
+	ret0, _ := ret[0].(interface{})
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

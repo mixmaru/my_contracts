@@ -89,27 +89,6 @@ func userIndividualValidation(name string) (validationErrors map[string][]string
 	return validationErrors, nil
 }
 
-// 個人顧客情報を取得して返却する
-func (s *UserApplicationService) GetUserIndividual(userId int) (data_transfer_objects.UserIndividualDto, error) {
-	conn, err := db_connection.GetConnection()
-	if err != nil {
-		return data_transfer_objects.UserIndividualDto{}, err
-	}
-	defer conn.Db.Close()
-
-	user, err := s.userRepository.GetUserIndividualById(userId, conn)
-	if err != nil {
-		return data_transfer_objects.UserIndividualDto{}, err
-	}
-	if user == nil {
-		// データがない場合、空データ構造体を返す
-		return data_transfer_objects.UserIndividualDto{}, nil
-	} else {
-		userDto := createUserIndividualDtoFromEntity(user)
-		return userDto, nil
-	}
-}
-
 func createUserIndividualDtoFromEntity(entity *entities.UserIndividualEntity) data_transfer_objects.UserIndividualDto {
 	return data_transfer_objects.UserIndividualDto{
 		Name: entity.Name(),
@@ -146,12 +125,7 @@ func (s *UserApplicationService) RegisterUserCorporation(contactPersonName strin
 	}
 
 	// リポジトリ登録用にデータ作成
-	entity := entities.NewUserCorporationEntity()
-	err = entity.SetContactPersonName(contactPersonName)
-	if err != nil {
-		return data_transfer_objects.UserCorporationDto{}, validationErrors, err
-	}
-	err = entity.SetPresidentName(presidentName)
+	entity, err := entities.NewUserCorporationEntity(contactPersonName, presidentName)
 	if err != nil {
 		return data_transfer_objects.UserCorporationDto{}, validationErrors, err
 	}
@@ -240,24 +214,31 @@ func registerUserCorporationValidation(contactPersonName string, presidentName s
 	return validationErrors, nil
 }
 
-// 法人顧客情報を取得して返却する
-func (s *UserApplicationService) GetUserCorporation(userId int) (data_transfer_objects.UserCorporationDto, error) {
+func (s *UserApplicationService) GetUserById(userId int) (usrDto interface{}, err error) {
 	conn, err := db_connection.GetConnection()
 	if err != nil {
-		return data_transfer_objects.UserCorporationDto{}, err
+		return nil, err
 	}
 	defer conn.Db.Close()
 
-	gotUser, err := s.userRepository.GetUserCorporationById(userId, conn)
+	gotUser, err := s.userRepository.GetUserById(userId, conn)
 	if err != nil {
-		return data_transfer_objects.UserCorporationDto{}, err
+		return nil, err
 	}
 
 	if gotUser == nil {
-		// データがない場合、空データ構造体を返す
-		return data_transfer_objects.UserCorporationDto{}, nil
-	} else {
-		userDto := createUserCorporationDtoFromEntity(gotUser)
+		// データがない場合
+		return nil, nil
+	}
+
+	switch gotUser.(type) {
+	case *entities.UserIndividualEntity:
+		userDto := data_transfer_objects.NewUserIndividualDtoFromEntity(gotUser.(*entities.UserIndividualEntity))
 		return userDto, nil
+	case *entities.UserCorporationEntity:
+		userDto := data_transfer_objects.NewUserCorporationDtoFromEntity(gotUser.(*entities.UserCorporationEntity))
+		return userDto, nil
+	default:
+		return nil, errors.Errorf("考慮していないtypeが来た。type: %t, userId: %v", gotUser, userId)
 	}
 }
