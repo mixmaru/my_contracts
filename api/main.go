@@ -84,7 +84,7 @@ func saveUser(c echo.Context) error {
 	default:
 		validErrorMessage := map[string][]string{
 			"type": []string{
-				"typeがindividualでもproductionでもありません。",
+				"typeがindividualでもcorporationでもありません。",
 			},
 		}
 		return c.JSON(http.StatusBadRequest, validErrorMessage)

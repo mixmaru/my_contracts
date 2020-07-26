@@ -199,7 +199,7 @@ func TestMain_saveUser(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, validErrors, 1)
 		assert.Len(t, validErrors["type"], 1)
-		assert.Equal(t, "typeがindividualでもproductionでもありません。", validErrors["type"][0])
+		assert.Equal(t, "typeがindividualでもcorporationでもありません。", validErrors["type"][0])
 	})
 }
 
