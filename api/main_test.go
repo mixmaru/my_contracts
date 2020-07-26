@@ -45,6 +45,36 @@ func TestMain_saveUser(t *testing.T) {
 			assert.NotZero(t, registeredUser.CreatedAt)
 			assert.NotZero(t, registeredUser.UpdatedAt)
 		})
+
+		t.Run("バリデーションエラー", func(t *testing.T) {
+			router := newRouter()
+
+			// リクエストパラメータ作成
+			body := url.Values{}
+			body.Set("type", "individual")
+			body.Set("name", "")
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/users/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+			// jsonパース
+			var validMessages map[string][]string
+			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+			assert.NoError(t, err)
+
+			expect := map[string][]string{
+				"name": []string{
+					"空です",
+				},
+			}
+			assert.Equal(t, expect, validMessages)
+		})
 	})
 
 	t.Run("法人顧客", func(t *testing.T) {
@@ -78,6 +108,72 @@ func TestMain_saveUser(t *testing.T) {
 			assert.NotZero(t, registeredUser.CreatedAt)
 			assert.NotZero(t, registeredUser.UpdatedAt)
 		})
+
+		t.Run("バリデーションエラー", func(t *testing.T) {
+			router := newRouter()
+
+			t.Run("空文字", func(t *testing.T) {
+				body := url.Values{}
+				body.Set("type", "corporation")
+				body.Set("contact_person_name", "")
+				body.Set("president_name", "")
+
+				// リクエスト実行
+				req := httptest.NewRequest("POST", "/users/", strings.NewReader(body.Encode()))
+				req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+				rec := httptest.NewRecorder()
+				router.ServeHTTP(rec, req)
+
+				// 検証
+				assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+				// jsonパース
+				var validMessages map[string][]string
+				err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+				assert.NoError(t, err)
+
+				expected := map[string][]string{
+					"contact_person_name": []string{
+						"空です",
+					},
+					"president_name": []string{
+						"空です",
+					},
+				}
+				assert.Equal(t, expected, validMessages)
+			})
+
+			t.Run("文字多すぎ", func(t *testing.T) {
+				body := url.Values{}
+				body.Set("type", "corporation")
+				body.Set("contact_person_name", "000000000011111111112222222222333333333344444444445")
+				body.Set("president_name", "００００００００００11111111112222222222333333333344444444445")
+
+				// リクエスト実行
+				req := httptest.NewRequest("POST", "/users/", strings.NewReader(body.Encode()))
+				req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+				rec := httptest.NewRecorder()
+				router.ServeHTTP(rec, req)
+
+				// 検証
+				assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+				// jsonパース
+				var validMessages map[string][]string
+				err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+				assert.NoError(t, err)
+
+				expected := map[string][]string{
+					"contact_person_name": []string{
+						"50文字より多いです",
+					},
+					"president_name": []string{
+						"50文字より多いです",
+					},
+				}
+				assert.Equal(t, expected, validMessages)
+			})
+		})
 	})
 
 	t.Run("type間違えたとき", func(t *testing.T) {
@@ -104,175 +200,6 @@ func TestMain_saveUser(t *testing.T) {
 		assert.Len(t, validErrors, 1)
 		assert.Len(t, validErrors["type"], 1)
 		assert.Equal(t, "typeがindividualでもproductionでもありません。", validErrors["type"][0])
-	})
-}
-
-func TestMain_saveIndividualUser_getIndividualUser(t *testing.T) {
-	t.Run("正常系", func(t *testing.T) {
-		router := newRouter()
-
-		//////// データ登録テスト
-
-		// リクエストパラメータ作成
-		body := url.Values{}
-		body.Set("name", "個人　太郎")
-
-		// リクエスト実行
-		req := httptest.NewRequest("POST", "/individual_users/", strings.NewReader(body.Encode()))
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-
-		// 検証
-		assert.Equal(t, http.StatusCreated, rec.Code)
-
-		// jsonパース
-		var registeredUser data_transfer_objects.UserIndividualDto
-		err := json.Unmarshal(rec.Body.Bytes(), &registeredUser)
-		assert.NoError(t, err)
-
-		assert.Equal(t, "個人　太郎", registeredUser.Name)
-
-		///////// データ取得テスト
-		// リクエスト実行
-		registeredId := strconv.Itoa(registeredUser.Id)
-		req = httptest.NewRequest("GET", "/users/"+registeredId, nil)
-		rec = httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-
-		// 検証
-		assert.Equal(t, http.StatusOK, rec.Code)
-
-		var loadedUser data_transfer_objects.UserIndividualDto
-		// jsonパース
-		err = json.Unmarshal(rec.Body.Bytes(), &loadedUser)
-		assert.NoError(t, err)
-
-		assert.Equal(t, registeredUser.Id, loadedUser.Id)
-	})
-
-	t.Run("バリデーションエラー", func(t *testing.T) {
-		router := newRouter()
-
-		// リクエストパラメータ作成
-		body := url.Values{}
-		body.Set("name", "")
-
-		// リクエスト実行
-		req := httptest.NewRequest("POST", "/individual_users/", strings.NewReader(body.Encode()))
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-
-		// 検証
-		assert.Equal(t, http.StatusBadRequest, rec.Code)
-
-		// jsonパース
-		var validMessages map[string][]string
-		err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
-		assert.NoError(t, err)
-
-		expect := map[string][]string{
-			"name": []string{
-				"空です",
-			},
-		}
-		assert.Equal(t, expect, validMessages)
-	})
-}
-
-func TestMain_saveCorporationUser(t *testing.T) {
-	t.Run("正常系", func(t *testing.T) {
-		router := newRouter()
-
-		//////// データ登録テスト
-
-		// リクエストパラメータ作成
-		body := url.Values{}
-		body.Set("contact_person_name", "担当　太郎")
-		body.Set("president_name", "社長　太郎")
-
-		// リクエスト実行
-		req := httptest.NewRequest("POST", "/corporation_users/", strings.NewReader(body.Encode()))
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-
-		// 検証
-		assert.Equal(t, http.StatusCreated, rec.Code)
-
-		// jsonパース
-		var registeredUser data_transfer_objects.UserCorporationDto
-		err := json.Unmarshal(rec.Body.Bytes(), &registeredUser)
-		assert.NoError(t, err)
-
-		assert.Equal(t, "担当　太郎", registeredUser.ContactPersonName)
-		assert.Equal(t, "社長　太郎", registeredUser.PresidentName)
-	})
-
-	t.Run("バリデーションエラー", func(t *testing.T) {
-		router := newRouter()
-		// リクエストパラメータ作成
-
-		t.Run("空文字", func(t *testing.T) {
-			body := url.Values{}
-			body.Set("contact_person_name", "")
-			body.Set("president_name", "")
-
-			// リクエスト実行
-			req := httptest.NewRequest("POST", "/corporation_users/", strings.NewReader(body.Encode()))
-			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-			rec := httptest.NewRecorder()
-			router.ServeHTTP(rec, req)
-
-			// 検証
-			assert.Equal(t, http.StatusBadRequest, rec.Code)
-
-			// jsonパース
-			var validMessages map[string][]string
-			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
-			assert.NoError(t, err)
-
-			expected := map[string][]string{
-				"contact_person_name": []string{
-					"空です",
-				},
-				"president_name": []string{
-					"空です",
-				},
-			}
-			assert.Equal(t, expected, validMessages)
-		})
-
-		t.Run("文字多すぎ", func(t *testing.T) {
-			body := url.Values{}
-			body.Set("contact_person_name", "000000000011111111112222222222333333333344444444445")
-			body.Set("president_name", "００００００００００11111111112222222222333333333344444444445")
-
-			// リクエスト実行
-			req := httptest.NewRequest("POST", "/corporation_users/", strings.NewReader(body.Encode()))
-			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-			rec := httptest.NewRecorder()
-			router.ServeHTTP(rec, req)
-
-			// 検証
-			assert.Equal(t, http.StatusBadRequest, rec.Code)
-
-			// jsonパース
-			var validMessages map[string][]string
-			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
-			assert.NoError(t, err)
-
-			expected := map[string][]string{
-				"contact_person_name": []string{
-					"50文字より多いです",
-				},
-				"president_name": []string{
-					"50文字より多いです",
-				},
-			}
-			assert.Equal(t, expected, validMessages)
-		})
 	})
 }
 
