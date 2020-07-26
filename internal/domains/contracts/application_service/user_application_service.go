@@ -61,7 +61,7 @@ func (s *UserApplicationService) RegisterUserIndividual(name string) (userIndivi
 	if err != nil {
 		return data_transfer_objects.UserIndividualDto{}, nil, err
 	}
-	userDto := createUserIndividualDtoFromEntity(savedUserEntity)
+	userDto := data_transfer_objects.NewUserIndividualDtoFromEntity(savedUserEntity)
 	return userDto, nil, nil
 }
 
@@ -87,29 +87,6 @@ func userIndividualValidation(name string) (validationErrors map[string][]string
 	}
 
 	return validationErrors, nil
-}
-
-func createUserIndividualDtoFromEntity(entity *entities.UserIndividualEntity) data_transfer_objects.UserIndividualDto {
-	return data_transfer_objects.UserIndividualDto{
-		Name: entity.Name(),
-		BaseDto: data_transfer_objects.BaseDto{
-			Id:        entity.Id(),
-			CreatedAt: entity.CreatedAt(),
-			UpdatedAt: entity.UpdatedAt(),
-		},
-	}
-}
-
-func createUserCorporationDtoFromEntity(entity *entities.UserCorporationEntity) data_transfer_objects.UserCorporationDto {
-	return data_transfer_objects.UserCorporationDto{
-		ContactPersonName: entity.ContactPersonName(),
-		PresidentName:     entity.PresidentName(),
-		BaseDto: data_transfer_objects.BaseDto{
-			Id:        entity.Id(),
-			CreatedAt: entity.CreatedAt(),
-			UpdatedAt: entity.UpdatedAt(),
-		},
-	}
 }
 
 // 法人顧客を新規登録する
@@ -159,7 +136,7 @@ func (s *UserApplicationService) RegisterUserCorporation(contactPersonName strin
 	}
 
 	// 登録データを取得してdtoにつめる
-	userDto := createUserCorporationDtoFromEntity(registeredUser)
+	userDto := data_transfer_objects.NewUserCorporationDtoFromEntity(registeredUser)
 	return userDto, nil, nil
 }
 

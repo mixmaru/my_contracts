@@ -27,10 +27,12 @@ func newRouter() *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	// 個人顧客新規登録
-	e.POST("/individual_users/", saveIndividualUser)
-	// 個人顧客新規登録
-	e.POST("/corporation_users/", saveCorporationUser)
+	//// 個人顧客新規登録
+	//e.POST("/individual_users/", saveIndividualUser)
+	//// 個人顧客新規登録
+	//e.POST("/corporation_users/", saveCorporationUser)
+	// 顧客新規登録
+	e.POST("/users/", saveUser)
 	// 顧客情報取得
 	e.GET("/users/:id", getUser)
 	// 商品登録
@@ -45,59 +47,107 @@ func newRouter() *echo.Echo {
 	return e
 }
 
-// 個人顧客新規登録
-// params:
-// name string 個人顧客名
-// curl -F "name=個人　太郎" http://localhost:1323/individual_users
-func saveIndividualUser(c echo.Context) error {
-	logger, err := my_logger.GetLogger()
-	if err != nil {
-		return err
-	}
-
-	// Get name and email
-	name := c.FormValue("name")
-	userAppService := application_service.NewUserApplicationService()
-	user, validErrs, err := userAppService.RegisterUserIndividual(name)
-	if err != nil {
-		logger.Sugar().Errorw("個人顧客データ登録に失敗。", "name", name, "err", err)
-		c.Error(err)
-		return err
-	}
-	if len(validErrs) > 0 {
-		return c.JSON(http.StatusBadRequest, validErrs)
-	}
-
-	return c.JSON(http.StatusCreated, user)
-}
+//// 個人顧客新規登録
+//// params:
+//// name string 個人顧客名
+//// curl -F "name=個人　太郎" http://localhost:1323/individual_users
+//func saveIndividualUser(c echo.Context) error {
+//	logger, err := my_logger.GetLogger()
+//	if err != nil {
+//		return err
+//	}
+//
+//	// Get name and email
+//	name := c.FormValue("name")
+//	userAppService := application_service.NewUserApplicationService()
+//	user, validErrs, err := userAppService.RegisterUserIndividual(name)
+//	if err != nil {
+//		logger.Sugar().Errorw("個人顧客データ登録に失敗。", "name", name, "err", err)
+//		c.Error(err)
+//		return err
+//	}
+//	if len(validErrs) > 0 {
+//		return c.JSON(http.StatusBadRequest, validErrs)
+//	}
+//
+//	return c.JSON(http.StatusCreated, user)
+//}
 
 // 法人顧客新規登録
 // params:
 // contact_person_name string 担当者名
 // president_name string 社長名
 // curl -F "contact_person_name=担当　太郎" -F "president_name=社長　太郎" http://localhost:1323/corporation_users/
-func saveCorporationUser(c echo.Context) error {
+//func saveCorporationUser(c echo.Context) error {
+//	logger, err := my_logger.GetLogger()
+//	if err != nil {
+//		return err
+//	}
+//
+//	contactName := c.FormValue("contact_person_name")
+//	presidentName := c.FormValue("president_name")
+//
+//	userAppService := application_service.NewUserApplicationService()
+//	user, validErrs, err := userAppService.RegisterUserCorporation(contactName, presidentName)
+//	if err != nil {
+//		logger.Sugar().Errorw("法人顧客データ登録に失敗。", "contactName", contactName, "presidentName", presidentName, "err", err)
+//		c.Error(err)
+//		return err
+//	}
+//
+//	if len(validErrs) > 0 {
+//		return c.JSON(http.StatusBadRequest, validErrs)
+//	}
+//
+//	return c.JSON(http.StatusCreated, user)
+//}
+
+func saveUser(c echo.Context) error {
 	logger, err := my_logger.GetLogger()
 	if err != nil {
 		return err
 	}
 
-	contactName := c.FormValue("contact_person_name")
-	presidentName := c.FormValue("president_name")
-
 	userAppService := application_service.NewUserApplicationService()
-	user, validErrs, err := userAppService.RegisterUserCorporation(contactName, presidentName)
-	if err != nil {
-		logger.Sugar().Errorw("法人顧客データ登録に失敗。", "contactName", contactName, "presidentName", presidentName, "err", err)
-		c.Error(err)
-		return err
-	}
 
-	if len(validErrs) > 0 {
-		return c.JSON(http.StatusBadRequest, validErrs)
-	}
+	// 顧客タイプで登録処理を分岐
+	userType := c.FormValue("type")
+	switch userType {
+	case "individual":
+		name := c.FormValue("name")
+		user, validErrs, err := userAppService.RegisterUserIndividual(name)
 
-	return c.JSON(http.StatusCreated, user)
+		if err != nil {
+			logger.Sugar().Errorw("個人顧客データ登録に失敗。", "name", name, "err", err)
+			c.Error(err)
+			return err
+		}
+		if len(validErrs) > 0 {
+			return c.JSON(http.StatusBadRequest, validErrs)
+		}
+		return c.JSON(http.StatusCreated, user)
+	case "corporation":
+		contactName := c.FormValue("contact_person_name")
+		presidentName := c.FormValue("president_name")
+
+		user, validErrs, err := userAppService.RegisterUserCorporation(contactName, presidentName)
+		if err != nil {
+			logger.Sugar().Errorw("法人顧客データ登録に失敗。", "contactName", contactName, "presidentName", presidentName, "err", err)
+			c.Error(err)
+			return err
+		}
+		if len(validErrs) > 0 {
+			return c.JSON(http.StatusBadRequest, validErrs)
+		}
+		return c.JSON(http.StatusCreated, user)
+	default:
+		validErrorMessage := map[string][]string{
+			"type": []string{
+				"typeがindividualでもproductionでもありません。",
+			},
+		}
+		return c.JSON(http.StatusBadRequest, validErrorMessage)
+	}
 }
 
 func getUser(c echo.Context) error {

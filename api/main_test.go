@@ -15,6 +15,98 @@ import (
 	"testing"
 )
 
+func TestMain_saveUser(t *testing.T) {
+	t.Run("個人顧客", func(t *testing.T) {
+		t.Run("正常系", func(t *testing.T) {
+			router := newRouter()
+
+			// リクエストパラメータ作成
+			body := url.Values{}
+			body.Set("type", "individual")
+			body.Set("name", "個人　太郎")
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/users/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusCreated, rec.Code)
+
+			// jsonパース
+			var registeredUser data_transfer_objects.UserIndividualDto
+			err := json.Unmarshal(rec.Body.Bytes(), &registeredUser)
+			assert.NoError(t, err)
+
+			assert.NotZero(t, registeredUser.Id)
+			assert.Equal(t, "個人　太郎", registeredUser.Name)
+			assert.Equal(t, "individual", registeredUser.Type)
+			assert.NotZero(t, registeredUser.CreatedAt)
+			assert.NotZero(t, registeredUser.UpdatedAt)
+		})
+	})
+
+	t.Run("法人顧客", func(t *testing.T) {
+		t.Run("正常系", func(t *testing.T) {
+			router := newRouter()
+
+			// リクエストパラメータ作成
+			body := url.Values{}
+			body.Set("type", "corporation")
+			body.Set("contact_person_name", "担当　太郎")
+			body.Set("president_name", "社長　太郎")
+
+			// リクエスト実行
+			req := httptest.NewRequest("POST", "/users/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			// 検証
+			assert.Equal(t, http.StatusCreated, rec.Code)
+
+			// jsonパース
+			var registeredUser data_transfer_objects.UserCorporationDto
+			err := json.Unmarshal(rec.Body.Bytes(), &registeredUser)
+			assert.NoError(t, err)
+
+			assert.NotZero(t, registeredUser.Id)
+			assert.Equal(t, "corporation", registeredUser.Type)
+			assert.Equal(t, "担当　太郎", registeredUser.ContactPersonName)
+			assert.Equal(t, "社長　太郎", registeredUser.PresidentName)
+			assert.NotZero(t, registeredUser.CreatedAt)
+			assert.NotZero(t, registeredUser.UpdatedAt)
+		})
+	})
+
+	t.Run("type間違えたとき", func(t *testing.T) {
+		router := newRouter()
+
+		// リクエストパラメータ作成
+		body := url.Values{}
+		body.Set("type", "aaaa")
+		body.Set("name", "個人　太郎")
+
+		// リクエスト実行
+		req := httptest.NewRequest("POST", "/users/", strings.NewReader(body.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		// 検証
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+		// jsonパース
+		var validErrors map[string][]string
+		err := json.Unmarshal(rec.Body.Bytes(), &validErrors)
+		assert.NoError(t, err)
+		assert.Len(t, validErrors, 1)
+		assert.Len(t, validErrors["type"], 1)
+		assert.Equal(t, "typeがindividualでもproductionでもありません。", validErrors["type"][0])
+	})
+}
+
 func TestMain_saveIndividualUser_getIndividualUser(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
 		router := newRouter()
