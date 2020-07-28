@@ -11,6 +11,7 @@ func TestUserCorporationMapper_NewUserCorporationMapperFromUserCorporationEntity
 	// entity用意
 	entity, err := entities.NewUserCorporationEntityWithData(
 		1,
+		"イケてる会社",
 		"担当太郎",
 		"社長次郎",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -23,6 +24,7 @@ func TestUserCorporationMapper_NewUserCorporationMapperFromUserCorporationEntity
 
 	expect := &UserCorporationMapper{
 		UserId:            1,
+		CompanyName:       "イケてる会社",
 		ContactParsonName: "担当太郎",
 		PresidentName:     "社長次郎",
 		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
@@ -39,6 +41,7 @@ func TestUserCorporationMapper_PreInsert(t *testing.T) {
 	// entity用意
 	newUser := UserCorporationMapper{
 		UserId:            0,
+		CompanyName:       "イケてる会社",
 		ContactParsonName: "担当太郎",
 		PresidentName:     "社長次郎",
 	}
@@ -54,6 +57,7 @@ func TestUserCorporationMapper_PreUpdate(t *testing.T) {
 	// entity用意
 	newUser := UserCorporationMapper{
 		UserId:            0,
+		CompanyName:       "イケてる会社",
 		ContactParsonName: "担当太郎",
 		PresidentName:     "社長次郎",
 	}

@@ -31,6 +31,7 @@ func TestUser_NewUserMapperFromUserIndividualEntity(t *testing.T) {
 func TestUser_NewUserMapperFromUserCorporationEntity(t *testing.T) {
 	userEntity, err := entities.NewUserCorporationEntityWithData(
 		1,
+		"イケてる会社",
 		"担当たろう",
 		"社長じろう",
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
