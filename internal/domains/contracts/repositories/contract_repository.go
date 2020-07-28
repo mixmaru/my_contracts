@@ -96,7 +96,7 @@ where c.id = $1`
 			return nil, nil, nil, errors.Wrapf(err, "userIndividualEntity作成失敗。mapper: %v", mapper)
 		}
 	case "corporation":
-		user, err = entities.NewUserCorporationEntityWithData(mapper.UserId, mapper.UserCorporationContractPersonName.String, mapper.UserCorporationPresidentName.String, mapper.UserCorporationCreatedAt.Time, mapper.UserCorporationUpdatedAt.Time)
+		user, err = entities.NewUserCorporationEntityWithData(mapper.UserId, mapper.UserCorporationCorporationName.String, mapper.UserCorporationContractPersonName.String, mapper.UserCorporationPresidentName.String, mapper.UserCorporationCreatedAt.Time, mapper.UserCorporationUpdatedAt.Time)
 		if err != nil {
 			return nil, nil, nil, errors.Wrapf(err, "userCorporationEntity作成失敗。mapper: %v", mapper)
 		}

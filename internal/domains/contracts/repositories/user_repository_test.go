@@ -107,7 +107,7 @@ func TestUserRepository_GetUserCorporationById(t *testing.T) {
 	defer db.Db.Close()
 
 	//　事前にデータ登録する
-	savingUser, err := entities.NewUserCorporationEntity("担当　太郎", "社長　太郎")
+	savingUser, err := entities.NewUserCorporationEntity("イケてる会社", "担当　太郎", "社長　太郎")
 	assert.NoError(t, err)
 
 	repo := NewUserRepository()
@@ -119,6 +119,7 @@ func TestUserRepository_GetUserCorporationById(t *testing.T) {
 		result, err := repo.GetUserCorporationById(savedId, db)
 		assert.NoError(t, err)
 		assert.Equal(t, savedId, result.Id())
+		assert.Equal(t, "イケてる会社", result.CorporationName())
 		assert.Equal(t, "担当　太郎", result.ContactPersonName())
 		assert.Equal(t, "社長　太郎", result.PresidentName())
 		assert.NotEqual(t, time.Time{}, result.CreatedAt())
@@ -138,7 +139,7 @@ func TestUserRepository_SaveUserCorporation(t *testing.T) {
 	defer db.Db.Close()
 
 	// 保存するデータ作成
-	user, err := entities.NewUserCorporationEntity("担当太郎", "社長次郎")
+	user, err := entities.NewUserCorporationEntity("イケてる会社", "担当太郎", "社長次郎")
 	assert.NoError(t, err)
 
 	// 保存実行
@@ -154,7 +155,7 @@ func TestUserRepository_getUserCorporationViewById(t *testing.T) {
 	defer dbMap.Db.Close()
 
 	// 事前にデータ登録
-	user, err := entities.NewUserCorporationEntity("担当太郎", "社長次郎")
+	user, err := entities.NewUserCorporationEntity("イケてる会社", "担当太郎", "社長次郎")
 	assert.NoError(t, err)
 	repo := NewUserRepository()
 	savedId, err := repo.SaveUserCorporation(user, dbMap)
@@ -166,6 +167,7 @@ func TestUserRepository_getUserCorporationViewById(t *testing.T) {
 
 	// 検証
 	assert.Equal(t, result.Id(), savedId)
+	assert.Equal(t, "イケてる会社", result.CorporationName())
 	assert.Equal(t, "担当太郎", result.ContactPersonName())
 	assert.Equal(t, "社長次郎", result.PresidentName())
 	assert.NotEqual(t, time.Time{}, result.CreatedAt())
@@ -185,7 +187,7 @@ func TestUserRepository_GetUserById(t *testing.T) {
 	assert.NoError(t, err)
 
 	//　事前にデータ登録する。法人顧客
-	userCorporation, err := entities.NewUserCorporationEntity("担当太郎", "社長太郎")
+	userCorporation, err := entities.NewUserCorporationEntity("イケてる会社", "担当太郎", "社長太郎")
 	assert.NoError(t, err)
 	repo = NewUserRepository()
 	savedCorporationId, err := repo.SaveUserCorporation(userCorporation, db)
@@ -222,6 +224,7 @@ func TestUserRepository_GetUserById(t *testing.T) {
 			assert.True(t, ok)
 
 			assert.Equal(t, savedCorporationId, loadedCorporation.Id())
+			assert.Equal(t, "イケてる会社", loadedCorporation.CorporationName())
 			assert.Equal(t, "担当太郎", loadedCorporation.ContactPersonName())
 			assert.Equal(t, "社長太郎", loadedCorporation.PresidentName())
 			assert.NotZero(t, loadedCorporation.CreatedAt())
