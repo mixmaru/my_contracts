@@ -7,11 +7,17 @@ import (
 
 type UserCorporationEntity struct {
 	*UserEntity
+	corporationName   values.CorporationNameValue   //会社名
 	contactPersonName values.ContactPersonNameValue //担当者名
 	presidentName     values.PresidentNameValue     //社長名
 }
 
-func NewUserCorporationEntity(contactPersonName string, presidentName string) (*UserCorporationEntity, error) {
+func NewUserCorporationEntity(companyName, contactPersonName, presidentName string) (*UserCorporationEntity, error) {
+	companyNameValue, err := values.NewCorporationNameValue(companyName)
+	if err != nil {
+		return nil, err
+	}
+
 	contactPersonNameValue, err := values.NewContactPersonNameValue(contactPersonName)
 	if err != nil {
 		return nil, err
@@ -24,13 +30,14 @@ func NewUserCorporationEntity(contactPersonName string, presidentName string) (*
 
 	return &UserCorporationEntity{
 		UserEntity:        &UserEntity{},
+		corporationName:   companyNameValue,
 		contactPersonName: contactPersonNameValue,
 		presidentName:     presidentNameValue,
 	}, nil
 }
 
-func NewUserCorporationEntityWithData(id int, contractPersonName, presidentName string, createdAt, updatedAt time.Time) (*UserCorporationEntity, error) {
-	user, err := NewUserCorporationEntity(contractPersonName, presidentName)
+func NewUserCorporationEntityWithData(id int, companyName, contractPersonName, presidentName string, createdAt, updatedAt time.Time) (*UserCorporationEntity, error) {
+	user, err := NewUserCorporationEntity(companyName, contractPersonName, presidentName)
 	if err != nil {
 		return nil, err
 	}
@@ -42,12 +49,16 @@ func NewUserCorporationEntityWithData(id int, contractPersonName, presidentName 
 }
 
 // 保持データをセットし直す
-func (u *UserCorporationEntity) LoadData(id int, contractPersonName, presidentName string, createdAt, updatedAt time.Time) error {
+func (u *UserCorporationEntity) LoadData(id int, companyName, contractPersonName, presidentName string, createdAt, updatedAt time.Time) error {
 	if u.UserEntity == nil {
 		u.UserEntity = &UserEntity{}
 	}
 	u.id = id
-	err := u.SetContactPersonName(contractPersonName)
+	err := u.SetCorporationName(companyName)
+	if err != nil {
+		return err
+	}
+	err = u.SetContactPersonName(contractPersonName)
 	if err != nil {
 		return err
 	}
@@ -78,10 +89,23 @@ func (u *UserCorporationEntity) SetPresidentName(name string) error {
 	return nil
 }
 
+func (u *UserCorporationEntity) SetCorporationName(name string) error {
+	nameValue, err := values.NewCorporationNameValue(name)
+	if err != nil {
+		return err
+	}
+	u.corporationName = nameValue
+	return nil
+}
+
 func (u *UserCorporationEntity) ContactPersonName() string {
 	return u.contactPersonName.Value()
 }
 
 func (u *UserCorporationEntity) PresidentName() string {
 	return u.presidentName.Value()
+}
+
+func (u *UserCorporationEntity) CorporationName() string {
+	return u.corporationName.Value()
 }
