@@ -68,12 +68,13 @@ func saveUser(c echo.Context) error {
 		}
 		return c.JSON(http.StatusCreated, user)
 	case "corporation":
+		corporationName := c.FormValue("corporation_name")
 		contactName := c.FormValue("contact_person_name")
 		presidentName := c.FormValue("president_name")
 
-		user, validErrs, err := userAppService.RegisterUserCorporation(contactName, presidentName)
+		user, validErrs, err := userAppService.RegisterUserCorporation(corporationName, contactName, presidentName)
 		if err != nil {
-			logger.Sugar().Errorw("法人顧客データ登録に失敗。", "contactName", contactName, "presidentName", presidentName, "err", err)
+			logger.Sugar().Errorw("法人顧客データ登録に失敗。", "corporationName", corporationName, "contactName", contactName, "presidentName", presidentName, "err", err)
 			c.Error(err)
 			return err
 		}

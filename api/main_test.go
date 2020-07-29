@@ -84,6 +84,7 @@ func TestMain_saveUser(t *testing.T) {
 			// リクエストパラメータ作成
 			body := url.Values{}
 			body.Set("type", "corporation")
+			body.Set("corporation_name", "イケイケ株式会社")
 			body.Set("contact_person_name", "担当　太郎")
 			body.Set("president_name", "社長　太郎")
 
@@ -103,6 +104,7 @@ func TestMain_saveUser(t *testing.T) {
 
 			assert.NotZero(t, registeredUser.Id)
 			assert.Equal(t, "corporation", registeredUser.Type)
+			assert.Equal(t, "イケイケ株式会社", registeredUser.CorporationName)
 			assert.Equal(t, "担当　太郎", registeredUser.ContactPersonName)
 			assert.Equal(t, "社長　太郎", registeredUser.PresidentName)
 			assert.NotZero(t, registeredUser.CreatedAt)
@@ -115,6 +117,7 @@ func TestMain_saveUser(t *testing.T) {
 			t.Run("空文字", func(t *testing.T) {
 				body := url.Values{}
 				body.Set("type", "corporation")
+				body.Set("corporation_name", "")
 				body.Set("contact_person_name", "")
 				body.Set("president_name", "")
 
@@ -133,6 +136,9 @@ func TestMain_saveUser(t *testing.T) {
 				assert.NoError(t, err)
 
 				expected := map[string][]string{
+					"corporation_name": []string{
+						"空です",
+					},
 					"contact_person_name": []string{
 						"空です",
 					},
@@ -146,6 +152,7 @@ func TestMain_saveUser(t *testing.T) {
 			t.Run("文字多すぎ", func(t *testing.T) {
 				body := url.Values{}
 				body.Set("type", "corporation")
+				body.Set("corporation_name", "000000000011111111112222222222333333333344444444445")
 				body.Set("contact_person_name", "000000000011111111112222222222333333333344444444445")
 				body.Set("president_name", "００００００００００11111111112222222222333333333344444444445")
 
@@ -164,6 +171,9 @@ func TestMain_saveUser(t *testing.T) {
 				assert.NoError(t, err)
 
 				expected := map[string][]string{
+					"corporation_name": []string{
+						"50文字より多いです",
+					},
 					"contact_person_name": []string{
 						"50文字より多いです",
 					},
@@ -211,7 +221,7 @@ func TestMain_getUser(t *testing.T) {
 	assert.Len(t, validErrors, 0)
 
 	// 法人ユーザー登録
-	savedCorporationUser, validErrors, err := userAppService.RegisterUserCorporation("法人担当者", "社長次郎")
+	savedCorporationUser, validErrors, err := userAppService.RegisterUserCorporation("イケイケ株式会社", "法人担当者", "社長次郎")
 	assert.NoError(t, err)
 	assert.Len(t, validErrors, 0)
 
@@ -287,6 +297,7 @@ func TestMain_getUser(t *testing.T) {
 
 			assert.Equal(t, savedCorporationUser.Id, loadedUser.Id)
 			assert.Equal(t, "corporation", loadedUser.Type)
+			assert.Equal(t, "イケイケ株式会社", loadedUser.CorporationName)
 			assert.Equal(t, "法人担当者", loadedUser.ContactPersonName)
 			assert.Equal(t, "社長次郎", loadedUser.PresidentName)
 			assert.NotZero(t, loadedUser.CreatedAt)
@@ -688,7 +699,7 @@ func TestMain_getContract(t *testing.T) {
 
 	// 検証用データ(user)登録
 	userAppService := application_service.NewUserApplicationService()
-	user, validErrs, err := userAppService.RegisterUserCorporation("契約取得用顧客担当", "契約取得用社長")
+	user, validErrs, err := userAppService.RegisterUserCorporation("イケイケ池株式会社", "契約取得用顧客担当", "契約取得用社長")
 	assert.NoError(t, err)
 	assert.Len(t, validErrs, 0)
 
@@ -717,6 +728,7 @@ func TestMain_getContract(t *testing.T) {
 
 		assert.Equal(t, user.Id, gotContractData.User.Id)
 		assert.Equal(t, "corporation", gotContractData.User.Type)
+		assert.Equal(t, "イケイケ池株式会社", gotContractData.User.CorporationName)
 		assert.Equal(t, "契約取得用顧客担当", gotContractData.User.ContactPersonName)
 		assert.Equal(t, "契約取得用社長", gotContractData.User.PresidentName)
 		assert.NotZero(t, gotContractData.User.CreatedAt)
