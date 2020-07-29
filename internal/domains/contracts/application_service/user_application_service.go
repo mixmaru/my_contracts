@@ -144,12 +144,39 @@ func registerUserCorporationValidation(corporationName, contactPersonName string
 	validationErrors = map[string][]string{}
 
 	// 会社名バリデーション
-	corporationNameValidErrors, err := values.CorporationNameValue{}.Validate(contactPersonName)
+	corporationNameValidErrors, err := corporationNameValidation(corporationName)
 	if err != nil {
 		return nil, err
 	}
 	if len(corporationNameValidErrors) > 0 {
-		validationErrors["corporation_name"] = []string{}
+		validationErrors["corporation_name"] = corporationNameValidErrors
+	}
+
+	// 担当者名バリデーション
+	contactPersonNameValidErrors, err := contactPersonValidation(contactPersonName)
+	if err != nil {
+		return nil, err
+	}
+	if len(contactPersonNameValidErrors) > 0 {
+		validationErrors["contact_person_name"] = contactPersonNameValidErrors
+	}
+
+	// 社長名バリデーション
+	presidentNameValidErrors, err := presidentNameValidation(presidentName)
+	if err != nil {
+		return nil, err
+	}
+	if len(presidentNameValidErrors) > 0 {
+		validationErrors["president_name"] = presidentNameValidErrors
+	}
+
+	return validationErrors, nil
+}
+
+func corporationNameValidation(corporationName string) (validErrors []string, err error) {
+	corporationNameValidErrors, err := values.CorporationNameValue{}.Validate(corporationName)
+	if err != nil {
+		return nil, err
 	}
 	for _, validError := range corporationNameValidErrors {
 		var errorMessage string
@@ -159,20 +186,19 @@ func registerUserCorporationValidation(corporationName, contactPersonName string
 		case validators.OverLengthStringValidError:
 			errorMessage = fmt.Sprintf("%v文字より多いです", values.MaxCorporationNameNum)
 		default:
-			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。corporation_name: %v, validErrorText: %v", corporationName, validators.ValidErrorText(validError)))
+			return nil, errors.New(fmt.Sprintf("想定外エラー。corporation_name: %v, validErrorText: %v", corporationName, validators.ValidErrorText(validError)))
 		}
-		validationErrors["corporation_name"] = append(validationErrors["corporation_name"], errorMessage)
+		validErrors = append(validErrors, errorMessage)
 	}
+	return validErrors, nil
+}
 
-	// 担当者名バリデーション
+func contactPersonValidation(contactPersonName string) (validErrors []string, err error) {
 	contactPersonNameValidErrors, err := values.ContactPersonNameValue{}.Validate(contactPersonName)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(contactPersonNameValidErrors) > 0 {
-		validationErrors["contact_person_name"] = []string{}
-	}
 	for _, validError := range contactPersonNameValidErrors {
 		var errorMessage string
 		switch validError {
@@ -181,22 +207,20 @@ func registerUserCorporationValidation(corporationName, contactPersonName string
 		case validators.OverLengthStringValidError:
 			errorMessage = fmt.Sprintf("%v文字より多いです", values.MaxContactPersonNameNum)
 		default:
-			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。contact_person_name: %v, validErrorText: %v", contactPersonName, validators.ValidErrorText(validError)))
+			return nil, errors.New(fmt.Sprintf("想定外エラー。contact_person_name: %v, validErrorText: %v", contactPersonName, validators.ValidErrorText(validError)))
 		}
-		validationErrors["contact_person_name"] = append(validationErrors["contact_person_name"], errorMessage)
+		validErrors = append(validErrors, errorMessage)
 	}
+	return validErrors, nil
+}
 
-	// 社長名バリデーション
+func presidentNameValidation(presidentName string) (validErrors []string, err error) {
 	presidentNameValidErrors, err := values.PresidentNameValue{}.Validate(presidentName)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(presidentNameValidErrors) > 0 {
-		validationErrors["president_name"] = []string{}
-	}
 	for _, validError := range presidentNameValidErrors {
-		//validationErrors["president_name"] = append(validationErrors["president_name"], validError.Error())
 		var errorMessage string
 		switch validError {
 		case validators.EmptyStringValidError:
@@ -204,12 +228,11 @@ func registerUserCorporationValidation(corporationName, contactPersonName string
 		case validators.OverLengthStringValidError:
 			errorMessage = fmt.Sprintf("%v文字より多いです", values.MaxPresidentNameNum)
 		default:
-			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。contact_person_name: %v, validErrorText: %v", contactPersonName, validators.ValidErrorText(validError)))
+			return nil, errors.New(fmt.Sprintf("想定外エラー。president_name: %v, validErrorText: %v", presidentName, validators.ValidErrorText(validError)))
 		}
-		validationErrors["president_name"] = append(validationErrors["president_name"], errorMessage)
+		validErrors = append(validErrors, errorMessage)
 	}
-
-	return validationErrors, nil
+	return validErrors, nil
 }
 
 func (s *UserApplicationService) GetUserById(userId int) (usrDto interface{}, err error) {
