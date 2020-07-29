@@ -5,6 +5,7 @@ import "github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 const userCorporationDtoType = "corporation"
 
 type UserCorporationDto struct {
+	CorporationName   string
 	ContactPersonName string
 	PresidentName     string
 	Type              string
@@ -15,6 +16,7 @@ func NewUserCorporationDtoFromEntity(entity *entities.UserCorporationEntity) Use
 	dto := UserCorporationDto{}
 	dto.Type = userCorporationDtoType
 	dto.Id = entity.Id()
+	dto.CorporationName = entity.CorporationName()
 	dto.ContactPersonName = entity.ContactPersonName()
 	dto.PresidentName = entity.PresidentName()
 	dto.CreatedAt = entity.CreatedAt()

@@ -23,7 +23,7 @@ func NewContactPersonNameValue(value string) (ContactPersonNameValue, error) {
 	if len(validateErrors) > 0 {
 		var msgs []string
 		for _, validateError := range validateErrors {
-			msgs = append(msgs, validators.ValidErrorTest(validateError))
+			msgs = append(msgs, validators.ValidErrorText(validateError))
 		}
 		return ContactPersonNameValue{}, errors.New(fmt.Sprintf("Nameバリデーションエラー。%v", strings.Join(msgs, ", ")))
 	}

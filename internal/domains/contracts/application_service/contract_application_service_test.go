@@ -109,6 +109,7 @@ func TestContractApplicationService_GetById(t *testing.T) {
 
 		returnUserEntity, err := entities.NewUserCorporationEntityWithData(
 			2,
+			"イケイケ会社",
 			"担当太郎",
 			"社長次郎",
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -144,6 +145,7 @@ func TestContractApplicationService_GetById(t *testing.T) {
 		userDto, ok := user.(data_transfer_objects.UserCorporationDto)
 		assert.True(t, ok)
 		assert.Equal(t, 2, userDto.Id)
+		assert.Equal(t, "イケイケ会社", userDto.CorporationName)
 		assert.Equal(t, "担当太郎", userDto.ContactPersonName)
 		assert.Equal(t, "社長次郎", userDto.PresidentName)
 		assert.True(t, userDto.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))

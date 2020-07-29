@@ -22,7 +22,7 @@ func NewPresidentNameValue(value string) (PresidentNameValue, error) {
 	if len(validateErrors) > 0 {
 		var msgs []string
 		for _, validateError := range validateErrors {
-			msgs = append(msgs, validators.ValidErrorTest(validateError))
+			msgs = append(msgs, validators.ValidErrorText(validateError))
 		}
 		return PresidentNameValue{}, errors.New(fmt.Sprintf("PresidentNameバリデーションエラー。%v", strings.Join(msgs, ", ")))
 	}

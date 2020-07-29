@@ -23,7 +23,7 @@ func NewProductNameValue(value string) (ProductNameValue, error) {
 	if len(validateErrors) > 0 {
 		var msgs []string
 		for _, validateError := range validateErrors {
-			msgs = append(msgs, validators.ValidErrorTest(validateError))
+			msgs = append(msgs, validators.ValidErrorText(validateError))
 		}
 		return ProductNameValue{}, errors.New(fmt.Sprintf("ProductNameバリデーションエラー。%v", strings.Join(msgs, ", ")))
 	}

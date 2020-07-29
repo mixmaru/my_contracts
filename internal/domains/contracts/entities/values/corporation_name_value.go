@@ -22,7 +22,7 @@ func NewCorporationNameValue(value string) (CorporationNameValue, error) {
 	if len(validateErrors) > 0 {
 		var msgs []string
 		for _, validateError := range validateErrors {
-			msgs = append(msgs, validators.ValidErrorTest(validateError))
+			msgs = append(msgs, validators.ValidErrorText(validateError))
 		}
 		return CorporationNameValue{}, errors.New(fmt.Sprintf("CorporationNameバリデーションエラー。%v", strings.Join(msgs, ", ")))
 	}

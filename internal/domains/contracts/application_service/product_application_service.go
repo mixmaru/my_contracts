@@ -87,7 +87,7 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 		case validators.OverLengthStringValidError:
 			errorMessage = fmt.Sprintf("%v文字より多いです", values.ProductNameMaxLength)
 		default:
-			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorTest(validError)))
+			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorText(validError)))
 		}
 		validationErrors["name"] = append(validationErrors["name"], errorMessage)
 	}
@@ -120,7 +120,7 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 		case validators.NegativeValidError:
 			errorMessage = "マイナス値です"
 		default:
-			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。price: %v, validErrorText: %v", price, validators.ValidErrorTest(validError)))
+			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。price: %v, validErrorText: %v", price, validators.ValidErrorText(validError)))
 		}
 		validationErrors["price"] = append(validationErrors["price"], errorMessage)
 	}

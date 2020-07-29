@@ -98,7 +98,7 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
 		now := time.Now()
-		returnUserEntity, err := entities.NewUserCorporationEntityWithData(1, "担当太郎", "社長太郎", now, now)
+		returnUserEntity, err := entities.NewUserCorporationEntityWithData(1, "イケてる会社", "担当太郎", "社長太郎", now, now)
 		assert.NoError(t, err)
 
 		// モックリポジトリ作成
@@ -121,17 +121,18 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		// インスタンス化
 		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
 
-		registeredUser, validErrs, err := userApp.RegisterUserCorporation("担当太郎", "社長太郎")
+		registeredUser, validErrs, err := userApp.RegisterUserCorporation("イケてる会社", "担当太郎", "社長太郎")
 		assert.NoError(t, err)
 		assert.Len(t, validErrs, 0)
 		assert.Equal(t, 1, registeredUser.Id)
+		assert.Equal(t, "イケてる会社", registeredUser.CorporationName)
 		assert.Equal(t, "担当太郎", registeredUser.ContactPersonName)
 		assert.Equal(t, "社長太郎", registeredUser.PresidentName)
 		assert.Equal(t, now, registeredUser.CreatedAt)
 		assert.Equal(t, now, registeredUser.UpdatedAt)
 	})
 
-	t.Run("バリデーションエラー　担当者名と社長名がから文字", func(t *testing.T) {
+	t.Run("バリデーションエラー　会社名と担当者名と社長名がから文字", func(t *testing.T) {
 		// モックリポジトリ作成
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -140,9 +141,12 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		// インスタンス化
 		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
 
-		_, validErrs, err := userApp.RegisterUserCorporation("", "")
+		_, validErrs, err := userApp.RegisterUserCorporation("", "", "")
 		assert.NoError(t, err)
 		expectValidErrs := map[string][]string{
+			"corporation_name": []string{
+				"空です",
+			},
 			"contact_person_name": []string{
 				"空です",
 			},
@@ -163,9 +167,12 @@ func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
 		// インスタンス化
 		userApp := NewUserApplicationServiceWithMock(userRepositoryMock)
 
-		_, validErrs, err := userApp.RegisterUserCorporation("000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445")
+		_, validErrs, err := userApp.RegisterUserCorporation("000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445")
 		assert.NoError(t, err)
 		expectValidErrs := map[string][]string{
+			"corporation_name": []string{
+				"50文字より多いです",
+			},
 			"contact_person_name": []string{
 				"50文字より多いです",
 			},
@@ -184,7 +191,7 @@ func TestUserApplicationService_GetUserById(t *testing.T) {
 	individualDto, validErrors, err := app.RegisterUserIndividual("個人顧客取得テスト")
 	assert.NoError(t, err)
 	assert.Len(t, validErrors, 0)
-	corporationDto, validErrors, err := app.RegisterUserCorporation("法人顧客取得テスト担当", "法人顧客取得テスト社長")
+	corporationDto, validErrors, err := app.RegisterUserCorporation("法人顧客会社名", "法人顧客取得テスト担当", "法人顧客取得テスト社長")
 	assert.NoError(t, err)
 	assert.Len(t, validErrors, 0)
 
@@ -214,6 +221,7 @@ func TestUserApplicationService_GetUserById(t *testing.T) {
 			userDto, ok := user.(data_transfer_objects.UserCorporationDto)
 			assert.True(t, ok)
 			assert.NotZero(t, userDto.Id)
+			assert.Equal(t, "法人顧客会社名", userDto.CorporationName)
 			assert.Equal(t, "法人顧客取得テスト担当", userDto.ContactPersonName)
 			assert.Equal(t, "法人顧客取得テスト社長", userDto.PresidentName)
 			assert.NotZero(t, userDto.CreatedAt)

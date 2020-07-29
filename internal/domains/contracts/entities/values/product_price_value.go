@@ -22,7 +22,7 @@ func NewProductPriceValue(value string) (ProductPriceValue, error) {
 	if len(validateErrors) > 0 {
 		var msgs []string
 		for _, validateError := range validateErrors {
-			msgs = append(msgs, validators.ValidErrorTest(validateError))
+			msgs = append(msgs, validators.ValidErrorText(validateError))
 		}
 		return ProductPriceValue{}, errors.New(fmt.Sprintf("ProductPriceバリデーションエラー。%v", strings.Join(msgs, ", ")))
 	}

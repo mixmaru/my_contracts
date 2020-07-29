@@ -19,7 +19,7 @@ var validErrorText = map[int]string{
 	NegativeValidError:         "マイナス値エラー",
 }
 
-func ValidErrorTest(errorConst int) string {
+func ValidErrorText(errorConst int) string {
 	return validErrorText[errorConst]
 }
 
