@@ -10,7 +10,7 @@ import (
 func TestUserCorporationView_SetDataToEntity(t *testing.T) {
 	record := UserCorporationView{}
 	record.Id = 1
-	record.CompanyName = "イケてる会社"
+	record.CorporationName = "イケてる会社"
 	record.ContactPersonName = "担当太郎"
 	record.PresidentName = "社長太郎"
 	record.CreatedAt = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)

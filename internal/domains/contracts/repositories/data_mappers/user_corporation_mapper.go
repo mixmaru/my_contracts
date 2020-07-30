@@ -8,7 +8,7 @@ type UserCorporationMapper struct {
 	UserId            int    `db:"user_id"`
 	ContactParsonName string `db:"contact_person_name"`
 	PresidentName     string `db:"president_name"`
-	CompanyName       string `db:"company_name"`
+	CorporationName   string `db:"company_name"`
 	CreatedAtUpdatedAtMapper
 }
 
@@ -16,7 +16,7 @@ type UserCorporationMapper struct {
 func NewUserCorporationMapperFromUserCorporationEntity(entity *entities.UserCorporationEntity) *UserCorporationMapper {
 	return &UserCorporationMapper{
 		UserId:            entity.Id(),
-		CompanyName:       entity.CorporationName(),
+		CorporationName:   entity.CorporationName(),
 		ContactParsonName: entity.ContactPersonName(),
 		PresidentName:     entity.PresidentName(),
 		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
