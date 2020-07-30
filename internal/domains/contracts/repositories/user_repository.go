@@ -54,7 +54,7 @@ select
    ui.name as user_individual_name,
    ui.created_at as user_individual_created_at,
    ui.updated_at as user_individual_updated_at,
-   uc.company_name as user_corporation_corporation_name,
+   uc.corporation_name as user_corporation_corporation_name,
    uc.contact_person_name as user_corporation_contact_person_name,
    uc.president_name as user_corporation_president_name,
    uc.created_at as user_corporation_created_at,
@@ -147,7 +147,7 @@ func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporatio
 func (r *UserRepository) getUserCorporationEntityById(id int, entity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
 	// dbからデータ取得
 	record := data_mappers.UserCorporationView{}
-	query := "SELECT u.id, uc.company_name, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at " +
+	query := "SELECT u.id, uc.corporation_name, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at " +
 		"FROM users u " +
 		"inner join users_corporation uc on u.id = uc.user_id " +
 		"WHERE id = $1"

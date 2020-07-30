@@ -9,7 +9,7 @@ import (
 
 type UserCorporationView struct {
 	UserMapper
-	CompanyName       string `db:"company_name"`
+	CorporationName   string `db:"corporation_name"`
 	ContactPersonName string `db:"contact_person_name"`
 	PresidentName     string `db:"president_name"`
 }
@@ -19,7 +19,7 @@ func (u *UserCorporationView) SetDataToEntity(entity interface{}) error {
 	if !ok {
 		return errors.New(fmt.Sprintf("entityが*entities.UserCorporationEntityではない。%v", reflect.TypeOf(entity)))
 	}
-	err := userCorporationEntity.LoadData(u.Id, u.CompanyName, u.ContactPersonName, u.PresidentName, u.CreatedAt, u.UpdatedAt)
+	err := userCorporationEntity.LoadData(u.Id, u.CorporationName, u.ContactPersonName, u.PresidentName, u.CreatedAt, u.UpdatedAt)
 	if err != nil {
 		return err
 	}

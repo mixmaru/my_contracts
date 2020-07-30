@@ -12,8 +12,8 @@ type UserCorporationEntity struct {
 	presidentName     values.PresidentNameValue     //社長名
 }
 
-func NewUserCorporationEntity(companyName, contactPersonName, presidentName string) (*UserCorporationEntity, error) {
-	companyNameValue, err := values.NewCorporationNameValue(companyName)
+func NewUserCorporationEntity(corporationName, contactPersonName, presidentName string) (*UserCorporationEntity, error) {
+	corporationNameValue, err := values.NewCorporationNameValue(corporationName)
 	if err != nil {
 		return nil, err
 	}
@@ -30,14 +30,14 @@ func NewUserCorporationEntity(companyName, contactPersonName, presidentName stri
 
 	return &UserCorporationEntity{
 		UserEntity:        &UserEntity{},
-		corporationName:   companyNameValue,
+		corporationName:   corporationNameValue,
 		contactPersonName: contactPersonNameValue,
 		presidentName:     presidentNameValue,
 	}, nil
 }
 
-func NewUserCorporationEntityWithData(id int, companyName, contractPersonName, presidentName string, createdAt, updatedAt time.Time) (*UserCorporationEntity, error) {
-	user, err := NewUserCorporationEntity(companyName, contractPersonName, presidentName)
+func NewUserCorporationEntityWithData(id int, corporationName, contractPersonName, presidentName string, createdAt, updatedAt time.Time) (*UserCorporationEntity, error) {
+	user, err := NewUserCorporationEntity(corporationName, contractPersonName, presidentName)
 	if err != nil {
 		return nil, err
 	}
@@ -49,12 +49,12 @@ func NewUserCorporationEntityWithData(id int, companyName, contractPersonName, p
 }
 
 // 保持データをセットし直す
-func (u *UserCorporationEntity) LoadData(id int, companyName, contractPersonName, presidentName string, createdAt, updatedAt time.Time) error {
+func (u *UserCorporationEntity) LoadData(id int, corporationName, contractPersonName, presidentName string, createdAt, updatedAt time.Time) error {
 	if u.UserEntity == nil {
 		u.UserEntity = &UserEntity{}
 	}
 	u.id = id
-	err := u.SetCorporationName(companyName)
+	err := u.SetCorporationName(corporationName)
 	if err != nil {
 		return err
 	}
