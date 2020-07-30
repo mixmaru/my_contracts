@@ -9,7 +9,7 @@ import (
 
 type UserCorporationView struct {
 	UserMapper
-	CorporationName   string `db:"company_name"`
+	CorporationName   string `db:"corporation_name"`
 	ContactPersonName string `db:"contact_person_name"`
 	PresidentName     string `db:"president_name"`
 }

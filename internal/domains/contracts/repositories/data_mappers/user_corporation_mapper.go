@@ -8,7 +8,7 @@ type UserCorporationMapper struct {
 	UserId            int    `db:"user_id"`
 	ContactParsonName string `db:"contact_person_name"`
 	PresidentName     string `db:"president_name"`
-	CorporationName   string `db:"company_name"`
+	CorporationName   string `db:"corporation_name"`
 	CreatedAtUpdatedAtMapper
 }
 
