@@ -24,6 +24,8 @@ func (r *ContractRepository) Create(contractEntity *entities.ContractEntity, exe
 	contractMapper := data_mappers.ContractMapper{
 		UserId:                   contractEntity.UserId(),
 		ProductId:                contractEntity.ProductId(),
+		ContractDate:             contractEntity.ContractDate(),
+		BillingStartDate:         contractEntity.BillingStartDate(),
 		CreatedAtUpdatedAtMapper: data_mappers.CreatedAtUpdatedAtMapper{},
 	}
 
@@ -44,6 +46,8 @@ func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contrac
 	query :=
 		`select
        c.id as id,
+       c.contract_date as contract_date,
+       c.billing_start_date as billing_start_date,
        c.created_at as created_at,
        c.updated_at as updated_at,
        p.id as product_id,
@@ -85,7 +89,7 @@ where c.id = $1`
 		return nil, nil, nil, errors.Wrapf(err, "productEntity作成失敗。mapper: %v", mapper)
 	}
 	// contractエンティティにデータを詰める
-	contract, err = entities.NewContractEntityWithData(mapper.Id, mapper.UserId, mapper.ProductId, mapper.CreatedAt, mapper.UpdatedAt)
+	contract, err = entities.NewContractEntityWithData(mapper.Id, mapper.UserId, mapper.ProductId, mapper.ContractDate, mapper.BillingStartDate, mapper.CreatedAt, mapper.UpdatedAt)
 	if err != nil {
 		return nil, nil, nil, errors.Wrapf(err, "contractEntity作成失敗。mapper: %v", mapper)
 	}
