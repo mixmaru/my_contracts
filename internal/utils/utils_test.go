@@ -48,6 +48,16 @@ func TestUtils_GetExecuteMode(t *testing.T) {
 		//})
 	})
 }
+
+func TestUtils_CreateJstTime(t *testing.T) {
+	t.Run("渡した引数をjstで解釈してtime構造体を作成し返す", func(t *testing.T) {
+		jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+		expect := time.Date(2020, 1, 1, 0, 0, 0, 0, jst)
+		actual := CreateJstTime(2020, 1, 1, 0, 0, 0, 0)
+		assert.Equal(t, expect, actual)
+	})
+}
+
 func TestUtils_CreateJstLocation(t *testing.T) {
 	expect := time.FixedZone("Asia/Tokyo", 9*60*60)
 	assert.EqualValues(t, expect, CreateJstLocation())

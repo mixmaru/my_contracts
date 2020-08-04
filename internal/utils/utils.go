@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"os"
+	"time"
 )
 
 const (
@@ -41,6 +42,12 @@ func isGoTest() bool {
 		return false
 	}
 }
+
+func CreateJstTime(year int, month time.Month, day, hour, min, sec, nsec int) time.Time {
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	return time.Date(year, month, day, hour, min, sec, nsec, jst)
+}
+
 func CreateJstLocation() *time.Location {
 	return time.FixedZone("Asia/Tokyo", 9*60*60)
 }
