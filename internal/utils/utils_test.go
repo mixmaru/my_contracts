@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestUtils_GetExecuteMode(t *testing.T) {
@@ -46,4 +47,8 @@ func TestUtils_GetExecuteMode(t *testing.T) {
 		//	assert.Equal(t, Development, mode)
 		//})
 	})
+}
+func TestUtils_CreateJstLocation(t *testing.T) {
+	expect := time.FixedZone("Asia/Tokyo", 9*60*60)
+	assert.EqualValues(t, expect, CreateJstLocation())
 }

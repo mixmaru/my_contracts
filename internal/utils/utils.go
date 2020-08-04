@@ -41,3 +41,6 @@ func isGoTest() bool {
 		return false
 	}
 }
+func CreateJstLocation() *time.Location {
+	return time.FixedZone("Asia/Tokyo", 9*60*60)
+}
