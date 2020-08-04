@@ -88,87 +88,94 @@ func TestContractApplicationService_Register(t *testing.T) {
 }
 
 func TestContractApplicationService_GetById(t *testing.T) {
-	t.Run("データがある時", func(t *testing.T) {
-		returnContractEntity, err := entities.NewContractEntityWithData(
-			100,
-			2,
-			3,
-			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-			time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
-		)
-		assert.NoError(t, err)
-
-		returnProductEntity, err := entities.NewProductEntityWithData(
-			3,
-			"商品A",
-			"2000",
-			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-			time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
-		)
-		assert.NoError(t, err)
-
-		returnUserEntity, err := entities.NewUserCorporationEntityWithData(
-			2,
-			"イケイケ会社",
-			"担当太郎",
-			"社長次郎",
-			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-			time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
-		)
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		repositoryMock := mock_interfaces.NewMockIContractRepository(ctrl)
-		repositoryMock.EXPECT().
-			GetById(
+	t.Run("Idを渡すと対応するデータが取得できる", func(t *testing.T) {
+		t.Run("データがある時はデータが取得できる", func(t *testing.T) {
+			returnContractEntity, err := entities.NewContractEntityWithData(
 				100,
-				gomock.Any(),
-			).Return(returnContractEntity, returnProductEntity, returnUserEntity, nil).
-			Times(1)
+				2,
+				3,
+				time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+			)
+			assert.NoError(t, err)
 
-		contractApp := NewContractApplicationServiceWithMock(repositoryMock)
-		contract, product, user, err := contractApp.GetById(100)
-		assert.NoError(t, err)
+			returnProductEntity, err := entities.NewProductEntityWithData(
+				3,
+				"商品A",
+				"2000",
+				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
+			)
+			assert.NoError(t, err)
 
-		assert.Equal(t, 100, contract.Id)
-		assert.Equal(t, 3, contract.ProductId)
-		assert.Equal(t, 2, contract.UserId)
-		assert.True(t, contract.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
-		assert.True(t, contract.UpdatedAt.Equal(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)))
+			returnUserEntity, err := entities.NewUserCorporationEntityWithData(
+				2,
+				"イケイケ会社",
+				"担当太郎",
+				"社長次郎",
+				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
+			)
 
-		assert.Equal(t, 3, product.Id)
-		assert.Equal(t, "商品A", product.Name)
-		assert.Equal(t, "2000", product.Price)
-		assert.True(t, product.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
-		assert.True(t, product.UpdatedAt.Equal(time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)))
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			repositoryMock := mock_interfaces.NewMockIContractRepository(ctrl)
+			repositoryMock.EXPECT().
+				GetById(
+					100,
+					gomock.Any(),
+				).Return(returnContractEntity, returnProductEntity, returnUserEntity, nil).
+				Times(1)
 
-		userDto, ok := user.(data_transfer_objects.UserCorporationDto)
-		assert.True(t, ok)
-		assert.Equal(t, 2, userDto.Id)
-		assert.Equal(t, "イケイケ会社", userDto.CorporationName)
-		assert.Equal(t, "担当太郎", userDto.ContactPersonName)
-		assert.Equal(t, "社長次郎", userDto.PresidentName)
-		assert.True(t, userDto.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
-		assert.True(t, userDto.UpdatedAt.Equal(time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)))
-	})
+			contractApp := NewContractApplicationServiceWithMock(repositoryMock)
+			contract, product, user, err := contractApp.GetById(100)
+			assert.NoError(t, err)
 
-	t.Run("データがない時", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		repositoryMock := mock_interfaces.NewMockIContractRepository(ctrl)
-		repositoryMock.EXPECT().
-			GetById(
-				100,
-				gomock.Any(),
-			).Return(nil, nil, nil, nil).
-			Times(1)
+			assert.Equal(t, 100, contract.Id)
+			assert.Equal(t, 3, contract.ProductId)
+			assert.Equal(t, 2, contract.UserId)
+			assert.EqualValues(t, time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC), contract.ContractDate)
+			assert.EqualValues(t, time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC), contract.BillingStartDate)
+			assert.True(t, contract.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
+			assert.True(t, contract.UpdatedAt.Equal(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)))
 
-		contractApp := NewContractApplicationServiceWithMock(repositoryMock)
-		contract, product, user, err := contractApp.GetById(100)
-		assert.NoError(t, err)
+			assert.Equal(t, 3, product.Id)
+			assert.Equal(t, "商品A", product.Name)
+			assert.Equal(t, "2000", product.Price)
+			assert.True(t, product.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
+			assert.True(t, product.UpdatedAt.Equal(time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)))
 
-		assert.Zero(t, contract)
-		assert.Zero(t, product)
-		assert.Nil(t, user)
+			userDto, ok := user.(data_transfer_objects.UserCorporationDto)
+			assert.True(t, ok)
+			assert.Equal(t, 2, userDto.Id)
+			assert.Equal(t, "イケイケ会社", userDto.CorporationName)
+			assert.Equal(t, "担当太郎", userDto.ContactPersonName)
+			assert.Equal(t, "社長次郎", userDto.PresidentName)
+			assert.True(t, userDto.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
+			assert.True(t, userDto.UpdatedAt.Equal(time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)))
+		})
+
+		t.Run("データがない時はゼロ値が返ってくる", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			repositoryMock := mock_interfaces.NewMockIContractRepository(ctrl)
+			repositoryMock.EXPECT().
+				GetById(
+					100,
+					gomock.Any(),
+				).Return(nil, nil, nil, nil).
+				Times(1)
+
+			contractApp := NewContractApplicationServiceWithMock(repositoryMock)
+			contract, product, user, err := contractApp.GetById(100)
+			assert.NoError(t, err)
+
+			assert.Zero(t, contract)
+			assert.Zero(t, product)
+			assert.Nil(t, user)
+		})
+
 	})
 }

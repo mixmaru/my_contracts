@@ -7,6 +7,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
+	"time"
 )
 
 type ContractApplicationService struct {
@@ -37,7 +38,8 @@ func (c *ContractApplicationService) Register(userId int, productId int) (produc
 	}
 
 	// entityを作成
-	entity := entities.NewContractEntity(userId, productId)
+	// todo: 仮でContractDateとBillingStartDateをセットした
+	entity := entities.NewContractEntity(userId, productId, time.Now(), time.Now())
 
 	// リポジトリで保存
 	savedId, err := c.ContractRepository.Create(entity, tran)
