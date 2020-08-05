@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestMain_saveUser(t *testing.T) {
@@ -577,6 +578,8 @@ func TestMain_saveContract(t *testing.T) {
 		assert.Equal(t, userDto.Id, registeredContract.UserId)
 		assert.Equal(t, productDto.Id, registeredContract.ProductId)
 		assert.NotZero(t, registeredContract.Id)
+		assert.NotZero(t, registeredContract.ContractDate)
+		assert.NotZero(t, registeredContract.BillingStartDate)
 		assert.NotZero(t, registeredContract.CreatedAt)
 		assert.NotZero(t, registeredContract.UpdatedAt)
 	})
@@ -705,7 +708,7 @@ func TestMain_getContract(t *testing.T) {
 
 	// 検証用データ(契約)登録
 	contractAppService := application_service.NewContractApplicationService()
-	contract, validErrs, err := contractAppService.Register(user.Id, product.Id)
+	contract, validErrs, err := contractAppService.Register(user.Id, product.Id, time.Now())
 	assert.NoError(t, err)
 	assert.Len(t, validErrs, 0)
 

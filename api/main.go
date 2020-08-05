@@ -216,7 +216,7 @@ func saveContract(c echo.Context) error {
 	}
 
 	app := application_service.NewContractApplicationService()
-	contract, validErrs, err := app.Register(userId, productId)
+	contract, validErrs, err := app.Register(userId, productId, time.Now())
 	if err != nil {
 		logger.Sugar().Errorw("契約データ登録に失敗。", "userId", userId, "productId", productId, "err", err)
 		c.Error(err)
