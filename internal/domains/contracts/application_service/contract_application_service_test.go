@@ -7,6 +7,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
+	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -176,6 +177,21 @@ func TestContractApplicationService_GetById(t *testing.T) {
 			assert.Zero(t, product)
 			assert.Nil(t, user)
 		})
+	})
+}
 
+func TestContractApplicationService_calculateBillingStartDate(t *testing.T) {
+	app := NewContractApplicationService()
+	t.Run("契約日と無料期間とタイムゾーンを渡すと_課金開始日が返ってくる", func(t *testing.T) {
+		t.Run("JSTで渡すと_JSTで0時0分で返ってくる", func(t *testing.T) {
+			expect := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
+			actual := app.calculateBillingStartDate(utils.CreateJstTime(2020, 1, 1, 15, 0, 0, 0), 10, utils.CreateJstLocation())
+			assert.True(t, expect.Equal(actual))
+		})
+		t.Run("契約開始日をJSTで渡し_locale引数をUTCで渡すと_UTCで0時0分で返ってくる", func(t *testing.T) {
+			expect := time.Date(2020, 1, 11, 0, 0, 0, 0, time.UTC)
+			actual := app.calculateBillingStartDate(utils.CreateJstTime(2020, 1, 1, 15, 0, 0, 0), 10, time.UTC)
+			assert.True(t, expect.Equal(actual))
+		})
 	})
 }

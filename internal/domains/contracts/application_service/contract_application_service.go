@@ -5,6 +5,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
+	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
 	"time"
@@ -63,6 +64,11 @@ func (c *ContractApplicationService) Register(userId int, productId int) (produc
 
 	// 返却
 	return dto, nil, nil
+}
+
+func (c *ContractApplicationService) calculateBillingStartDate(contractDate time.Time, freeDays int, locale *time.Location) time.Time {
+	addFreeDays := contractDate.AddDate(0, 0, freeDays).In(locale)
+	return time.Date(addFreeDays.Year(), addFreeDays.Month(), addFreeDays.Day(), 0, 0, 0, 0, locale)
 }
 
 func (c *ContractApplicationService) registerValidation(userId int, productId int, executor gorp.SqlExecutor) (validationErrors map[string][]string, err error) {
