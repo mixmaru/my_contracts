@@ -46,20 +46,23 @@ func TestContractApplicationService_Register(t *testing.T) {
 
 	app := NewContractApplicationService()
 
-	t.Run("エラーなし", func(t *testing.T) {
-		dto, validErrors, err := app.Register(savedUserId, savedProductId)
+	t.Run("顧客Idと商品IDを契約日時を渡すと課金開始日が翌日で契約が作成される", func(t *testing.T) {
+		contractDateTime := utils.CreateJstTime(2020, 2, 28, 23, 0, 0, 0)
+		dto, validErrors, err := app.Register(savedUserId, savedProductId, contractDateTime)
 		assert.NoError(t, err)
 		assert.Len(t, validErrors, 0)
 
 		assert.NotZero(t, dto.Id)
 		assert.Equal(t, savedUserId, dto.UserId)
 		assert.Equal(t, savedProductId, dto.ProductId)
+		assert.True(t, contractDateTime.Equal(dto.ContractDate))
+		assert.True(t, utils.CreateJstTime(2020, 2, 29, 0, 0, 0, 0).Equal(dto.BillingStartDate))
 		assert.NotZero(t, dto.CreatedAt)
 		assert.NotZero(t, dto.UpdatedAt)
 	})
 
-	t.Run("指定されたUserが存在しない", func(t *testing.T) {
-		dto, validationErrors, err := app.Register(-100, savedProductId)
+	t.Run("指定されたUserが存在しない時_validationErrorsにエラーメッセージが返ってくる", func(t *testing.T) {
+		dto, validationErrors, err := app.Register(-100, savedProductId, time.Now())
 		assert.NoError(t, err)
 		assert.Len(t, validationErrors, 1)
 		assert.Len(t, validationErrors["user_id"], 1)
@@ -67,8 +70,8 @@ func TestContractApplicationService_Register(t *testing.T) {
 		assert.Zero(t, dto)
 	})
 
-	t.Run("指定されたProductが存在しない", func(t *testing.T) {
-		dto, validationErrors, err := app.Register(savedUserId, -100)
+	t.Run("指定されたProductが存在しない時_validationErrorsにエラーメッセージが返ってくる", func(t *testing.T) {
+		dto, validationErrors, err := app.Register(savedUserId, -100, time.Now())
 		assert.NoError(t, err)
 		assert.Len(t, validationErrors, 1)
 		assert.Len(t, validationErrors["product_id"], 1)
@@ -76,8 +79,8 @@ func TestContractApplicationService_Register(t *testing.T) {
 		assert.Zero(t, dto)
 	})
 
-	t.Run("指定されたProductもuserも存在しない", func(t *testing.T) {
-		dto, validationErrors, err := app.Register(-1000, -100)
+	t.Run("指定されたProductもuserも存在しない時_validationErrorsに両方を示すエラーメッセージが返ってくる", func(t *testing.T) {
+		dto, validationErrors, err := app.Register(-1000, -100, time.Now())
 		assert.NoError(t, err)
 		assert.Len(t, validationErrors, 2)
 		assert.Len(t, validationErrors["user_id"], 1)

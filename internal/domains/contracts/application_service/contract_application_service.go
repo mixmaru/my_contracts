@@ -17,7 +17,7 @@ type ContractApplicationService struct {
 	ProductRepository  interfaces.IProductRepository
 }
 
-func (c *ContractApplicationService) Register(userId int, productId int) (productDto data_transfer_objects.ContractDto, validationErrors map[string][]string, err error) {
+func (c *ContractApplicationService) Register(userId int, productId int, contractDateTime time.Time) (productDto data_transfer_objects.ContractDto, validationErrors map[string][]string, err error) {
 	// トランザクション開始
 	conn, err := db_connection.GetConnection()
 	if err != nil {
@@ -39,8 +39,9 @@ func (c *ContractApplicationService) Register(userId int, productId int) (produc
 	}
 
 	// entityを作成
-	// todo: 仮でContractDateとBillingStartDateをセットした
-	entity := entities.NewContractEntity(userId, productId, time.Now(), time.Now())
+	billingStartDate := c.calculateBillingStartDate(contractDateTime, 1, utils.CreateJstLocation())
+
+	entity := entities.NewContractEntity(userId, productId, contractDateTime, billingStartDate)
 
 	// リポジトリで保存
 	savedId, err := c.ContractRepository.Create(entity, tran)
