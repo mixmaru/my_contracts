@@ -7,9 +7,20 @@ import (
 )
 
 type ProductEntity struct {
-	name  values.ProductNameValue
-	price values.ProductPriceValue
+	name         values.ProductNameValue
+	price        values.ProductPriceValue
+	contractTerm interface{} //契約期間タイプを表す構造体が入る（ProductPriceYearlyEntity or ProductPriceMonthlyEntity...）
 	BaseEntity
+}
+
+type ProductPriceYearlyEntity struct{}
+
+type ProductPriceMonthlyEntity struct{}
+
+type ProductPriceLumpEntity struct{}
+
+type ProductPriceCustomTermEntity struct {
+	term int // 契約更新サイクル日数
 }
 
 func NewProductEntity(name string, price string) (*ProductEntity, error) {
@@ -23,8 +34,9 @@ func NewProductEntity(name string, price string) (*ProductEntity, error) {
 	}
 
 	return &ProductEntity{
-		name:  nameValue,
-		price: priceValue,
+		name:         nameValue,
+		price:        priceValue,
+		contractTerm: &ProductPriceMonthlyEntity{},
 	}, nil
 }
 
