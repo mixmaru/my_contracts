@@ -1,39 +1,44 @@
 -- +migrate Up
-create table product_monthly_price
+create table product_price_monthlies
 (
-	id bigint not null
-		constraint product_monthly_price_pk
-			primary key,
 	product_id bigint not null
-		constraint product_monthly_price_products_id_fk
+		constraint product_price_monthlies_products_id_fk
 			references products (id),
-	price decimal not null
+	created_at timestamptz not null,
+	updated_at timestamptz not null
 );
-alter table product_monthly_price
-	add created_at timestamptz not null;
+insert into product_price_monthlies (product_id, created_at, updated_at) select id, created_at, updated_at from products;
 
-alter table product_monthly_price
-	add updated_at timestamptz not null;
+create table product_price_yearlies
+(
+	product_id bigint not null
+		constraint product_price_yearlies_products_id_fk
+			references products (id),
+	created_at timestamptz not null,
+	updated_at timestamptz not null
+);
 
-create sequence product_monthly_price_id_seq;
+create table product_price_lumps
+(
+	product_id bigint not null
+		constraint product_price_lump_products_id_fk
+			references products (id),
+	created_at timestamptz not null,
+	updated_at timestamptz not null
+);
 
-alter table product_monthly_price alter column id set default nextval('public.product_monthly_price_id_seq');
-
-alter sequence product_monthly_price_id_seq owned by product_monthly_price.id;
-
-
-insert into product_monthly_price (product_id, price, created_at, updated_at)
-select id, price, created_at, created_at
-from products;
-
-alter table products drop column price;
-
+create table product_price_custom_terms
+(
+	product_id bigint not null
+		constraint product_price_lump_products_id_fk
+			references products (id),
+	term int not null,
+	created_at timestamptz not null,
+	updated_at timestamptz not null
+);
 
 -- +migrate Down
-alter table products
-	add price numeric default 0 not null;
-
-update products p set price = pm.price from product_monthly_price pm where pm.product_id = p.id;
-
-alter table products alter column price drop default;
-drop table product_monthly_price;
+drop table product_price_monthlies;
+drop table product_price_yearlies;
+drop table product_price_lumps;
+drop table product_price_custom_terms;
