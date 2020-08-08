@@ -712,7 +712,7 @@ func TestMain_getContract(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, validErrs, 0)
 
-	t.Run("正常系", func(t *testing.T) {
+	t.Run("GETでcontract_idを渡すと契約情報とユーザー情報が返ってくる", func(t *testing.T) {
 		router := newRouter()
 		req := httptest.NewRequest("GET", fmt.Sprintf("/contracts/%v", contract.Id), nil)
 		rec := httptest.NewRecorder()
@@ -726,6 +726,8 @@ func TestMain_getContract(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.NotZero(t, gotContractData.Id)
+		assert.NotZero(t, gotContractData.ContractDate)
+		assert.NotZero(t, gotContractData.BillingStartDate)
 		assert.NotZero(t, gotContractData.CreatedAt)
 		assert.NotZero(t, gotContractData.UpdatedAt)
 
