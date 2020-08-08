@@ -31,6 +31,12 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, executor
 		return 0, errors.WithStack(err)
 	}
 
+	productPriceMonthlyRecord := data_mappers.ProductPriceMonthlyMapper{ProductId: productRecord.Id}
+	err = executor.Insert(&productPriceMonthlyRecord)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+
 	return productRecord.Id, nil
 }
 

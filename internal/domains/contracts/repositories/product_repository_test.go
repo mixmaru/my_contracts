@@ -16,10 +16,15 @@ func TestProductRepository_Save(t *testing.T) {
 	_, err = db.Exec("truncate table products cascade")
 	assert.NoError(t, err)
 
+	tran, err := db.Begin()
+	assert.NoError(t, err)
+
 	r := NewProductRepository()
 	productEntity, err := entities.NewProductEntity("商品名", "1000")
 	assert.NoError(t, err)
-	savedId, err := r.Save(productEntity, db)
+	savedId, err := r.Save(productEntity, tran)
+	err = tran.Commit()
+	assert.NoError(t, err)
 
 	assert.NoError(t, err)
 	assert.NotEqual(t, 0, savedId)
