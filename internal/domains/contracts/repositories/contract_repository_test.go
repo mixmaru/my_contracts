@@ -3,6 +3,7 @@ package repositories
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
+	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -36,26 +37,38 @@ func TestContractRepository_Create(t *testing.T) {
 	savedProductId, err := productRepository.Save(productEntity, db)
 	assert.NoError(t, err)
 
-	t.Run("正常系", func(t *testing.T) {
+	t.Run("UserIdとProductIdと契約日と課金開始日を渡すと契約が新規作成される", func(t *testing.T) {
 		// 契約作成テスト
 		contractRepository := NewContractRepository()
-		savedContractId, err := contractRepository.Create(entities.NewContractEntity(savedUserId, savedProductId), db)
+		contractDate := utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0)
+		billingStartDate := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
+		contractEntity := entities.NewContractEntity(savedUserId, savedProductId, contractDate, billingStartDate)
+
+		savedContractId, err := contractRepository.Create(contractEntity, db)
 
 		assert.NoError(t, err)
 		assert.NotZero(t, savedContractId)
 	})
 
-	t.Run("存在しないuserIdで作成されようとしたとき", func(t *testing.T) {
+	t.Run("存在しないuserIdで作成されようとしたとき_エラーが出る", func(t *testing.T) {
 		contractRepository := NewContractRepository()
-		savedContractId, err := contractRepository.Create(entities.NewContractEntity(0, savedProductId), db)
+		contractDate := utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0)
+		billingStartDate := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
+		contractEntity := entities.NewContractEntity(0, savedProductId, contractDate, billingStartDate)
+
+		savedContractId, err := contractRepository.Create(contractEntity, db)
 
 		assert.Error(t, err)
 		assert.Zero(t, savedContractId)
 	})
 
-	t.Run("存在しないproductIDで作成されようとしたとき", func(t *testing.T) {
+	t.Run("存在しないproductIDで作成されようとしたとき_エラーが出る", func(t *testing.T) {
 		contractRepository := NewContractRepository()
-		savedContractId, err := contractRepository.Create(entities.NewContractEntity(savedUserId, 0), db)
+		contractDate := utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0)
+		billingStartDate := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
+		contractEntity := entities.NewContractEntity(savedUserId, 0, contractDate, billingStartDate)
+
+		savedContractId, err := contractRepository.Create(contractEntity, db)
 
 		assert.Error(t, err)
 		assert.Zero(t, savedContractId)
@@ -94,7 +107,12 @@ func TestContractRepository_GetById(t *testing.T) {
 	t.Run("データがある時", func(t *testing.T) {
 		r := NewContractRepository()
 		// データ登録
-		contractEntity := entities.NewContractEntity(savedUserId, savedProductId)
+		contractEntity := entities.NewContractEntity(
+			savedUserId,
+			savedProductId,
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0),
+		)
 		savedId, err := r.Create(contractEntity, db)
 		assert.NoError(t, err)
 
