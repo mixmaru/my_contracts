@@ -11,7 +11,7 @@ type ProductDto struct {
 }
 
 func NewProductDtoFromEntity(entity *entities.ProductEntity) ProductDto {
-	price := entity.Price()
+	price := entity.MonthlyPrice()
 
 	dto := ProductDto{}
 	dto.Id = entity.Id()

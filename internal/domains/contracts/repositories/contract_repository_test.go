@@ -129,7 +129,7 @@ func TestContractRepository_GetById(t *testing.T) {
 		// productテスト
 		assert.Equal(t, savedProductId, loadedProduct.Id())
 		assert.Equal(t, "商品名", loadedProduct.Name())
-		price := loadedProduct.Price()
+		price := loadedProduct.MonthlyPrice()
 		assert.Equal(t, "1000", price.String())
 		assert.NotZero(t, loadedProduct.CreatedAt())
 		assert.NotZero(t, loadedProduct.UpdatedAt())

@@ -36,7 +36,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 
 		assert.Equal(t, savedId, productEntity.Id())
 		assert.Equal(t, "商品名", productEntity.Name())
-		price := productEntity.Price()
+		price := productEntity.MonthlyPrice()
 		assert.Equal(t, "1000", price.String())
 		assert.NotZero(t, productEntity.CreatedAt())
 		assert.NotZero(t, productEntity.UpdatedAt())

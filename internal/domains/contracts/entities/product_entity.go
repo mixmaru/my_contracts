@@ -3,24 +3,34 @@ package entities
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values"
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
+	"github.com/pkg/errors"
 	"time"
 )
 
 type ProductEntity struct {
-	name         values.ProductNameValue
-	price        values.ProductPriceValue
-	contractTerm interface{} //契約期間タイプを表す構造体が入る（ProductPriceYearlyEntity or ProductPriceMonthlyEntity...）
+	name            values.ProductNameValue
+	priceYearly     *ProductPriceYearlyEntity     // 年間契約の場合の情報を保持させる
+	priceMonthly    *ProductPriceMonthlyEntity    // 月契約の場合の情報を保持させる
+	priceLump       *ProductPriceLumpEntity       // 一括購入の場合の情報を保持させる
+	priceCustomTerm *ProductPriceCustomTermEntity // 任意期間契約の倍の情報を保持させる
 	BaseEntity
 }
 
-type ProductPriceYearlyEntity struct{}
+type ProductPriceYearlyEntity struct {
+	price values.ProductPriceValue
+}
 
-type ProductPriceMonthlyEntity struct{}
+type ProductPriceMonthlyEntity struct {
+	price values.ProductPriceValue
+}
 
-type ProductPriceLumpEntity struct{}
+type ProductPriceLumpEntity struct {
+	price values.ProductPriceValue
+}
 
 type ProductPriceCustomTermEntity struct {
-	term int // 契約更新サイクル日数
+	price values.ProductPriceValue
+	term  int // 契約更新サイクル日数
 }
 
 func NewProductEntity(name string, price string) (*ProductEntity, error) {
@@ -35,8 +45,7 @@ func NewProductEntity(name string, price string) (*ProductEntity, error) {
 
 	return &ProductEntity{
 		name:         nameValue,
-		price:        priceValue,
-		contractTerm: &ProductPriceMonthlyEntity{},
+		priceMonthly: &ProductPriceMonthlyEntity{price: priceValue},
 	}, nil
 }
 
@@ -53,8 +62,12 @@ func (p *ProductEntity) Name() string {
 	return p.name.Value()
 }
 
-func (p *ProductEntity) Price() decimal.Decimal {
-	return p.price.Value()
+func (p *ProductEntity) MonthlyPrice() (decimal.Decimal, error) {
+	if p.priceMonthly != nil {
+		return p.priceMonthly.price.Value(), nil
+	} else {
+		return decimal.Decimal{}, errors.Errorf("月契約価格が存在しない。productId: %v", p.Id())
+	}
 }
 
 // 保持データをセットし直す
@@ -67,10 +80,13 @@ func (p *ProductEntity) LoadData(id int, name string, price string, createdAt ti
 	if err != nil {
 		return err
 	}
+	if p.priceMonthly == nil {
+		p.priceMonthly = &ProductPriceMonthlyEntity{}
+	}
 
 	p.id = id
 	p.name = nameValue
-	p.price = priceValue
+	p.priceMonthly.price = priceValue
 	p.createdAt = createdAt
 	p.updatedAt = updatedAt
 	return nil
