@@ -21,8 +21,7 @@ func NewProductRepository() *ProductRepository {
 func (r *ProductRepository) Save(productEntity *entities.ProductEntity, executor gorp.SqlExecutor) (savedId int, err error) {
 	// recordオブジェクトに詰め替え
 	productRecord := data_mappers.ProductMapper{
-		Name:  productEntity.Name(),
-		Price: productEntity.Price(),
+		Name: productEntity.Name(),
 	}
 
 	// 新規保存実行
@@ -31,7 +30,15 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, executor
 		return 0, errors.WithStack(err)
 	}
 
-	productPriceMonthlyRecord := data_mappers.ProductPriceMonthlyMapper{ProductId: productRecord.Id}
+	price, err := productEntity.MonthlyPrice()
+	if err != nil {
+		return 0, errors.WithMessagef(err, "月額金額取得失敗。productEntity: %v", productEntity)
+	}
+
+	productPriceMonthlyRecord := data_mappers.ProductPriceMonthlyMapper{
+		ProductId: productRecord.Id,
+		Price:     price,
+	}
 	err = executor.Insert(&productPriceMonthlyRecord)
 	if err != nil {
 		return 0, errors.WithStack(err)
