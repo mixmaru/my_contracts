@@ -52,7 +52,7 @@ func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contrac
        c.updated_at as updated_at,
        p.id as product_id,
        p.name as product_name,
-       p.price as product_price,
+       ppm.price as product_price,
        p.created_at as product_created_at,
        p.updated_at as product_updated_at,
        u.id as user_id,
@@ -70,6 +70,7 @@ func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contrac
        uc.updated_at as user_corporation_updated_at
 from contracts c
 inner join products p on c.product_id = p.id
+inner join product_price_monthlies ppm on ppm.product_id = p.id
 inner join users u on c.user_id = u.id
 left outer join users_individual ui on u.id = ui.user_id
 left outer join users_corporation uc on u.id = uc.user_id

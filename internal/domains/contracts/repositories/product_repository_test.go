@@ -52,8 +52,8 @@ func TestProductRepository_GetById(t *testing.T) {
 
 		assert.Equal(t, savedId, loadedEntity.Id())
 		assert.Equal(t, "商品名", loadedEntity.Name())
-		price, err := loadedEntity.MonthlyPrice()
-		assert.NoError(t, err)
+		price, exist := loadedEntity.MonthlyPrice()
+		assert.True(t, exist)
 		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
 		assert.NotZero(t, loadedEntity.CreatedAt())
 		assert.NotZero(t, loadedEntity.UpdatedAt())
@@ -90,8 +90,8 @@ func TestProductRepository_GetByName(t *testing.T) {
 
 		assert.Equal(t, savedId, loadedEntity.Id())
 		assert.Equal(t, "商品名", loadedEntity.Name())
-		price, err := loadedEntity.MonthlyPrice()
-		assert.NoError(t, err)
+		price, exist := loadedEntity.MonthlyPrice()
+		assert.True(t, exist)
 		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
 		assert.NotZero(t, loadedEntity.CreatedAt())
 		assert.NotZero(t, loadedEntity.UpdatedAt())

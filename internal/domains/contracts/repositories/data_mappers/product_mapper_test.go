@@ -2,7 +2,6 @@ package data_mappers
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
-	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -11,9 +10,8 @@ import (
 func TestProductRecord_SetDataToEntity(t *testing.T) {
 	t.Run("正常系", func(t *testing.T) {
 		productRecord := ProductMapper{
-			Id:    1,
-			Name:  "名前",
-			Price: decimal.NewFromFloat(1000),
+			Id:   1,
+			Name: "名前",
 			CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 				CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -26,7 +24,8 @@ func TestProductRecord_SetDataToEntity(t *testing.T) {
 		assert.Equal(t, 1, entity.Id())
 		assert.Equal(t, "名前", entity.Name())
 
-		price := entity.MonthlyPrice()
+		price, exist := entity.MonthlyPrice()
+		assert.True(t, exist)
 		assert.Equal(t, "1000", price.String())
 		assert.Equal(t, time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), entity.CreatedAt())
 		assert.Equal(t, time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), entity.UpdatedAt())
@@ -34,9 +33,8 @@ func TestProductRecord_SetDataToEntity(t *testing.T) {
 
 	t.Run("違うentityが渡されたとき", func(t *testing.T) {
 		productRecord := ProductMapper{
-			Id:    1,
-			Name:  "名前",
-			Price: decimal.NewFromFloat(1000),
+			Id:   1,
+			Name: "名前",
 			CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
 				CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				UpdatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),

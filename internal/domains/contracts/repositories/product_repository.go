@@ -30,8 +30,8 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, executor
 		return 0, errors.WithStack(err)
 	}
 
-	price, err := productEntity.MonthlyPrice()
-	if err != nil {
+	price, exist := productEntity.MonthlyPrice()
+	if !exist {
 		return 0, errors.WithMessagef(err, "月額金額取得失敗。productEntity: %v", productEntity)
 	}
 
