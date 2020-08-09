@@ -16,8 +16,8 @@ func TestProductEntity_NewProductEntity(t *testing.T) {
 
 		// テスト
 		assert.Equal(t, "name", productEntity.Name())
-		price, err := productEntity.MonthlyPrice()
-		assert.NoError(t, err)
+		price, exist := productEntity.MonthlyPrice()
+		assert.True(t, exist)
 		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
 	})
 }
@@ -30,8 +30,8 @@ func TestProductEntity_NewProductEntityWithData(t *testing.T) {
 
 	assert.Equal(t, 1, productEntity.Id())
 	assert.Equal(t, "name", productEntity.Name())
-	price, err := productEntity.MonthlyPrice()
-	assert.NoError(t, err)
+	price, exist := productEntity.MonthlyPrice()
+	assert.True(t, exist)
 	assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
 	assert.True(t, createdAt.Equal(productEntity.CreatedAt()))
 	assert.True(t, updatedAt.Equal(productEntity.UpdatedAt()))
@@ -54,8 +54,8 @@ func TestProductEntity_LoadData(t *testing.T) {
 
 	assert.Equal(t, 1, productEntity.Id())
 	assert.Equal(t, "name2", productEntity.Name())
-	price, err := productEntity.MonthlyPrice()
-	assert.NoError(t, err)
+	price, exist := productEntity.MonthlyPrice()
+	assert.True(t, exist)
 	assert.True(t, price.Equal(decimal.NewFromFloat(2000)))
 	assert.Equal(t, createdAt, productEntity.CreatedAt())
 	assert.Equal(t, updateAt, productEntity.UpdatedAt())
@@ -66,8 +66,8 @@ func TestProductEntity_MonthlyPrice(t *testing.T) {
 		productEntity, err := NewProductEntity("name", "1000")
 		assert.NoError(t, err)
 
-		price, err := productEntity.MonthlyPrice()
-		assert.NoError(t, err)
+		price, exist := productEntity.MonthlyPrice()
+		assert.True(t, exist)
 		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
 	})
 	t.Run("月契約が存在しない商品なら_errorが返ってくる", func(t *testing.T) {

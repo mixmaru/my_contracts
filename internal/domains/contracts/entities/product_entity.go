@@ -3,7 +3,6 @@ package entities
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values"
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
-	"github.com/pkg/errors"
 	"time"
 )
 
@@ -62,11 +61,15 @@ func (p *ProductEntity) Name() string {
 	return p.name.Value()
 }
 
-func (p *ProductEntity) MonthlyPrice() (decimal.Decimal, error) {
+/*
+月契約があれば月額金額を返す。
+なければboolでfalseが返る
+*/
+func (p *ProductEntity) MonthlyPrice() (decimal.Decimal, bool) {
 	if p.priceMonthly != nil {
-		return p.priceMonthly.price.Value(), nil
+		return p.priceMonthly.price.Value(), true
 	} else {
-		return decimal.Decimal{}, errors.Errorf("月契約価格が存在しない。productId: %v", p.Id())
+		return decimal.Decimal{}, false
 	}
 }
 
