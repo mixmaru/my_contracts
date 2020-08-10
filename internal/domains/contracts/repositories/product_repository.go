@@ -67,12 +67,7 @@ FROM products p
 LEFT OUTER JOIN product_price_monthlies ppm on p.id = ppm.product_id
 WHERE p.id = $1
 `
-	noRow, err := r.selectOne(
-		executor,
-		&productRecord,
-		&productEntity,
-		query, id,
-	)
+	noRow, err := r.selectOne(executor, &productRecord, &productEntity, query, id)
 	if err != nil {
 		return nil, err
 	}
@@ -84,9 +79,24 @@ WHERE p.id = $1
 
 func (r *ProductRepository) GetByName(name string, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
 	// データ取得
-	var productRecord data_mappers.ProductMapper
+	var productRecord productGetMapper
 	var productEntity entities.ProductEntity
-	noRow, err := r.selectOne(executor, &productRecord, &productEntity, "select * from products where name = $1", name)
+	query := `
+SELECT
+       id,
+       name,
+       p.created_at,
+       p.updated_at,
+       CASE
+           WHEN ppm.product_id IS NULL THEN false
+           ELSE true
+       END AS exist_price_monthly,
+       ppm.price AS price_monthly
+FROM products p
+LEFT OUTER JOIN product_price_monthlies ppm on p.id = ppm.product_id
+WHERE p.name = $1
+`
+	noRow, err := r.selectOne(executor, &productRecord, &productEntity, query, name)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +116,7 @@ type productGetMapper struct {
 func (p *productGetMapper) SetDataToEntity(productEntity interface{}) error {
 	entity, ok := productEntity.(*entities.ProductEntity)
 	if !ok {
-		return errors.Errorf("想定外の型が来た。%t", productEntity)
+		return errors.Errorf("想定外の型が来た。型: %T, productEntity: %+v", productEntity, productEntity)
 	}
 	err := entity.LoadData(p.Id, p.Name, p.PriceMonthly.Decimal.String(), p.CreatedAt, p.UpdatedAt)
 	if err != nil {
