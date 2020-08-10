@@ -28,17 +28,27 @@ func TestBaseRepository_selectOne(t *testing.T) {
 
 	t.Run("データがある時", func(t *testing.T) {
 		// データ取得
-		productRecord := data_mappers.ProductMapper{}
+		productMapper := productGetMapper{}
 		productEntity := entities.ProductEntity{}
-		noRow, err := baseRepository.selectOne(db, &productRecord, &productEntity, "select * from products where id =$1", savedId)
+		query := `
+SELECT
+       1 AS id,
+       '商品名' AS name,
+       to_timestamp('2020-01-01', 'YYYY-MM-DD') AS created_at,
+       to_timestamp('2020-01-02', 'YYYY-MM-DD') AS updated_at,
+       true AS exist_price_monthly,
+       '200' AS price_monthly
+;
+`
+		noRow, err := baseRepository.selectOne(db, &productMapper, &productEntity, query)
 		assert.NoError(t, err)
 		assert.False(t, noRow)
 
-		assert.Equal(t, savedId, productEntity.Id())
+		assert.Equal(t, 1, productEntity.Id())
 		assert.Equal(t, "商品名", productEntity.Name())
 		price, exist := productEntity.MonthlyPrice()
 		assert.True(t, exist)
-		assert.Equal(t, "1000", price.String())
+		assert.Equal(t, "200", price.String())
 		assert.NotZero(t, productEntity.CreatedAt())
 		assert.NotZero(t, productEntity.UpdatedAt())
 	})
