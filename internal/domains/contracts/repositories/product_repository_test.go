@@ -39,13 +39,13 @@ func TestProductRepository_GetById(t *testing.T) {
 
 	r := NewProductRepository()
 
-	t.Run("データがある時", func(t *testing.T) {
-		// データ登録
-		productEntity, err := entities.NewProductEntity("商品名", "1000")
-		assert.NoError(t, err)
-		savedId, err := r.Save(productEntity, db)
-		assert.NoError(t, err)
+	// 検証用データ登録
+	productEntity, err := entities.NewProductEntity("商品名", "1000")
+	assert.NoError(t, err)
+	savedId, err := r.Save(productEntity, db)
+	assert.NoError(t, err)
 
+	t.Run("データがある時", func(t *testing.T) {
 		// データ取得
 		loadedEntity, err := r.GetById(savedId, db)
 		assert.NoError(t, err)
@@ -77,12 +77,13 @@ func TestProductRepository_GetByName(t *testing.T) {
 
 	r := NewProductRepository()
 
+	// 検証用データ登録
+	productEntity, err := entities.NewProductEntity("商品名", "1000")
+	assert.NoError(t, err)
+	savedId, err := r.Save(productEntity, db)
+	assert.NoError(t, err)
+
 	t.Run("データがある時", func(t *testing.T) {
-		// データ登録
-		productEntity, err := entities.NewProductEntity("商品名", "1000")
-		assert.NoError(t, err)
-		savedId, err := r.Save(productEntity, db)
-		assert.NoError(t, err)
 
 		// データ取得
 		loadedEntity, err := r.GetByName("商品名", db)

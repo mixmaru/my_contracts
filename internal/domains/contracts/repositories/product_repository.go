@@ -3,6 +3,7 @@ package repositories
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/data_mappers"
+	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
 )
@@ -49,9 +50,29 @@ func (r *ProductRepository) Save(productEntity *entities.ProductEntity, executor
 
 func (r *ProductRepository) GetById(id int, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
 	// データ取得
-	var productRecord data_mappers.ProductMapper
+	var productRecord productGetMapper
 	var productEntity entities.ProductEntity
-	noRow, err := r.selectOne(executor, &productRecord, &productEntity, "select * from products where id = $1", id)
+	query := `
+SELECT
+       id,
+       name,
+       p.created_at,
+       p.updated_at,
+       CASE
+           WHEN ppm.product_id IS NULL THEN false
+           ELSE true
+       END AS exist_price_monthly,
+       ppm.price AS price_monthly
+FROM products p
+LEFT OUTER JOIN product_price_monthlies ppm on p.id = ppm.product_id
+WHERE p.id = $1
+`
+	noRow, err := r.selectOne(
+		executor,
+		&productRecord,
+		&productEntity,
+		query, id,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -73,4 +94,23 @@ func (r *ProductRepository) GetByName(name string, executor gorp.SqlExecutor) (*
 		return nil, nil
 	}
 	return &productEntity, nil
+}
+
+type productGetMapper struct {
+	data_mappers.ProductMapper
+
+	ExistPriceMonthly bool                `db:"exist_price_monthly"`
+	PriceMonthly      decimal.NullDecimal `db:"price_monthly"`
+}
+
+func (p *productGetMapper) SetDataToEntity(productEntity interface{}) error {
+	entity, ok := productEntity.(*entities.ProductEntity)
+	if !ok {
+		return errors.Errorf("想定外の型が来た。%t", productEntity)
+	}
+	err := entity.LoadData(p.Id, p.Name, p.PriceMonthly.Decimal.String(), p.CreatedAt, p.UpdatedAt)
+	if err != nil {
+		return err
+	}
+	return nil
 }
