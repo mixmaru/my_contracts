@@ -12,8 +12,6 @@ import (
 )
 
 func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
-	// テスト用ユーザーを（なければ）作成する
-	// 月300円の商品を(なければ)作成する。
 	// テスト用契約を新規作成する
 	contract, err := entities.NewContractEntityWithData(
 		1,
@@ -26,12 +24,15 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 	)
 	assert.NoError(t, err)
 
+	////// Productリポジトリモック作成
+	// DBから取得される商品データ
 	productEntity, err := entities.NewProductEntityWithData(3, "請求金額テスト商品", "1000", time.Now(), time.Now())
 	assert.NoError(t, err)
-
+	// mock作成
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	repositoryMock := mock_interfaces.NewMockIProductRepository(ctrl)
+	// GetByIdをモック
 	repositoryMock.EXPECT().
 		GetById(
 			3,
@@ -39,8 +40,10 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 		).Return(productEntity, nil).
 		Times(1)
 
+	// ドメインサービスインスタンス化
 	billingDS := NewBillingCalculatorDomainService(repositoryMock)
 
+	// db接続作成
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 
