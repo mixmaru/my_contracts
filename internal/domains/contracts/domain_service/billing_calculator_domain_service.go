@@ -34,13 +34,23 @@ func (b *BillingCalculatorDomainService) BillingAmount(contract *entities.Contra
 	thisTermDateNum := b.thisTermDateNum(billingStartDate)
 	// 課金開始日からtargetDateの間の日数を計算する
 	DateNumForTargetDate := int(math.Ceil(targetDate.Sub(billingStartDate).Hours() / 24))
-	// 金額を計算する（月額 / 月間日数 * 対象日までの日数）
-	div := price.Div(decimal.NewFromInt(int64(thisTermDateNum)))
-	retPrice := div.Mul(decimal.NewFromInt(int64(DateNumForTargetDate)))
-	return retPrice, nil
+
+	// 規定日数に足りない場合のみ日割り計算をする（満額時も日割りロジックで算出しようとすると小数点以下の都合で定価がおかしくなる）
+	if DateNumForTargetDate < thisTermDateNum {
+		// 日割り金額を計算する（月額 / 月間日数 * 対象日までの日数）
+		div := price.Div(decimal.NewFromInt(int64(thisTermDateNum)))
+		retPrice := div.Mul(decimal.NewFromInt(int64(DateNumForTargetDate)))
+		return retPrice, nil
+	} else {
+		// 満額
+		return price, nil
+	}
 }
 
 func (b *BillingCalculatorDomainService) thisTermDateNum(lastBillingStartDate time.Time) int {
-	duration, _ := time.ParseDuration("744h")
-	return int(math.Ceil(duration.Hours() / 24))
+	// 次の課金開始日を算出
+	nextBillingStartDate := lastBillingStartDate.AddDate(0, 1, 0)
+	// 日数算出
+	oneMonthDuration := nextBillingStartDate.Sub(lastBillingStartDate)
+	return int(math.Ceil(oneMonthDuration.Hours() / 24))
 }
