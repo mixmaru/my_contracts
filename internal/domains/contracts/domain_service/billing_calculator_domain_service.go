@@ -40,7 +40,7 @@ func (b *BillingCalculatorDomainService) BillingAmount(contract *entities.Contra
 		// 日割り金額を計算する（月額 / 月間日数 * 対象日までの日数）
 		div := price.Div(decimal.NewFromInt(int64(thisTermDateNum)))
 		retPrice := div.Mul(decimal.NewFromInt(int64(DateNumForTargetDate)))
-		return retPrice, nil
+		return retPrice.Truncate(0), nil
 	} else {
 		// 満額
 		return price, nil
