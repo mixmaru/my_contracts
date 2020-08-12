@@ -20,14 +20,27 @@ func TestContractRepository_Create(t *testing.T) {
 	savedUserId, err := userRepository.SaveUserIndividual(userEntity, db)
 	assert.NoError(t, err)
 
+	tran, err := db.Begin()
+	assert.NoError(t, err)
+
 	// 商品を事前に削除
-	_, err = db.Exec(
+	_, err = tran.Exec(
 		"delete from contracts " +
 			"using products " +
 			"where products.id = contracts.product_id " +
 			"and products.name = '商品名' ")
 	assert.NoError(t, err)
-	_, err = db.Exec("delete from products where name = '商品名'")
+
+	_, err = tran.Exec(
+		"delete from product_price_monthlies " +
+			"using products " +
+			"where products.id = product_price_monthlies.product_id " +
+			"and products.name = '商品名' ")
+	assert.NoError(t, err)
+
+	_, err = tran.Exec("delete from products where name = '商品名'")
+	assert.NoError(t, err)
+	err = tran.Commit()
 	assert.NoError(t, err)
 
 	// 商品を登録
@@ -87,14 +100,24 @@ func TestContractRepository_GetById(t *testing.T) {
 	savedUserId, err := userRepository.SaveUserIndividual(userEntity, db)
 	assert.NoError(t, err)
 
+	tran, err := db.Begin()
+
 	// 商品を事前に削除
-	_, err = db.Exec(
+	_, err = tran.Exec(
 		"delete from contracts " +
 			"using products " +
 			"where products.id = contracts.product_id " +
 			"and products.name = '商品名' ")
 	assert.NoError(t, err)
-	_, err = db.Exec("delete from products where name = '商品名'")
+	_, err = tran.Exec(
+		"delete from product_price_monthlies " +
+			"using products " +
+			"where products.id = product_price_monthlies.product_id " +
+			"and products.name = '商品名' ")
+	assert.NoError(t, err)
+	_, err = tran.Exec("delete from products where name = '商品名'")
+	assert.NoError(t, err)
+	err = tran.Commit()
 	assert.NoError(t, err)
 
 	// 商品を登録
@@ -129,7 +152,8 @@ func TestContractRepository_GetById(t *testing.T) {
 		// productテスト
 		assert.Equal(t, savedProductId, loadedProduct.Id())
 		assert.Equal(t, "商品名", loadedProduct.Name())
-		price := loadedProduct.Price()
+		price, exist := loadedProduct.MonthlyPrice()
+		assert.True(t, exist)
 		assert.Equal(t, "1000", price.String())
 		assert.NotZero(t, loadedProduct.CreatedAt())
 		assert.NotZero(t, loadedProduct.UpdatedAt())

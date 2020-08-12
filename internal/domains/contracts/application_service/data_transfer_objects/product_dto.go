@@ -2,6 +2,7 @@ package data_transfer_objects
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
+	"github.com/pkg/errors"
 )
 
 type ProductDto struct {
@@ -11,7 +12,10 @@ type ProductDto struct {
 }
 
 func NewProductDtoFromEntity(entity *entities.ProductEntity) ProductDto {
-	price := entity.Price()
+	price, exist := entity.MonthlyPrice()
+	if !exist {
+		errors.Errorf("月額料金が取得できなかった。%v", entity)
+	}
 
 	dto := ProductDto{}
 	dto.Id = entity.Id()

@@ -7,9 +7,29 @@ import (
 )
 
 type ProductEntity struct {
-	name  values.ProductNameValue
-	price values.ProductPriceValue
+	name            values.ProductNameValue
+	priceYearly     *ProductPriceYearlyEntity     // 年間契約の場合の情報を保持させる
+	priceMonthly    *ProductPriceMonthlyEntity    // 月契約の場合の情報を保持させる
+	priceLump       *ProductPriceLumpEntity       // 一括購入の場合の情報を保持させる
+	priceCustomTerm *ProductPriceCustomTermEntity // 任意期間契約の倍の情報を保持させる
 	BaseEntity
+}
+
+type ProductPriceYearlyEntity struct {
+	price values.ProductPriceValue
+}
+
+type ProductPriceMonthlyEntity struct {
+	price values.ProductPriceValue
+}
+
+type ProductPriceLumpEntity struct {
+	price values.ProductPriceValue
+}
+
+type ProductPriceCustomTermEntity struct {
+	price values.ProductPriceValue
+	term  int // 契約更新サイクル日数
 }
 
 func NewProductEntity(name string, price string) (*ProductEntity, error) {
@@ -23,8 +43,8 @@ func NewProductEntity(name string, price string) (*ProductEntity, error) {
 	}
 
 	return &ProductEntity{
-		name:  nameValue,
-		price: priceValue,
+		name:         nameValue,
+		priceMonthly: &ProductPriceMonthlyEntity{price: priceValue},
 	}, nil
 }
 
@@ -41,8 +61,16 @@ func (p *ProductEntity) Name() string {
 	return p.name.Value()
 }
 
-func (p *ProductEntity) Price() decimal.Decimal {
-	return p.price.Value()
+/*
+月契約があれば月額金額を返す。
+なければboolでfalseが返る
+*/
+func (p *ProductEntity) MonthlyPrice() (decimal.Decimal, bool) {
+	if p.priceMonthly != nil {
+		return p.priceMonthly.price.Value(), true
+	} else {
+		return decimal.Decimal{}, false
+	}
 }
 
 // 保持データをセットし直す
@@ -55,10 +83,13 @@ func (p *ProductEntity) LoadData(id int, name string, price string, createdAt ti
 	if err != nil {
 		return err
 	}
+	if p.priceMonthly == nil {
+		p.priceMonthly = &ProductPriceMonthlyEntity{}
+	}
 
 	p.id = id
 	p.name = nameValue
-	p.price = priceValue
+	p.priceMonthly.price = priceValue
 	p.createdAt = createdAt
 	p.updatedAt = updatedAt
 	return nil

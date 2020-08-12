@@ -349,17 +349,18 @@ func TestMain_saveProduct(t *testing.T) {
 	assert.NoError(t, err)
 	defer conn.Db.Close()
 
-	_, err = conn.Exec("delete from products where name = 'A商品'")
-	assert.NoError(t, err)
-
 	t.Run("正常系", func(t *testing.T) {
 		router := newRouter()
 
 		//////// データ登録テスト
+		// 重複しない商品名でテストを行う
+		unixNano := time.Now().UnixNano()
+		suffix := strconv.FormatInt(unixNano, 10)
+		name := "商品" + suffix
 
 		// リクエストパラメータ作成
 		body := url.Values{}
-		body.Set("name", "A商品")
+		body.Set("name", name)
 		body.Set("price", "1000.01")
 
 		// リクエスト実行
@@ -376,7 +377,7 @@ func TestMain_saveProduct(t *testing.T) {
 		err := json.Unmarshal(rec.Body.Bytes(), &registeredProduct)
 		assert.NoError(t, err)
 
-		assert.Equal(t, "A商品", registeredProduct.Name)
+		assert.Equal(t, name, registeredProduct.Name)
 		assert.Equal(t, "1000.01", registeredProduct.Price)
 	})
 
@@ -452,13 +453,15 @@ func TestMain_getProduct(t *testing.T) {
 	assert.NoError(t, err)
 	defer conn.Db.Close()
 
-	_, err = conn.Exec("delete from products where name = 'A商品'")
-	assert.NoError(t, err)
+	// 重複しない商品名でテストを行う
+	unixNano := time.Now().UnixNano()
+	suffix := strconv.FormatInt(unixNano, 10)
+	name := "商品" + suffix
 
 	// 検証用データ登録
 	router := newRouter()
 	body := url.Values{}
-	body.Set("name", "A商品")
+	body.Set("name", name)
 	body.Set("price", "1000.001")
 
 	// リクエスト実行
@@ -530,19 +533,14 @@ func TestMain_saveContract(t *testing.T) {
 	assert.NoError(t, err)
 	defer conn.Db.Close()
 
-	// 同盟商品は登録できないので予め契約とともに削除
-	_, err = conn.Exec(
-		"delete from contracts " +
-			"using products " +
-			"where products.id = contracts.product_id " +
-			"and products.name = 'ab商品' ")
-	assert.NoError(t, err)
-	_, err = conn.Exec("delete from products where name = 'ab商品'")
-	assert.NoError(t, err)
+	// 重複しない商品名でテストを行う
+	unixNano := time.Now().UnixNano()
+	suffix := strconv.FormatInt(unixNano, 10)
+	name := "商品" + suffix
 
 	// 商品登録
 	productApp := application_service.NewProductApplicationService()
-	productDto, validErrs, err := productApp.Register("ab商品", "200")
+	productDto, validErrs, err := productApp.Register(name, "200")
 	assert.NoError(t, err)
 	assert.Len(t, validErrs, 0)
 	// ユーザー登録
@@ -684,19 +682,14 @@ func TestMain_getContract(t *testing.T) {
 	assert.NoError(t, err)
 	defer conn.Db.Close()
 
-	// 同盟商品は登録できないので予め契約とともに削除
-	_, err = conn.Exec(
-		"delete from contracts " +
-			"using products " +
-			"where products.id = contracts.product_id " +
-			"and products.name = '契約取得用商品'")
-	assert.NoError(t, err)
-	_, err = conn.Exec("delete from products where name = '契約取得用商品'")
-	assert.NoError(t, err)
+	// 重複しない商品名でテストを行う
+	unixNano := time.Now().UnixNano()
+	suffix := strconv.FormatInt(unixNano, 10)
+	name := "商品" + suffix
 
 	// 検証用データ(商品)登録
 	productAppService := application_service.NewProductApplicationService()
-	product, validErrs, err := productAppService.Register("契約取得用商品", "100")
+	product, validErrs, err := productAppService.Register(name, "100")
 	assert.NoError(t, err)
 	assert.Len(t, validErrs, 0)
 
@@ -740,7 +733,7 @@ func TestMain_getContract(t *testing.T) {
 		assert.NotZero(t, gotContractData.User.UpdatedAt)
 
 		assert.Equal(t, product.Id, gotContractData.Product.Id)
-		assert.Equal(t, "契約取得用商品", gotContractData.Product.Name)
+		assert.Equal(t, name, gotContractData.Product.Name)
 		assert.Equal(t, "100", gotContractData.Product.Price)
 		assert.NotZero(t, gotContractData.Product.CreatedAt)
 		assert.NotZero(t, gotContractData.Product.UpdatedAt)

@@ -9,14 +9,17 @@ import (
 
 // UserIndividualのインスタンス化をテスト
 func TestProductEntity_NewProductEntity(t *testing.T) {
-	// インスタンス化
-	productEntity, err := NewProductEntity("name", "1000")
-	assert.NoError(t, err)
+	t.Run("名前と価格を渡すと_今は暫定的に_月額1000円商品としてインスタンス化される", func(t *testing.T) {
+		// インスタンス化
+		productEntity, err := NewProductEntity("name", "1000")
+		assert.NoError(t, err)
 
-	// テスト
-	assert.Equal(t, "name", productEntity.Name())
-	price := productEntity.Price()
-	assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
+		// テスト
+		assert.Equal(t, "name", productEntity.Name())
+		price, exist := productEntity.MonthlyPrice()
+		assert.True(t, exist)
+		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
+	})
 }
 func TestProductEntity_NewProductEntityWithData(t *testing.T) {
 	// インスタンス化
@@ -27,8 +30,9 @@ func TestProductEntity_NewProductEntityWithData(t *testing.T) {
 
 	assert.Equal(t, 1, productEntity.Id())
 	assert.Equal(t, "name", productEntity.Name())
-	price := productEntity.Price()
-	assert.Equal(t, "1000", price.String())
+	price, exist := productEntity.MonthlyPrice()
+	assert.True(t, exist)
+	assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
 	assert.True(t, createdAt.Equal(productEntity.CreatedAt()))
 	assert.True(t, updatedAt.Equal(productEntity.UpdatedAt()))
 }
@@ -50,8 +54,23 @@ func TestProductEntity_LoadData(t *testing.T) {
 
 	assert.Equal(t, 1, productEntity.Id())
 	assert.Equal(t, "name2", productEntity.Name())
-	price := productEntity.Price()
+	price, exist := productEntity.MonthlyPrice()
+	assert.True(t, exist)
 	assert.True(t, price.Equal(decimal.NewFromFloat(2000)))
 	assert.Equal(t, createdAt, productEntity.CreatedAt())
 	assert.Equal(t, updateAt, productEntity.UpdatedAt())
+}
+
+func TestProductEntity_MonthlyPrice(t *testing.T) {
+	t.Run("月契約が存在する商品なら_月額定価が返ってくる", func(t *testing.T) {
+		productEntity, err := NewProductEntity("name", "1000")
+		assert.NoError(t, err)
+
+		price, exist := productEntity.MonthlyPrice()
+		assert.True(t, exist)
+		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
+	})
+	t.Run("月契約が存在しない商品なら_errorが返ってくる", func(t *testing.T) {
+		t.Skip("まだ月契約しか設定できないのでスキップ")
+	})
 }

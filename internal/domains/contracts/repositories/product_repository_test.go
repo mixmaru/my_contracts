@@ -16,11 +16,15 @@ func TestProductRepository_Save(t *testing.T) {
 	_, err = db.Exec("truncate table products cascade")
 	assert.NoError(t, err)
 
+	tran, err := db.Begin()
+	assert.NoError(t, err)
+
 	r := NewProductRepository()
 	productEntity, err := entities.NewProductEntity("商品名", "1000")
 	assert.NoError(t, err)
-	savedId, err := r.Save(productEntity, db)
-
+	savedId, err := r.Save(productEntity, tran)
+	assert.NoError(t, err)
+	err = tran.Commit()
 	assert.NoError(t, err)
 	assert.NotEqual(t, 0, savedId)
 }
@@ -35,20 +39,21 @@ func TestProductRepository_GetById(t *testing.T) {
 
 	r := NewProductRepository()
 
-	t.Run("データがある時", func(t *testing.T) {
-		// データ登録
-		productEntity, err := entities.NewProductEntity("商品名", "1000")
-		assert.NoError(t, err)
-		savedId, err := r.Save(productEntity, db)
-		assert.NoError(t, err)
+	// 検証用データ登録
+	productEntity, err := entities.NewProductEntity("商品名", "1000")
+	assert.NoError(t, err)
+	savedId, err := r.Save(productEntity, db)
+	assert.NoError(t, err)
 
+	t.Run("データがある時", func(t *testing.T) {
 		// データ取得
 		loadedEntity, err := r.GetById(savedId, db)
 		assert.NoError(t, err)
 
 		assert.Equal(t, savedId, loadedEntity.Id())
 		assert.Equal(t, "商品名", loadedEntity.Name())
-		price := loadedEntity.Price()
+		price, exist := loadedEntity.MonthlyPrice()
+		assert.True(t, exist)
 		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
 		assert.NotZero(t, loadedEntity.CreatedAt())
 		assert.NotZero(t, loadedEntity.UpdatedAt())
@@ -72,12 +77,13 @@ func TestProductRepository_GetByName(t *testing.T) {
 
 	r := NewProductRepository()
 
+	// 検証用データ登録
+	productEntity, err := entities.NewProductEntity("商品名", "1000")
+	assert.NoError(t, err)
+	savedId, err := r.Save(productEntity, db)
+	assert.NoError(t, err)
+
 	t.Run("データがある時", func(t *testing.T) {
-		// データ登録
-		productEntity, err := entities.NewProductEntity("商品名", "1000")
-		assert.NoError(t, err)
-		savedId, err := r.Save(productEntity, db)
-		assert.NoError(t, err)
 
 		// データ取得
 		loadedEntity, err := r.GetByName("商品名", db)
@@ -85,7 +91,8 @@ func TestProductRepository_GetByName(t *testing.T) {
 
 		assert.Equal(t, savedId, loadedEntity.Id())
 		assert.Equal(t, "商品名", loadedEntity.Name())
-		price := loadedEntity.Price()
+		price, exist := loadedEntity.MonthlyPrice()
+		assert.True(t, exist)
 		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
 		assert.NotZero(t, loadedEntity.CreatedAt())
 		assert.NotZero(t, loadedEntity.UpdatedAt())
