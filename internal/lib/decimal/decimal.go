@@ -51,6 +51,10 @@ func (d *Decimal) Div(decimal Decimal) Decimal {
 	return Decimal{d.decimal.Div(decimal.decimal)}
 }
 
+func (d *Decimal) Truncate(precision int32) Decimal {
+	return Decimal{d.decimal.Truncate(precision)}
+}
+
 func (d *Decimal) Equal(decimal Decimal) bool {
 	return d.decimal.Equal(decimal.decimal)
 }

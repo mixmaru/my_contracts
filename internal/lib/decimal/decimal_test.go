@@ -162,6 +162,20 @@ func TestDecimal_Div(t *testing.T) {
 	}
 }
 
+// 切り捨て
+func TestDecimal_Truncate(t *testing.T) {
+	decimal := NewFromFloat(123.456789)
+
+	a := decimal.Truncate(0)
+	assert.Equal(t, "123", a.String())
+
+	b := decimal.Truncate(2)
+	assert.Equal(t, "123.45", b.String())
+
+	c := decimal.Truncate(-1)
+	assert.Equal(t, "120", c.String())
+}
+
 // 正チェック
 func TestDecimal_IsPositive(t *testing.T) {
 	d := NewFromFloat(10)
