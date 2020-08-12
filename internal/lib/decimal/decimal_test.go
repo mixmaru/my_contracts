@@ -172,8 +172,8 @@ func TestDecimal_Truncate(t *testing.T) {
 	b := decimal.Truncate(2)
 	assert.Equal(t, "123.45", b.String())
 
-	c := decimal.Truncate(-1)
-	assert.Equal(t, "120", c.String())
+	c := decimal.Truncate(-2)
+	assert.Equal(t, "123.456789", c.String())
 }
 
 // 正チェック
