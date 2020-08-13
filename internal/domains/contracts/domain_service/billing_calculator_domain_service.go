@@ -29,7 +29,7 @@ func (b *BillingCalculatorDomainService) BillingAmount(contract *entities.Contra
 	if !exist {
 		return decimal.Decimal{}, errors.Errorf("月額料金が取得できなかった。product: %+v", product)
 	}
-	billingStartDate := contract.BillingStartDate()
+	billingStartDate := contract.LastBillingStartDate(targetDate)
 	// 課金開始日から次の課金開始日の間の日数を取得する
 	thisTermFullDateNum := b.billingTermFullDateNum(billingStartDate)
 	// 課金開始日からtargetDateの間の日数を計算する
