@@ -1,7 +1,7 @@
 package domain_service
 
 import (
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/internal/utils"
@@ -12,46 +12,55 @@ import (
 )
 
 func TestContractDomainService_CreateContract(t *testing.T) {
-	// 事前準備。userと商品を登録しておく
-	userApp := application_service.NewUserApplicationService()
-	user, validErrors, err := userApp.RegisterUserIndividual("個人太郎")
-	assert.NoError(t, err)
-	assert.Len(t, validErrors, 0)
-
-	productApp := application_service.NewProductApplicationService()
-	// 重複しない商品名でテストを行う
-	unixNano := time.Now().UnixNano()
-	suffix := strconv.FormatInt(unixNano, 10)
-	name := "商品" + suffix
-	product, validErrors, err := productApp.Register(name, "200")
-	assert.NoError(t, err)
-	assert.Len(t, validErrors, 0)
-
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 	defer db.Db.Close()
 
-	domainService := NewContractDomainService(repositories.NewContractRepository(), repositories.NewUserRepository(), repositories.NewProductRepository())
+	// 事前準備。userを登録しとく
+	userEntity, err := entities.NewUserIndividualEntity("個人たろう")
+	assert.NoError(t, err)
+	userRepository := repositories.NewUserRepository()
+	userId, err := userRepository.SaveUserIndividual(userEntity, db)
+	assert.NoError(t, err)
+
+	// 事前準備。productを登録しとく
+	//productApp := application_service.NewProductApplicationService()
+	// 重複しない商品名でテストを行う
+	unixNano := time.Now().UnixNano()
+	suffix := strconv.FormatInt(unixNano, 10)
+	name := "商品" + suffix
+	productEntity, err := entities.NewProductEntity(name, "200")
+	assert.NoError(t, err)
+	productRepository := repositories.NewProductRepository()
+	productId, err := productRepository.Save(productEntity, db)
+	assert.NoError(t, err)
+
+	domainService := NewContractDomainService(repositories.NewContractRepository(), userRepository, productRepository)
 	t.Run("ユーザーIDと商品IDと契約作成日と課金開始日を渡すと_契約と使用権データを作成してDBに保存し_保存したデータを返す", func(t *testing.T) {
 		tran, err := db.Begin()
 		assert.NoError(t, err)
 
 		actualContractDto, validErrors, err := domainService.CreateContract(
-			user.Id,
-			product.Id,
+			userId,
+			productId,
 			utils.CreateJstTime(2020, 1, 1, 15, 0, 0, 0),
 			tran,
 		)
 		assert.NoError(t, err)
 		assert.Len(t, validErrors, 0)
 
+		err = tran.Commit()
+		assert.NoError(t, err)
+
 		assert.NotZero(t, actualContractDto.Id)
-		assert.Equal(t, user.Id, actualContractDto.UserId)
-		assert.Equal(t, product.Id, actualContractDto.ProductId)
+		assert.Equal(t, userId, actualContractDto.UserId)
+		assert.Equal(t, productId, actualContractDto.ProductId)
 		assert.True(t, actualContractDto.ContractDate.Equal(utils.CreateJstTime(2020, 1, 1, 15, 0, 0, 0)))
 		assert.True(t, actualContractDto.BillingStartDate.Equal(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0)))
 		assert.NotZero(t, actualContractDto.ContractDate)
 		assert.NotZero(t, actualContractDto.UpdatedAt)
+
+		// データ保存されているか見ておく
 	})
 }
 
