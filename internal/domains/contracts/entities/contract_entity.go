@@ -46,6 +46,22 @@ func (c *ContractEntity) BillingStartDate() time.Time {
 	return c.billingStartDate
 }
 
+/*
+対象日以下の最大の課金開始日（直近の課金開始日）を返す
+*/
+func (c *ContractEntity) LastBillingStartDate(targetDate time.Time) time.Time {
+	billingDate := c.billingStartDate
+	for true {
+		nextBillingStartDate := billingDate.AddDate(0, 1, 0)
+		if nextBillingStartDate.After(targetDate) {
+			return billingDate
+		} else {
+			billingDate = nextBillingStartDate
+		}
+	}
+	return billingDate // ここにはこないはず
+}
+
 //// 保持データをセットし直す
 func (c *ContractEntity) LoadData(id, userId, productId int, contractDate, billingStartDate, createdAt, updatedAt time.Time) error {
 	c.id = id

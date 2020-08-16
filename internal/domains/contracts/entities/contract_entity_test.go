@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -67,5 +68,35 @@ func TestContractEntity_LoadData(t *testing.T) {
 		assert.EqualValues(t, billingStartDate, contractEntity.BillingStartDate())
 		assert.EqualValues(t, createdAt, contractEntity.CreatedAt())
 		assert.EqualValues(t, updateAt, contractEntity.UpdatedAt())
+	})
+}
+
+func TestContractEntity_LastBillingStartDate(t *testing.T) {
+	contract, err := NewContractEntityWithData(
+		1,
+		2,
+		3,
+		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+	)
+	assert.NoError(t, err)
+
+	t.Run("2020_01_02を渡すと直近の課金開始日_2020_01_02が返る", func(t *testing.T) {
+		actual := contract.LastBillingStartDate(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0))
+		assert.True(t, actual.Equal(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0)))
+	})
+	t.Run("2020_02_01を渡すと直近の課金開始日_2020_01_02が返る", func(t *testing.T) {
+		actual := contract.LastBillingStartDate(utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0))
+		assert.True(t, actual.Equal(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0)))
+	})
+	t.Run("2020_02_02を渡すと直近の課金開始日_2020_02_02が返る", func(t *testing.T) {
+		actual := contract.LastBillingStartDate(utils.CreateJstTime(2020, 2, 2, 0, 0, 0, 0))
+		assert.True(t, actual.Equal(utils.CreateJstTime(2020, 2, 2, 0, 0, 0, 0)))
+	})
+	t.Run("2020_03_01を渡すと直近の課金開始日_2020_02_02が返る", func(t *testing.T) {
+		actual := contract.LastBillingStartDate(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0))
+		assert.True(t, actual.Equal(utils.CreateJstTime(2020, 2, 2, 0, 0, 0, 0)))
 	})
 }
