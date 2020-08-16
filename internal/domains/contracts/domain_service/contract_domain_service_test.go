@@ -35,7 +35,9 @@ func TestContractDomainService_CreateContract(t *testing.T) {
 	productId, err := productRepository.Save(productEntity, db)
 	assert.NoError(t, err)
 
-	domainService := NewContractDomainService(repositories.NewContractRepository(), userRepository, productRepository)
+	contractRepository := repositories.NewContractRepository()
+
+	domainService := NewContractDomainService(contractRepository, userRepository, productRepository)
 	t.Run("ユーザーIDと商品IDと契約作成日と課金開始日を渡すと_契約と使用権データを作成してDBに保存し_保存したデータを返す", func(t *testing.T) {
 		tran, err := db.Begin()
 		assert.NoError(t, err)
@@ -61,6 +63,9 @@ func TestContractDomainService_CreateContract(t *testing.T) {
 		assert.NotZero(t, actualContractDto.UpdatedAt)
 
 		// データ保存されているか見ておく
+		contractEntity, _, _, err := contractRepository.GetById(actualContractDto.Id, db)
+		assert.NoError(t, err)
+		assert.NotZero(t, contractEntity.Id())
 	})
 }
 
