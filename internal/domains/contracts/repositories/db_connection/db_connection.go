@@ -41,6 +41,7 @@ func GetConnection() (*gorp.DbMap, error) {
 	dbmap.AddTableWithName(data_mappers.ProductPriceMonthlyMapper{}, "product_price_monthlies")
 
 	dbmap.AddTableWithName(data_mappers.ContractMapper{}, "contracts").SetKeys(true, "Id")
+	dbmap.AddTableWithName(data_mappers.RightToUseMapper{}, "right_to_use").SetKeys(true, "Id")
 
 	return dbmap, nil
 }
