@@ -17,9 +17,9 @@ func NewRightToUseRepository() *RightToUseRepository {
 	}
 }
 
-func (r *RightToUseRepository) Create(rightToUseEnitty *entities.RightToUseEntity, executor gorp.SqlExecutor) (savedId int, err error) {
+func (r *RightToUseRepository) Create(rightToUseEntity *entities.RightToUseEntity, executor gorp.SqlExecutor) (savedId int, err error) {
 	// データマッパーを用意する
-	mapper := data_mappers.NewRightToUseMapperFromEntity(rightToUseEnitty)
+	mapper := data_mappers.NewRightToUseMapperFromEntity(rightToUseEntity)
 
 	// データ登録実行する
 	err = executor.Insert(&mapper)
