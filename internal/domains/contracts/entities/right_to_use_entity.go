@@ -31,14 +31,21 @@ func (r *RightToUseEntity) ValidTo() time.Time {
 	return r.validTo
 }
 
-//func NewContractEntityWithData(id, userId, productId int, contractDate, billingStartDate, createdAt, updatedAt time.Time) (*ContractEntity, error) {
-//	entity := ContractEntity{}
-//	err := entity.LoadData(id, userId, productId, contractDate, billingStartDate, createdAt, updatedAt)
-//	if err != nil {
-//		return nil, err
-//	}
-//	return &entity, nil
-//}
+func NewRightToUseWithData(id, contractId int, validFrom, validTo, createdAt, updatedAt time.Time) *RightToUseEntity {
+	entity := &RightToUseEntity{}
+	entity.LoadData(id, contractId, validFrom, validTo, createdAt, updatedAt)
+	return entity
+}
+
+func (r *RightToUseEntity) LoadData(id, contractId int, validFrom, validTo, createdAt, updatedAt time.Time) {
+	r.id = id
+	r.contractId = contractId
+	r.validFrom = validFrom
+	r.validTo = validTo
+	r.createdAt = createdAt
+	r.updatedAt = updatedAt
+}
+
 //
 //func (c *ContractEntity) UserId() int {
 //	return c.userId
