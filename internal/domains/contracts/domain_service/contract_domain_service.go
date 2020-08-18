@@ -10,16 +10,23 @@ import (
 )
 
 type ContractDomainService struct {
-	contractRepository interfaces.IContractRepository
-	userRepository     interfaces.IUserRepository
-	productRepository  interfaces.IProductRepository
+	contractRepository   interfaces.IContractRepository
+	userRepository       interfaces.IUserRepository
+	productRepository    interfaces.IProductRepository
+	rightToUseRepository interfaces.IRightToUseRepository
 }
 
-func NewContractDomainService(contractRepository interfaces.IContractRepository, userRepository interfaces.IUserRepository, productRepository interfaces.IProductRepository) *ContractDomainService {
+func NewContractDomainService(
+	contractRepository interfaces.IContractRepository,
+	userRepository interfaces.IUserRepository,
+	productRepository interfaces.IProductRepository,
+	rightToUseRepository interfaces.IRightToUseRepository,
+) *ContractDomainService {
 	return &ContractDomainService{
-		contractRepository: contractRepository,
-		userRepository:     userRepository,
-		productRepository:  productRepository,
+		contractRepository:   contractRepository,
+		userRepository:       userRepository,
+		productRepository:    productRepository,
+		rightToUseRepository: rightToUseRepository,
 	}
 }
 
@@ -33,19 +40,21 @@ func (c *ContractDomainService) CreateContract(userId, productId int, executeDat
 		return data_transfer_objects.ContractDto{}, validationErrors, nil
 	}
 
-	// entityを作成
+	// 課金開始日算出
 	billingStartDate := c.calculateBillingStartDate(executeDate, 1, utils.CreateJstLocation())
 
-	entity := entities.NewContractEntity(userId, productId, executeDate, billingStartDate)
-
-	// リポジトリで保存
-	savedId, err := c.contractRepository.Create(entity, executor)
+	// 契約の作成
+	savedContractId, err := c.createNewContract(userId, productId, executeDate, billingStartDate, executor)
 	if err != nil {
 		return data_transfer_objects.ContractDto{}, nil, err
 	}
 
+	// 使用権の作成
+	validTo := billingStartDate.AddDate(0, 1, 0)
+	_, err = c.createNewRightToUse(savedContractId, executeDate, validTo, executor)
+
 	// 再読込
-	savedEntity, _, _, err := c.contractRepository.GetById(savedId, executor)
+	savedEntity, _, _, err := c.contractRepository.GetById(savedContractId, executor)
 	if err != nil {
 		return data_transfer_objects.ContractDto{}, nil, err
 	}
@@ -55,56 +64,30 @@ func (c *ContractDomainService) CreateContract(userId, productId int, executeDat
 
 	// 返却
 	return dto, nil, nil
+}
 
-	//// トランザクション開始
-	//conn, err := db_connection.GetConnection()
-	//if err != nil {
-	//	return data_transfer_objects.ContractDto{}, nil, err
-	//}
-	//defer conn.Db.Close()
-	//tran, err := conn.Begin()
-	//if err != nil {
-	//	return data_transfer_objects.ContractDto{}, nil, errors.WithStack(err)
-	//}
-	//
-	//// 入力値バリデーション
-	//validationErrors, err = c.registerValidation(userId, productId, tran)
-	//if err != nil {
-	//	return data_transfer_objects.ContractDto{}, nil, err
-	//}
-	//if len(validationErrors) > 0 {
-	//	return data_transfer_objects.ContractDto{}, validationErrors, nil
-	//}
-	//
-	//// entityを作成
-	//billingStartDate := c.calculateBillingStartDate(contractDateTime, 1, utils.CreateJstLocation())
-	//
-	//entity := entities.NewContractEntity(userId, productId, contractDateTime, billingStartDate)
-	//
-	//// リポジトリで保存
-	//savedId, err := c.ContractRepository.Create(entity, tran)
-	//if err != nil {
-	//	return data_transfer_objects.ContractDto{}, nil, err
-	//}
-	//
-	//// 再読込
-	//savedEntity, _, _, err := c.ContractRepository.GetById(savedId, tran)
-	//if err != nil {
-	//	return data_transfer_objects.ContractDto{}, nil, err
-	//}
-	//
-	//err = tran.Commit()
-	//if err != nil {
-	//	return data_transfer_objects.ContractDto{}, nil, errors.WithStack(err)
-	//}
-	//
-	//// dtoに詰める
-	//dto := data_transfer_objects.NewContractDtoFromEntity(savedEntity)
-	//
-	//// 返却
-	//return dto, nil, nil
+func (c *ContractDomainService) createNewContract(userId, productId int, executeDate, billingStartDate time.Time, executor gorp.SqlExecutor) (savedContractId int, err error) {
+	// 契約entityを作成
+	entity := entities.NewContractEntity(userId, productId, executeDate, billingStartDate)
 
-	//return nil, nil
+	// リポジトリで保存
+	savedContractId, err = c.contractRepository.Create(entity, executor)
+	if err != nil {
+		return 0, err
+	}
+	return savedContractId, nil
+}
+
+func (c *ContractDomainService) createNewRightToUse(contractId int, validFrom, validTo time.Time, executor gorp.SqlExecutor) (savedRightToUseId int, err error) {
+	// 使用権entityを作成
+	rightToUseEntity := entities.NewRightToUseEntity(contractId, validFrom, validTo)
+
+	// リポジトリで保存
+	savedRightToUseId, err = c.rightToUseRepository.Create(rightToUseEntity, executor)
+	if err != nil {
+		return 0, err
+	}
+	return savedRightToUseId, nil
 }
 
 func (c *ContractDomainService) registerValidation(userId int, productId int, executor gorp.SqlExecutor) (validationErrors map[string][]string, err error) {

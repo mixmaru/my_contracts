@@ -3,6 +3,7 @@ package domain_service
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/data_mappers"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
@@ -36,12 +37,14 @@ func TestContractDomainService_CreateContract(t *testing.T) {
 	assert.NoError(t, err)
 
 	contractRepository := repositories.NewContractRepository()
+	rightToUseRepository := repositories.NewRightToUseRepository()
 
-	domainService := NewContractDomainService(contractRepository, userRepository, productRepository)
+	domainService := NewContractDomainService(contractRepository, userRepository, productRepository, rightToUseRepository)
 	t.Run("ユーザーIDと商品IDと契約作成日と課金開始日を渡すと_契約と使用権データを作成してDBに保存し_保存したデータを返す", func(t *testing.T) {
 		tran, err := db.Begin()
 		assert.NoError(t, err)
 
+		// 実行
 		actualContractDto, validErrors, err := domainService.CreateContract(
 			userId,
 			productId,
@@ -54,6 +57,7 @@ func TestContractDomainService_CreateContract(t *testing.T) {
 		err = tran.Commit()
 		assert.NoError(t, err)
 
+		// 検証
 		assert.NotZero(t, actualContractDto.Id)
 		assert.Equal(t, userId, actualContractDto.UserId)
 		assert.Equal(t, productId, actualContractDto.ProductId)
@@ -66,11 +70,21 @@ func TestContractDomainService_CreateContract(t *testing.T) {
 		contractEntity, _, _, err := contractRepository.GetById(actualContractDto.Id, db)
 		assert.NoError(t, err)
 		assert.NotZero(t, contractEntity.Id())
+
+		mapper := data_mappers.RightToUseMapper{}
+		err = db.SelectOne(&mapper, "SELECT * FROM right_to_use where contract_id = $1", contractEntity.Id())
+		assert.NoError(t, err)
+		assert.NotZero(t, mapper.Id)
+		assert.Equal(t, contractEntity.Id(), mapper.ContractId)
+		assert.True(t, mapper.ValidFrom.Equal(utils.CreateJstTime(2020, 1, 1, 15, 0, 0, 0)))
+		assert.True(t, mapper.ValidTo.Equal(utils.CreateJstTime(2020, 2, 2, 0, 0, 0, 0)))
+		assert.NotZero(t, mapper.CreatedAt)
+		assert.NotZero(t, mapper.UpdatedAt)
 	})
 }
 
 func TestNewContractDomainService_calculateBillingStartDate(t *testing.T) {
-	app := NewContractDomainService(nil, nil, nil)
+	app := NewContractDomainService(nil, nil, nil, nil)
 	t.Run("契約日と無料期間とタイムゾーンを渡すと_課金開始日が返ってくる", func(t *testing.T) {
 		t.Run("JSTで渡すと_JSTで0時0分で返ってくる", func(t *testing.T) {
 			expect := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
