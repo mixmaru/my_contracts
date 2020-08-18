@@ -33,10 +33,16 @@ func (c *ContractApplicationService) Register(userId int, productId int, contrac
 	contractDomainService := domain_service.NewContractDomainService(c.ContractRepository, c.UserRepository, c.ProductRepository, c.RightToUseRepository)
 	contractDto, validationErrors, err := contractDomainService.CreateContract(userId, productId, contractDateTime, tran)
 	if err != nil {
+		tran.Rollback()
 		return data_transfer_objects.ContractDto{}, nil, err
 	}
 	if len(validationErrors) > 0 {
+		tran.Rollback()
 		return data_transfer_objects.ContractDto{}, validationErrors, nil
+	}
+	err = tran.Commit()
+	if err != nil {
+		return data_transfer_objects.ContractDto{}, nil, errors.Wrapf(err, "コミットに失敗した。userId: %v, productId: %v, contractDateTime: %v", userId, productId, contractDateTime)
 	}
 
 	return contractDto, nil, nil
