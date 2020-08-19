@@ -20,6 +20,7 @@ func TestMain_saveUser(t *testing.T) {
 	router := newRouter()
 	t.Run("個人顧客", func(t *testing.T) {
 		t.Run("typeとnameを受け取って個人ユーザーを登録し_登録した内容を返却する", func(t *testing.T) {
+			////// 準備
 			// リクエストパラメータ作成
 			body := url.Values{}
 			body.Set("type", "individual")
@@ -31,9 +32,8 @@ func TestMain_saveUser(t *testing.T) {
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
 
-			// 検証
+			////// 検証
 			assert.Equal(t, http.StatusCreated, rec.Code)
-
 			// jsonパース
 			var registeredUser data_transfer_objects.UserIndividualDto
 			err := json.Unmarshal(rec.Body.Bytes(), &registeredUser)
@@ -47,6 +47,7 @@ func TestMain_saveUser(t *testing.T) {
 		})
 
 		t.Run("バリデーションエラー_nameが空だと登録できずエラーメッセージが返る", func(t *testing.T) {
+			////// 準備
 			// リクエストパラメータ作成
 			body := url.Values{}
 			body.Set("type", "individual")
@@ -58,9 +59,8 @@ func TestMain_saveUser(t *testing.T) {
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
 
-			// 検証
+			////// 検証
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
-
 			// jsonパース
 			var validMessages map[string][]string
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
@@ -77,6 +77,7 @@ func TestMain_saveUser(t *testing.T) {
 
 	t.Run("法人顧客", func(t *testing.T) {
 		t.Run("typeにcorporationを渡して会社名_担当者名_社長名を渡すと登録されて登録データが返却される", func(t *testing.T) {
+			////// 準備
 			// リクエストパラメータ作成
 			body := url.Values{}
 			body.Set("type", "corporation")
@@ -90,9 +91,8 @@ func TestMain_saveUser(t *testing.T) {
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
 
-			// 検証
+			////// 検証
 			assert.Equal(t, http.StatusCreated, rec.Code)
-
 			// jsonパース
 			var registeredUser data_transfer_objects.UserCorporationDto
 			err := json.Unmarshal(rec.Body.Bytes(), &registeredUser)
@@ -109,6 +109,7 @@ func TestMain_saveUser(t *testing.T) {
 
 		t.Run("バリデーションエラー", func(t *testing.T) {
 			t.Run("空文字_担当者名や社長名や会社名にから文字を渡すとエラーメッセージが返る", func(t *testing.T) {
+				////// 準備
 				body := url.Values{}
 				body.Set("type", "corporation")
 				body.Set("corporation_name", "")
@@ -121,9 +122,8 @@ func TestMain_saveUser(t *testing.T) {
 				rec := httptest.NewRecorder()
 				router.ServeHTTP(rec, req)
 
-				// 検証
+				////// 検証
 				assert.Equal(t, http.StatusBadRequest, rec.Code)
-
 				// jsonパース
 				var validMessages map[string][]string
 				err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
@@ -144,6 +144,7 @@ func TestMain_saveUser(t *testing.T) {
 			})
 
 			t.Run("文字多すぎるとエラーメッセージが返る", func(t *testing.T) {
+				////// 準備
 				body := url.Values{}
 				body.Set("type", "corporation")
 				body.Set("corporation_name", "000000000011111111112222222222333333333344444444445")
@@ -156,14 +157,12 @@ func TestMain_saveUser(t *testing.T) {
 				rec := httptest.NewRecorder()
 				router.ServeHTTP(rec, req)
 
-				// 検証
+				////// 検証
 				assert.Equal(t, http.StatusBadRequest, rec.Code)
-
 				// jsonパース
 				var validMessages map[string][]string
 				err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 				assert.NoError(t, err)
-
 				expected := map[string][]string{
 					"corporation_name": {
 						"50文字より多いです",
@@ -181,6 +180,7 @@ func TestMain_saveUser(t *testing.T) {
 	})
 
 	t.Run("バリデーションエラー_typeに適当な値をいれるとエラーメッセージを返す", func(t *testing.T) {
+		////// 準備
 		// リクエストパラメータ作成
 		body := url.Values{}
 		body.Set("type", "aaaa")
@@ -194,7 +194,6 @@ func TestMain_saveUser(t *testing.T) {
 
 		// 検証
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
-
 		// jsonパース
 		var validErrors map[string][]string
 		err := json.Unmarshal(rec.Body.Bytes(), &validErrors)
@@ -206,8 +205,8 @@ func TestMain_saveUser(t *testing.T) {
 }
 
 func TestMain_getUser(t *testing.T) {
-	router := newRouter()
 
+	////// 取得テスト用のデータを登録する
 	userAppService := application_service.NewUserApplicationService()
 	// 個人ユーザー登録
 	savedIndividualUser, validErrors, err := userAppService.RegisterUserIndividual("個人たたろう")
@@ -219,8 +218,11 @@ func TestMain_getUser(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, validErrors, 0)
 
+	router := newRouter()
+
 	t.Run("個人ユーザー取得", func(t *testing.T) {
 		t.Run("userIdをurlで受け取ってそのUser情報を返す", func(t *testing.T) {
+			////// 実行
 			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", savedIndividualUser.Id), nil)
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
@@ -230,7 +232,6 @@ func TestMain_getUser(t *testing.T) {
 			// jsonパース
 			err = json.Unmarshal(rec.Body.Bytes(), &loadedUser)
 			assert.NoError(t, err)
-
 			assert.Equal(t, savedIndividualUser.Id, loadedUser.Id)
 			assert.Equal(t, "individual", loadedUser.Type)
 			assert.Equal(t, "個人たたろう", loadedUser.Name)
@@ -239,16 +240,17 @@ func TestMain_getUser(t *testing.T) {
 		})
 
 		t.Run("指定IDのユーザーが存在しなかったときNotFoundを返す", func(t *testing.T) {
+			///// 実行
 			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", -100), nil)
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
-			assert.Equal(t, http.StatusNotFound, rec.Code)
 
+			///// 検証
+			assert.Equal(t, http.StatusNotFound, rec.Code)
 			// jsonパース
 			var jsonValues map[string]string
 			err = json.Unmarshal(rec.Body.Bytes(), &jsonValues)
 			assert.NoError(t, err)
-
 			expect := map[string]string{
 				"message": "Not Found",
 			}
@@ -256,16 +258,17 @@ func TestMain_getUser(t *testing.T) {
 		})
 
 		t.Run("数値ではない適当な値を入れられたときはNotFoundを返す", func(t *testing.T) {
+			////// 実行
 			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", "1a00"), nil)
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
-			assert.Equal(t, http.StatusNotFound, rec.Code)
 
+			////// 検証
+			assert.Equal(t, http.StatusNotFound, rec.Code)
 			// jsonパース
 			var jsonValues map[string]string
 			err = json.Unmarshal(rec.Body.Bytes(), &jsonValues)
 			assert.NoError(t, err)
-
 			expect := map[string]string{
 				"message": "Not Found",
 			}
@@ -275,6 +278,7 @@ func TestMain_getUser(t *testing.T) {
 
 	t.Run("法人ユーザー取得", func(t *testing.T) {
 		t.Run("UserIdを指定してそのUserの情報を返す", func(t *testing.T) {
+			////// 実行
 			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", savedCorporationUser.Id), nil)
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
@@ -284,7 +288,6 @@ func TestMain_getUser(t *testing.T) {
 			// jsonパース
 			err = json.Unmarshal(rec.Body.Bytes(), &loadedUser)
 			assert.NoError(t, err)
-
 			assert.Equal(t, savedCorporationUser.Id, loadedUser.Id)
 			assert.Equal(t, "corporation", loadedUser.Type)
 			assert.Equal(t, "イケイケ株式会社", loadedUser.CorporationName)
@@ -295,16 +298,17 @@ func TestMain_getUser(t *testing.T) {
 		})
 
 		t.Run("指定IDのユーザーが存在しなかったときNotFoundを返す", func(t *testing.T) {
+			////// 実行
 			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", -100), nil)
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
-			assert.Equal(t, http.StatusNotFound, rec.Code)
 
+			///// 検証
+			assert.Equal(t, http.StatusNotFound, rec.Code)
 			// jsonパース
 			var jsonValues map[string]string
 			err = json.Unmarshal(rec.Body.Bytes(), &jsonValues)
 			assert.NoError(t, err)
-
 			expect := map[string]string{
 				"message": "Not Found",
 			}
@@ -312,16 +316,17 @@ func TestMain_getUser(t *testing.T) {
 		})
 
 		t.Run("数値ではない適当な値を入れられたときはNotFoundを返す", func(t *testing.T) {
+			////// 実行
 			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", "1a00"), nil)
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
-			assert.Equal(t, http.StatusNotFound, rec.Code)
 
+			////// 検証
+			assert.Equal(t, http.StatusNotFound, rec.Code)
 			// jsonパース
 			var jsonValues map[string]string
 			err = json.Unmarshal(rec.Body.Bytes(), &jsonValues)
 			assert.NoError(t, err)
-
 			expect := map[string]string{
 				"message": "Not Found",
 			}
@@ -331,7 +336,6 @@ func TestMain_getUser(t *testing.T) {
 }
 
 func TestMain_saveProduct(t *testing.T) {
-	// 同盟商品は登録できないので予め削除
 	conn, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 	defer conn.Db.Close()
@@ -339,12 +343,11 @@ func TestMain_saveProduct(t *testing.T) {
 	router := newRouter()
 
 	t.Run("商品名と値段を渡すと商品登録して登録データを返す", func(t *testing.T) {
-		//////// データ登録テスト
+		//////// 準備
 		// 重複しない商品名でテストを行う
 		unixNano := time.Now().UnixNano()
 		suffix := strconv.FormatInt(unixNano, 10)
 		name := "商品" + suffix
-
 		// リクエストパラメータ作成
 		body := url.Values{}
 		body.Set("name", name)
@@ -356,38 +359,35 @@ func TestMain_saveProduct(t *testing.T) {
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
 
-		// 検証
+		////// 検証
 		assert.Equal(t, http.StatusCreated, rec.Code)
-
 		// jsonパース
 		var registeredProduct data_transfer_objects.ProductDto
 		err := json.Unmarshal(rec.Body.Bytes(), &registeredProduct)
 		assert.NoError(t, err)
-
 		assert.Equal(t, name, registeredProduct.Name)
 		assert.Equal(t, "1000.01", registeredProduct.Price)
 	})
 
 	t.Run("バリデーションエラー", func(t *testing.T) {
 		t.Run("空文字_要素にから文字を渡すとエラーメッセージを返す", func(t *testing.T) {
+			////// 準備
 			body := url.Values{}
 			body.Set("contact_person_name", "")
 			body.Set("president_name", "")
 
-			// リクエスト実行
+			////// リクエスト実行
 			req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
 
-			// 検証
+			////// 検証
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
-
 			// jsonパース
 			var validMessages map[string][]string
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
-
 			expected := map[string][]string{
 				"name": {
 					"空です",
@@ -400,6 +400,7 @@ func TestMain_saveProduct(t *testing.T) {
 		})
 
 		t.Run("文字多すぎだったり_priceがマイナス値だったりするとエラーメッセージを返す", func(t *testing.T) {
+			////// 準備
 			body := url.Values{}
 			body.Set("name", "000000000011111111112222222222333333333344444444445")
 			body.Set("price", "-1000")
@@ -410,14 +411,12 @@ func TestMain_saveProduct(t *testing.T) {
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
 
-			// 検証
+			////// 検証
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
-
 			// jsonパース
 			var validMessages map[string][]string
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
-
 			expected := map[string][]string{
 				"name": {
 					"50文字より多いです",
@@ -432,36 +431,21 @@ func TestMain_saveProduct(t *testing.T) {
 }
 
 func TestMain_getProduct(t *testing.T) {
-	// 重複商品名は登録できないので予め削除
-	conn, err := db_connection.GetConnection()
-	assert.NoError(t, err)
-	defer conn.Db.Close()
-
 	// 重複しない商品名でテストを行う
 	unixNano := time.Now().UnixNano()
 	suffix := strconv.FormatInt(unixNano, 10)
 	name := "商品" + suffix
 
 	// 検証用データ登録
-	router := newRouter()
-	body := url.Values{}
-	body.Set("name", name)
-	body.Set("price", "1000.001")
-
-	// リクエスト実行
-	req := httptest.NewRequest("POST", "/products/", strings.NewReader(body.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-	rec := httptest.NewRecorder()
-	router.ServeHTTP(rec, req)
-	// 検証
-	assert.Equal(t, http.StatusCreated, rec.Code)
-
-	// 保存したデータを取得
-	var registeredProduct data_transfer_objects.ProductDto
-	err = json.Unmarshal(rec.Body.Bytes(), &registeredProduct)
+	productAppService := application_service.NewProductApplicationService()
+	registeredProduct, validErrors, err := productAppService.Register(name, "1000.001")
 	assert.NoError(t, err)
+	assert.Len(t, validErrors, 0)
+
+	router := newRouter()
 
 	t.Run("商品IDを受け取って商品データを返す", func(t *testing.T) {
+		////// 実行
 		req := httptest.NewRequest("GET", fmt.Sprintf("/products/%v", registeredProduct.Id), nil)
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
@@ -471,20 +455,25 @@ func TestMain_getProduct(t *testing.T) {
 		err = json.Unmarshal(rec.Body.Bytes(), &gotProductData)
 		assert.NoError(t, err)
 
+		////// 検証
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, registeredProduct, gotProductData)
+		assert.Equal(t, registeredProduct.Id, gotProductData.Id)
+		assert.Equal(t, registeredProduct.Name, gotProductData.Name)
+		assert.Equal(t, registeredProduct.Price, gotProductData.Price)
+		assert.True(t, registeredProduct.CreatedAt.Equal(gotProductData.CreatedAt))
+		assert.True(t, registeredProduct.UpdatedAt.Equal(gotProductData.UpdatedAt))
 	})
 
 	t.Run("指定IDの商品が存在しなかった時はNot Roundになる", func(t *testing.T) {
+		////// 実行
 		req := httptest.NewRequest("GET", "/products/0", nil)
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
 
-		// 検証
+		////// 検証
 		var jsonValues map[string]string
 		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
 		assert.NoError(t, err)
-
 		expect := map[string]string{
 			"message": "Not Found",
 		}
@@ -493,15 +482,15 @@ func TestMain_getProduct(t *testing.T) {
 	})
 
 	t.Run("IDに変な値を入れられた時はNot Foundになる", func(t *testing.T) {
+		////// 実行
 		req := httptest.NewRequest("GET", "/products/aa99fdsa", nil)
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
 
-		// 検証
+		////// 検証
 		var jsonValues map[string]string
 		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
 		assert.NoError(t, err)
-
 		expect := map[string]string{
 			"message": "Not Found",
 		}
@@ -510,10 +499,6 @@ func TestMain_getProduct(t *testing.T) {
 	})
 }
 func TestMain_saveContract(t *testing.T) {
-	conn, err := db_connection.GetConnection()
-	assert.NoError(t, err)
-	defer conn.Db.Close()
-
 	// 重複しない商品名でテストを行う
 	unixNano := time.Now().UnixNano()
 	suffix := strconv.FormatInt(unixNano, 10)
@@ -533,10 +518,7 @@ func TestMain_saveContract(t *testing.T) {
 	router := newRouter()
 
 	t.Run("顧客IDと商品IDを渡すと契約が作成されて作成された契約データ内容が返る。内部では使用権データも作成されている", func(t *testing.T) {
-
-		//////// データ登録テスト
-
-		// リクエストパラメータ作成
+		// 準備
 		body := url.Values{}
 		body.Set("user_id", strconv.Itoa(userDto.Id))
 		body.Set("product_id", strconv.Itoa(productDto.Id))
@@ -549,12 +531,10 @@ func TestMain_saveContract(t *testing.T) {
 
 		// 検証
 		assert.Equal(t, http.StatusCreated, rec.Code)
-
 		// jsonパース
 		var registeredContract data_transfer_objects.ContractDto
 		err := json.Unmarshal(rec.Body.Bytes(), &registeredContract)
 		assert.NoError(t, err)
-
 		assert.Equal(t, userDto.Id, registeredContract.UserId)
 		assert.Equal(t, productDto.Id, registeredContract.ProductId)
 		assert.NotZero(t, registeredContract.Id)
@@ -566,6 +546,7 @@ func TestMain_saveContract(t *testing.T) {
 
 	t.Run("バリデーションエラー", func(t *testing.T) {
 		t.Run("与えられたproduct_idとuser_idが存在しない値だった場合_エラーメッセージが返る", func(t *testing.T) {
+			// 準備
 			body := url.Values{}
 			body.Set("user_id", "-100")
 			body.Set("product_id", "-200")
@@ -578,12 +559,10 @@ func TestMain_saveContract(t *testing.T) {
 
 			// 検証
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
-
 			// jsonパース
 			var validMessages map[string][]string
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
-
 			expected := map[string][]string{
 				"user_id": {
 					"存在しません",
@@ -596,6 +575,7 @@ func TestMain_saveContract(t *testing.T) {
 		})
 
 		t.Run("product_idとuser_idが与えられなかった場合_エラーメッセージが返る", func(t *testing.T) {
+			// 準備
 			body := url.Values{}
 
 			// リクエスト実行
@@ -606,12 +586,10 @@ func TestMain_saveContract(t *testing.T) {
 
 			// 検証
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
-
 			// jsonパース
 			var validMessages map[string][]string
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
-
 			expected := map[string][]string{
 				"user_id": {
 					"数値ではありません",
@@ -624,6 +602,7 @@ func TestMain_saveContract(t *testing.T) {
 		})
 
 		t.Run("product_idとuser_idに数値でないものが与えられた場合_エラーメッセージが返る", func(t *testing.T) {
+			// 準備
 			body := url.Values{}
 			body.Set("user_id", "aaa")
 			body.Set("product_id", "-2a00")
@@ -636,12 +615,10 @@ func TestMain_saveContract(t *testing.T) {
 
 			// 検証
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
-
 			// jsonパース
 			var validMessages map[string][]string
 			err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
 			assert.NoError(t, err)
-
 			expected := map[string][]string{
 				"user_id": {
 					"数値ではありません",
@@ -651,16 +628,10 @@ func TestMain_saveContract(t *testing.T) {
 				},
 			}
 			assert.Equal(t, expected, validMessages)
-
 		})
 	})
 }
 func TestMain_getContract(t *testing.T) {
-	// 重複商品名は登録できないので予め削除
-	conn, err := db_connection.GetConnection()
-	assert.NoError(t, err)
-	defer conn.Db.Close()
-
 	// 重複しない商品名でテストを行う
 	unixNano := time.Now().UnixNano()
 	suffix := strconv.FormatInt(unixNano, 10)
@@ -687,12 +658,13 @@ func TestMain_getContract(t *testing.T) {
 	router := newRouter()
 
 	t.Run("GETでcontract_idを渡すと契約情報とユーザー情報が返ってくる", func(t *testing.T) {
+		// 実行
 		req := httptest.NewRequest("GET", fmt.Sprintf("/contracts/%v", contract.Id), nil)
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
 
+		////// 検証
 		assert.Equal(t, http.StatusOK, rec.Code)
-
 		// 保存したデータを取得
 		var gotContractData contractDataForUserCorporation
 		err = json.Unmarshal(rec.Body.Bytes(), &gotContractData)
@@ -720,6 +692,7 @@ func TestMain_getContract(t *testing.T) {
 	})
 
 	t.Run("指定IDの契約が存在しなかった時_Not Foundが返る", func(t *testing.T) {
+		// 実行
 		req := httptest.NewRequest("GET", "/contracts/0", nil)
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
@@ -728,7 +701,6 @@ func TestMain_getContract(t *testing.T) {
 		var jsonValues map[string]string
 		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
 		assert.NoError(t, err)
-
 		expect := map[string]string{
 			"message": "Not Found",
 		}
@@ -737,6 +709,7 @@ func TestMain_getContract(t *testing.T) {
 	})
 
 	t.Run("IDに変な値を入れられた時_Not Foundが返る", func(t *testing.T) {
+		// 実行
 		req := httptest.NewRequest("GET", "/contracts/aa99fdsa", nil)
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
@@ -745,7 +718,6 @@ func TestMain_getContract(t *testing.T) {
 		var jsonValues map[string]string
 		err := json.Unmarshal(rec.Body.Bytes(), &jsonValues)
 		assert.NoError(t, err)
-
 		expect := map[string]string{
 			"message": "Not Found",
 		}
