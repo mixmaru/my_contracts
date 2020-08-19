@@ -18,7 +18,7 @@ import (
 
 func TestMain_saveUser(t *testing.T) {
 	t.Run("個人顧客", func(t *testing.T) {
-		t.Run("正常系", func(t *testing.T) {
+		t.Run("typeとnameを受け取って個人ユーザーを登録し_登録した内容を返却する", func(t *testing.T) {
 			router := newRouter()
 
 			// リクエストパラメータ作成
@@ -47,7 +47,7 @@ func TestMain_saveUser(t *testing.T) {
 			assert.NotZero(t, registeredUser.UpdatedAt)
 		})
 
-		t.Run("バリデーションエラー", func(t *testing.T) {
+		t.Run("バリデーションエラー_nameが空だと登録できずエラーメッセージが返る", func(t *testing.T) {
 			router := newRouter()
 
 			// リクエストパラメータ作成
@@ -79,7 +79,7 @@ func TestMain_saveUser(t *testing.T) {
 	})
 
 	t.Run("法人顧客", func(t *testing.T) {
-		t.Run("正常系", func(t *testing.T) {
+		t.Run("typeにcorporationを渡して会社名_担当者名_社長名を渡すと登録されて登録データが返却される", func(t *testing.T) {
 			router := newRouter()
 
 			// リクエストパラメータ作成
@@ -115,7 +115,7 @@ func TestMain_saveUser(t *testing.T) {
 		t.Run("バリデーションエラー", func(t *testing.T) {
 			router := newRouter()
 
-			t.Run("空文字", func(t *testing.T) {
+			t.Run("空文字_担当者名や社長名や会社名にから文字を渡すとエラーメッセージが返る", func(t *testing.T) {
 				body := url.Values{}
 				body.Set("type", "corporation")
 				body.Set("corporation_name", "")
@@ -150,7 +150,7 @@ func TestMain_saveUser(t *testing.T) {
 				assert.Equal(t, expected, validMessages)
 			})
 
-			t.Run("文字多すぎ", func(t *testing.T) {
+			t.Run("文字多すぎるとエラーメッセージが返る", func(t *testing.T) {
 				body := url.Values{}
 				body.Set("type", "corporation")
 				body.Set("corporation_name", "000000000011111111112222222222333333333344444444445")
@@ -187,7 +187,7 @@ func TestMain_saveUser(t *testing.T) {
 		})
 	})
 
-	t.Run("type間違えたとき", func(t *testing.T) {
+	t.Run("バリデーションエラー_typeに適当な値をいれるとエラーメッセージを返す", func(t *testing.T) {
 		router := newRouter()
 
 		// リクエストパラメータ作成
@@ -227,7 +227,7 @@ func TestMain_getUser(t *testing.T) {
 	assert.Len(t, validErrors, 0)
 
 	t.Run("個人ユーザー取得", func(t *testing.T) {
-		t.Run("正常系", func(t *testing.T) {
+		t.Run("userIdをurlで受け取ってそのUser情報を返す", func(t *testing.T) {
 			router := newRouter()
 			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", savedIndividualUser.Id), nil)
 			rec := httptest.NewRecorder()
@@ -284,7 +284,7 @@ func TestMain_getUser(t *testing.T) {
 	})
 
 	t.Run("法人ユーザー取得", func(t *testing.T) {
-		t.Run("正常系", func(t *testing.T) {
+		t.Run("UserIdを指定してそのUserの情報を返す", func(t *testing.T) {
 			router := newRouter()
 			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", savedCorporationUser.Id), nil)
 			rec := httptest.NewRecorder()
@@ -349,7 +349,7 @@ func TestMain_saveProduct(t *testing.T) {
 	assert.NoError(t, err)
 	defer conn.Db.Close()
 
-	t.Run("正常系", func(t *testing.T) {
+	t.Run("商品名と値段を渡すと商品登録して登録データを返す", func(t *testing.T) {
 		router := newRouter()
 
 		//////// データ登録テスト
@@ -385,7 +385,7 @@ func TestMain_saveProduct(t *testing.T) {
 		router := newRouter()
 		// リクエストパラメータ作成
 
-		t.Run("空文字", func(t *testing.T) {
+		t.Run("空文字_要素にから文字を渡すとエラーメッセージを返す", func(t *testing.T) {
 			body := url.Values{}
 			body.Set("contact_person_name", "")
 			body.Set("president_name", "")
@@ -415,7 +415,7 @@ func TestMain_saveProduct(t *testing.T) {
 			assert.Equal(t, expected, validMessages)
 		})
 
-		t.Run("文字多すぎ　priceがマイナス値", func(t *testing.T) {
+		t.Run("文字多すぎだったり_priceがマイナス値だったりするとエラーメッセージを返す", func(t *testing.T) {
 			body := url.Values{}
 			body.Set("name", "000000000011111111112222222222333333333344444444445")
 			body.Set("price", "-1000")
@@ -477,7 +477,7 @@ func TestMain_getProduct(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &registeredProduct)
 	assert.NoError(t, err)
 
-	t.Run("正常系", func(t *testing.T) {
+	t.Run("商品IDを受け取って商品データを返す", func(t *testing.T) {
 		router := newRouter()
 		req := httptest.NewRequest("GET", fmt.Sprintf("/products/%v", registeredProduct.Id), nil)
 		rec := httptest.NewRecorder()
@@ -492,7 +492,7 @@ func TestMain_getProduct(t *testing.T) {
 		assert.Equal(t, registeredProduct, gotProductData)
 	})
 
-	t.Run("指定IDの商品が存在しなかった時", func(t *testing.T) {
+	t.Run("指定IDの商品が存在しなかった時はNot Roundになる", func(t *testing.T) {
 		router := newRouter()
 		req := httptest.NewRequest("GET", "/products/0", nil)
 		rec := httptest.NewRecorder()
@@ -510,7 +510,7 @@ func TestMain_getProduct(t *testing.T) {
 		assert.Equal(t, expect, jsonValues)
 	})
 
-	t.Run("IDに変な値を入れられた時", func(t *testing.T) {
+	t.Run("IDに変な値を入れられた時はNot Foundになる", func(t *testing.T) {
 		router := newRouter()
 		req := httptest.NewRequest("GET", "/products/aa99fdsa", nil)
 		rec := httptest.NewRecorder()
@@ -549,7 +549,7 @@ func TestMain_saveContract(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, validErrs, 0)
 
-	t.Run("正常系", func(t *testing.T) {
+	t.Run("顧客IDと商品IDを渡すと契約が作成されて作成された契約データ内容が返る。内部では使用権データも作成されている", func(t *testing.T) {
 		router := newRouter()
 
 		//////// データ登録テスト
@@ -586,7 +586,7 @@ func TestMain_saveContract(t *testing.T) {
 		router := newRouter()
 		// リクエストパラメータ作成
 
-		t.Run("与えられたproduct_idとuser_idが存在しない値だった場合", func(t *testing.T) {
+		t.Run("与えられたproduct_idとuser_idが存在しない値だった場合_エラーメッセージが返る", func(t *testing.T) {
 			body := url.Values{}
 			body.Set("user_id", "-100")
 			body.Set("product_id", "-200")
@@ -616,7 +616,7 @@ func TestMain_saveContract(t *testing.T) {
 			assert.Equal(t, expected, validMessages)
 		})
 
-		t.Run("product_idとuser_idが与えられなかった場合", func(t *testing.T) {
+		t.Run("product_idとuser_idが与えられなかった場合_エラーメッセージが返る", func(t *testing.T) {
 			body := url.Values{}
 
 			// リクエスト実行
@@ -644,7 +644,7 @@ func TestMain_saveContract(t *testing.T) {
 			assert.Equal(t, expected, validMessages)
 		})
 
-		t.Run("product_idとuser_idに数値でないものが与えられた場合", func(t *testing.T) {
+		t.Run("product_idとuser_idに数値でないものが与えられた場合_エラーメッセージが返る", func(t *testing.T) {
 			body := url.Values{}
 			body.Set("user_id", "aaa")
 			body.Set("product_id", "-2a00")
@@ -739,7 +739,7 @@ func TestMain_getContract(t *testing.T) {
 		assert.NotZero(t, gotContractData.Product.UpdatedAt)
 	})
 
-	t.Run("指定IDの契約が存在しなかった時", func(t *testing.T) {
+	t.Run("指定IDの契約が存在しなかった時_Not Foundが返る", func(t *testing.T) {
 		router := newRouter()
 		req := httptest.NewRequest("GET", "/contracts/0", nil)
 		rec := httptest.NewRecorder()
@@ -757,7 +757,7 @@ func TestMain_getContract(t *testing.T) {
 		assert.Equal(t, expect, jsonValues)
 	})
 
-	t.Run("IDに変な値を入れられた時", func(t *testing.T) {
+	t.Run("IDに変な値を入れられた時_Not Foundが返る", func(t *testing.T) {
 		router := newRouter()
 		req := httptest.NewRequest("GET", "/contracts/aa99fdsa", nil)
 		rec := httptest.NewRecorder()
