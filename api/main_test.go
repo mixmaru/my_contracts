@@ -67,7 +67,7 @@ func TestMain_saveUser(t *testing.T) {
 			assert.NoError(t, err)
 
 			expect := map[string][]string{
-				"name": []string{
+				"name": {
 					"空です",
 				},
 			}
@@ -130,13 +130,13 @@ func TestMain_saveUser(t *testing.T) {
 				assert.NoError(t, err)
 
 				expected := map[string][]string{
-					"corporation_name": []string{
+					"corporation_name": {
 						"空です",
 					},
-					"contact_person_name": []string{
+					"contact_person_name": {
 						"空です",
 					},
-					"president_name": []string{
+					"president_name": {
 						"空です",
 					},
 				}
@@ -165,13 +165,13 @@ func TestMain_saveUser(t *testing.T) {
 				assert.NoError(t, err)
 
 				expected := map[string][]string{
-					"corporation_name": []string{
+					"corporation_name": {
 						"50文字より多いです",
 					},
-					"contact_person_name": []string{
+					"contact_person_name": {
 						"50文字より多いです",
 					},
-					"president_name": []string{
+					"president_name": {
 						"50文字より多いです",
 					},
 				}
@@ -389,10 +389,10 @@ func TestMain_saveProduct(t *testing.T) {
 			assert.NoError(t, err)
 
 			expected := map[string][]string{
-				"name": []string{
+				"name": {
 					"空です",
 				},
-				"price": []string{
+				"price": {
 					"空です",
 				},
 			}
@@ -419,10 +419,10 @@ func TestMain_saveProduct(t *testing.T) {
 			assert.NoError(t, err)
 
 			expected := map[string][]string{
-				"name": []string{
+				"name": {
 					"50文字より多いです",
 				},
-				"price": []string{
+				"price": {
 					"マイナス値です",
 				},
 			}
@@ -585,10 +585,10 @@ func TestMain_saveContract(t *testing.T) {
 			assert.NoError(t, err)
 
 			expected := map[string][]string{
-				"user_id": []string{
+				"user_id": {
 					"存在しません",
 				},
-				"product_id": []string{
+				"product_id": {
 					"存在しません",
 				},
 			}
@@ -613,10 +613,10 @@ func TestMain_saveContract(t *testing.T) {
 			assert.NoError(t, err)
 
 			expected := map[string][]string{
-				"user_id": []string{
+				"user_id": {
 					"数値ではありません",
 				},
-				"product_id": []string{
+				"product_id": {
 					"数値ではありません",
 				},
 			}
@@ -643,10 +643,10 @@ func TestMain_saveContract(t *testing.T) {
 			assert.NoError(t, err)
 
 			expected := map[string][]string{
-				"user_id": []string{
+				"user_id": {
 					"数値ではありません",
 				},
-				"product_id": []string{
+				"product_id": {
 					"数値ではありません",
 				},
 			}
