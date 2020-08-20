@@ -61,13 +61,13 @@ func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contrac
            when uc.user_id IS NOT NULL then 'corporation'
         end as user_type,
        ui.name as user_individual_name,
-       ui.created_at as user_individual_created_at,
-       ui.updated_at as user_individual_updated_at,
+       u.created_at as user_individual_created_at,
+       u.updated_at as user_individual_updated_at,
        uc.corporation_name as user_corporation_corporation_name,
        uc.contact_person_name as user_corporation_contact_person_name,
        uc.president_name as user_corporation_president_name,
-       uc.created_at as user_corporation_created_at,
-       uc.updated_at as user_corporation_updated_at
+       u.created_at as user_corporation_created_at,
+       u.updated_at as user_corporation_updated_at
 from contracts c
 inner join products p on c.product_id = p.id
 inner join product_price_monthlies ppm on ppm.product_id = p.id
