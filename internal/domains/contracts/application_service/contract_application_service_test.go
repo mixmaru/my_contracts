@@ -5,7 +5,6 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -120,16 +119,9 @@ func TestContractApplicationService_GetById(t *testing.T) {
 	})
 }
 
-func createUniqProductName() string {
-	unixNano := time.Now().UnixNano()
-	suffix := strconv.FormatInt(unixNano, 10)
-	name := "商品" + suffix
-	return name
-}
-
 func createProduct() data_transfer_objects.ProductDto {
 	productApp := NewProductApplicationService()
-	productDto, validErrors, err := productApp.Register(createUniqProductName(), "2000")
+	productDto, validErrors, err := productApp.Register(utils.CreateUniqProductNameForTest(), "2000")
 	if err != nil || len(validErrors) > 0 {
 		panic("データ作成失敗")
 	}

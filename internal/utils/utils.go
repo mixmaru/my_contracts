@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -50,4 +51,12 @@ func CreateJstTime(year int, month time.Month, day, hour, min, sec, nsec int) ti
 
 func CreateJstLocation() *time.Location {
 	return time.FixedZone("Asia/Tokyo", 9*60*60)
+}
+
+// テスト用に重複しない商品名を作成するメソッド
+func CreateUniqProductNameForTest() string {
+	unixNano := time.Now().UnixNano()
+	suffix := strconv.FormatInt(unixNano, 10)
+	name := "商品" + suffix
+	return name
 }

@@ -2,6 +2,7 @@ package application_service
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
+	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
@@ -60,7 +61,7 @@ func TestProductApplicationService_registerValidation(t *testing.T) {
 	productAppService := NewProductApplicationService()
 
 	t.Run("バリデーションエラーにならない場合はvalidationErrorsは空スライスが返ってくる", func(t *testing.T) {
-		validationErrors, err := productAppService.registerValidation(createUniqProductName(), "1000.01", conn)
+		validationErrors, err := productAppService.registerValidation(utils.CreateUniqProductNameForTest(), "1000.01", conn)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string][]string{}, validationErrors)
 	})
