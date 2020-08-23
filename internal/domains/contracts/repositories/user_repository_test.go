@@ -86,7 +86,7 @@ func TestUserRepository_GetUserIndividualById(t *testing.T) {
 	assert.NoError(t, err)
 
 	// idで取得して検証
-	t.Run("データがある時", func(t *testing.T) {
+	t.Run("データがある時_idでデータが取得できる", func(t *testing.T) {
 		result, err := repo.GetUserIndividualById(savedId, db)
 		assert.NoError(t, err)
 		assert.Equal(t, user.Name(), result.Name())
@@ -94,7 +94,7 @@ func TestUserRepository_GetUserIndividualById(t *testing.T) {
 		assert.NotEqual(t, time.Time{}, result.UpdatedAt())
 	})
 
-	t.Run("データが無い時", func(t *testing.T) {
+	t.Run("データが無い時_nilが返る", func(t *testing.T) {
 		user, err := repo.GetUserIndividualById(-1, db)
 		assert.NoError(t, err)
 		assert.Nil(t, user)
@@ -115,7 +115,7 @@ func TestUserRepository_GetUserCorporationById(t *testing.T) {
 	assert.NoError(t, err)
 
 	// idで取得して検証
-	t.Run("データがある時", func(t *testing.T) {
+	t.Run("データがある時_idでデータが取得できる", func(t *testing.T) {
 		result, err := repo.GetUserCorporationById(savedId, db)
 		assert.NoError(t, err)
 		assert.Equal(t, savedId, result.Id())
@@ -126,7 +126,7 @@ func TestUserRepository_GetUserCorporationById(t *testing.T) {
 		assert.NotEqual(t, time.Time{}, result.UpdatedAt())
 	})
 
-	t.Run("データが無い時", func(t *testing.T) {
+	t.Run("データが無い時_nilが返る", func(t *testing.T) {
 		result, err := repo.GetUserCorporationById(-1, db)
 		assert.NoError(t, err)
 		assert.Nil(t, result)
@@ -195,7 +195,7 @@ func TestUserRepository_GetUserById(t *testing.T) {
 
 	// idで取得して検証
 	t.Run("個人顧客データ取得", func(t *testing.T) {
-		t.Run("データがある時", func(t *testing.T) {
+		t.Run("データがある時_interface{}型でUserIndividualEntityが返る", func(t *testing.T) {
 			result, err := repo.GetUserById(savedIndividualId, db)
 			assert.NoError(t, err)
 
@@ -208,7 +208,7 @@ func TestUserRepository_GetUserById(t *testing.T) {
 			assert.NotZero(t, loadedIndividual.UpdatedAt())
 		})
 
-		t.Run("データが無い時", func(t *testing.T) {
+		t.Run("データが無い時_nilが返る", func(t *testing.T) {
 			user, err := repo.GetUserById(-1, db)
 			assert.NoError(t, err)
 			assert.Nil(t, user)
@@ -216,7 +216,7 @@ func TestUserRepository_GetUserById(t *testing.T) {
 	})
 
 	t.Run("法人顧客データ取得", func(t *testing.T) {
-		t.Run("データがある時", func(t *testing.T) {
+		t.Run("データがある時_interface{}型でUserCorporationEntityが返る", func(t *testing.T) {
 			result, err := repo.GetUserById(savedCorporationId, db)
 			assert.NoError(t, err)
 
@@ -231,7 +231,7 @@ func TestUserRepository_GetUserById(t *testing.T) {
 			assert.NotZero(t, loadedCorporation.UpdatedAt())
 		})
 
-		t.Run("データが無い時", func(t *testing.T) {
+		t.Run("データが無い時_nilが返る", func(t *testing.T) {
 			user, err := repo.GetUserById(-1, db)
 			assert.NoError(t, err)
 			assert.Nil(t, user)

@@ -1,35 +1,41 @@
 package domain_service
 
 import (
-	"github.com/golang/mock/gomock"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"time"
 )
 
+func createProduct(price string) *entities.ProductEntity {
+	db, err := db_connection.GetConnection()
+	if err != nil {
+		panic("db接続エラー")
+	}
+	productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), price)
+	if err != nil {
+		panic("データ作成エラー")
+	}
+	rep := repositories.NewProductRepository()
+	id, err := rep.Save(productEntity, db)
+	if err != nil {
+		panic("データ保存エラー")
+	}
+	entity, err := rep.GetById(id, db)
+	if err != nil {
+		panic("データ取得エラー")
+	}
+	return entity
+}
+
 func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
-	////// Productリポジトリモック作成
-	// DBから取得される商品データ
-	productEntity, err := entities.NewProductEntityWithData(3, "請求金額テスト商品", "31000", time.Now(), time.Now())
-	assert.NoError(t, err)
-	// mock作成
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	repositoryMock := mock_interfaces.NewMockIProductRepository(ctrl)
-	// GetByIdをモック
-	repositoryMock.EXPECT().
-		GetById(
-			3,
-			gomock.Any(),
-		).Return(productEntity, nil).
-		AnyTimes()
+	// 事前に31000円の商品を登録
+	productEntity := createProduct("31000")
 
 	// ドメインサービスインスタンス化
-	billingDS := NewBillingCalculatorDomainService(repositoryMock)
+	billingDS := NewBillingCalculatorDomainService(repositories.NewProductRepository())
 
 	// db接続作成
 	db, err := db_connection.GetConnection()
@@ -41,7 +47,7 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 			contract, err := entities.NewContractEntityWithData(
 				1,
 				2,
-				3,
+				productEntity.Id(),
 				utils.CreateJstTime(2020, 1, 15, 0, 0, 0, 0),
 				utils.CreateJstTime(2020, 1, 16, 0, 0, 0, 0),
 				utils.CreateJstTime(2020, 1, 15, 0, 0, 0, 0),
@@ -66,7 +72,7 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 			contract, err := entities.NewContractEntityWithData(
 				1,
 				2,
-				3,
+				productEntity.Id(),
 				utils.CreateJstTime(2020, 4, 15, 0, 0, 0, 0),
 				utils.CreateJstTime(2020, 4, 16, 0, 0, 0, 0),
 				utils.CreateJstTime(2020, 4, 15, 0, 0, 0, 0),
@@ -90,7 +96,7 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 			contract, err := entities.NewContractEntityWithData(
 				1,
 				2,
-				3,
+				productEntity.Id(),
 				utils.CreateJstTime(2020, 2, 15, 0, 0, 0, 0),
 				utils.CreateJstTime(2020, 2, 16, 0, 0, 0, 0),
 				utils.CreateJstTime(2020, 2, 15, 0, 0, 0, 0),
@@ -115,7 +121,7 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 		contract, err := entities.NewContractEntityWithData(
 			1,
 			2,
-			3,
+			productEntity.Id(),
 			utils.CreateJstTime(2020, 1, 15, 0, 0, 0, 0),
 			utils.CreateJstTime(2020, 1, 16, 0, 0, 0, 0),
 			utils.CreateJstTime(2020, 1, 15, 0, 0, 0, 0),

@@ -20,32 +20,9 @@ func TestContractRepository_Create(t *testing.T) {
 	savedUserId, err := userRepository.SaveUserIndividual(userEntity, db)
 	assert.NoError(t, err)
 
-	tran, err := db.Begin()
-	assert.NoError(t, err)
-
-	// 商品を事前に削除
-	_, err = tran.Exec(
-		"delete from contracts " +
-			"using products " +
-			"where products.id = contracts.product_id " +
-			"and products.name = '商品名' ")
-	assert.NoError(t, err)
-
-	_, err = tran.Exec(
-		"delete from product_price_monthlies " +
-			"using products " +
-			"where products.id = product_price_monthlies.product_id " +
-			"and products.name = '商品名' ")
-	assert.NoError(t, err)
-
-	_, err = tran.Exec("delete from products where name = '商品名'")
-	assert.NoError(t, err)
-	err = tran.Commit()
-	assert.NoError(t, err)
-
 	// 商品を登録
 	productRepository := NewProductRepository()
-	productEntity, err := entities.NewProductEntity("商品名", "1000")
+	productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "1000")
 	assert.NoError(t, err)
 	savedProductId, err := productRepository.Save(productEntity, db)
 	assert.NoError(t, err)
@@ -67,7 +44,7 @@ func TestContractRepository_Create(t *testing.T) {
 		contractRepository := NewContractRepository()
 		contractDate := utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0)
 		billingStartDate := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
-		contractEntity := entities.NewContractEntity(0, savedProductId, contractDate, billingStartDate)
+		contractEntity := entities.NewContractEntity(-100, savedProductId, contractDate, billingStartDate)
 
 		savedContractId, err := contractRepository.Create(contractEntity, db)
 
@@ -79,7 +56,7 @@ func TestContractRepository_Create(t *testing.T) {
 		contractRepository := NewContractRepository()
 		contractDate := utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0)
 		billingStartDate := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
-		contractEntity := entities.NewContractEntity(savedUserId, 0, contractDate, billingStartDate)
+		contractEntity := entities.NewContractEntity(savedUserId, -100, contractDate, billingStartDate)
 
 		savedContractId, err := contractRepository.Create(contractEntity, db)
 
@@ -100,34 +77,14 @@ func TestContractRepository_GetById(t *testing.T) {
 	savedUserId, err := userRepository.SaveUserIndividual(userEntity, db)
 	assert.NoError(t, err)
 
-	tran, err := db.Begin()
-
-	// 商品を事前に削除
-	_, err = tran.Exec(
-		"delete from contracts " +
-			"using products " +
-			"where products.id = contracts.product_id " +
-			"and products.name = '商品名' ")
-	assert.NoError(t, err)
-	_, err = tran.Exec(
-		"delete from product_price_monthlies " +
-			"using products " +
-			"where products.id = product_price_monthlies.product_id " +
-			"and products.name = '商品名' ")
-	assert.NoError(t, err)
-	_, err = tran.Exec("delete from products where name = '商品名'")
-	assert.NoError(t, err)
-	err = tran.Commit()
-	assert.NoError(t, err)
-
 	// 商品を登録
 	productRepository := NewProductRepository()
-	productEntity, err := entities.NewProductEntity("商品名", "1000")
+	productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "1000")
 	assert.NoError(t, err)
 	savedProductId, err := productRepository.Save(productEntity, db)
 	assert.NoError(t, err)
 
-	t.Run("データがある時", func(t *testing.T) {
+	t.Run("データがある時_Idで契約データと関連する商品データとユーザーデータを返す_一緒に使うことが多い気がするため", func(t *testing.T) {
 		r := NewContractRepository()
 		// データ登録
 		contractEntity := entities.NewContractEntity(
@@ -151,7 +108,7 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.NotZero(t, loadedContract.UpdatedAt())
 		// productテスト
 		assert.Equal(t, savedProductId, loadedProduct.Id())
-		assert.Equal(t, "商品名", loadedProduct.Name())
+		assert.Equal(t, productEntity.Name(), loadedProduct.Name())
 		price, exist := loadedProduct.MonthlyPrice()
 		assert.True(t, exist)
 		assert.Equal(t, "1000", price.String())

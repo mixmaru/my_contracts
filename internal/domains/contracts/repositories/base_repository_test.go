@@ -14,7 +14,7 @@ func TestBaseRepository_selectOne(t *testing.T) {
 
 	baseRepository := &BaseRepository{}
 
-	t.Run("データがある時", func(t *testing.T) {
+	t.Run("データがある時_マッパーとエンティティとクエリを渡すとマッパーを使ってデータを取り出しエンティティにデータを詰めてくれる", func(t *testing.T) {
 		// データ取得
 		productMapper := productGetMapper{}
 		productEntity := entities.ProductEntity{}
@@ -41,7 +41,7 @@ SELECT
 		assert.NotZero(t, productEntity.UpdatedAt())
 	})
 
-	t.Run("データがない時", func(t *testing.T) {
+	t.Run("データがない時_noRowがtrueで返る", func(t *testing.T) {
 		productRecord := productGetMapper{}
 		productEntity := entities.ProductEntity{}
 		noRow, err := baseRepository.selectOne(db, &productRecord, &productEntity, "select * from products where 1 = 2")
@@ -49,7 +49,7 @@ SELECT
 		assert.True(t, noRow)
 	})
 
-	t.Run("渡すrecordとentityがアベコベだったとき", func(t *testing.T) {
+	t.Run("渡すrecordとentityがアベコベだったときはエラーが返る_noRowもTrueで返る", func(t *testing.T) {
 		productRecord := productGetMapper{}
 		userCorporationEntity := entities.UserCorporationEntity{}
 		query := `

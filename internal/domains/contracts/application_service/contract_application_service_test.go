@@ -1,11 +1,7 @@
 package application_service
 
 import (
-	"github.com/golang/mock/gomock"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces/mock_interfaces"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
@@ -19,27 +15,8 @@ func TestContractApplicationService_Register(t *testing.T) {
 	tran, err := conn.Begin()
 	assert.NoError(t, err)
 
-	productRep := repositories.NewProductRepository()
-
-	// productがあればそれを使用する。なければ登録。同名商品は登録できないため
-	product, err := productRep.GetByName("バリデーションテスト商品", tran)
-	assert.NoError(t, err)
-	savedProductId := 0
-	if product == nil {
-		product, err = entities.NewProductEntity("バリデーションテスト商品", "2000")
-		assert.NoError(t, err)
-		savedProductId, err = productRep.Save(product, tran)
-		assert.NoError(t, err)
-	} else {
-		savedProductId = product.Id()
-	}
-
-	// userを新規登録
-	userRep := repositories.NewUserRepository()
-	user, err := entities.NewUserIndividualEntity("個人たろう")
-	assert.NoError(t, err)
-	savedUserId, err := userRep.SaveUserIndividual(user, tran)
-	assert.NoError(t, err)
+	savedProductDto := createProduct()
+	savedUserDto := createUser()
 
 	err = tran.Commit()
 	assert.NoError(t, err)
@@ -47,14 +24,16 @@ func TestContractApplicationService_Register(t *testing.T) {
 	app := NewContractApplicationService()
 
 	t.Run("顧客Idと商品IDを契約日時を渡すと課金開始日が翌日で契約が作成される", func(t *testing.T) {
+		// 実行
 		contractDateTime := utils.CreateJstTime(2020, 2, 28, 23, 0, 0, 0)
-		dto, validErrors, err := app.Register(savedUserId, savedProductId, contractDateTime)
+		dto, validErrors, err := app.Register(savedUserDto.Id, savedProductDto.Id, contractDateTime)
 		assert.NoError(t, err)
 		assert.Len(t, validErrors, 0)
 
+		// 検証
 		assert.NotZero(t, dto.Id)
-		assert.Equal(t, savedUserId, dto.UserId)
-		assert.Equal(t, savedProductId, dto.ProductId)
+		assert.Equal(t, savedUserDto.Id, dto.UserId)
+		assert.Equal(t, savedProductDto.Id, dto.ProductId)
 		assert.True(t, contractDateTime.Equal(dto.ContractDate))
 		assert.True(t, utils.CreateJstTime(2020, 2, 29, 0, 0, 0, 0).Equal(dto.BillingStartDate))
 		assert.NotZero(t, dto.CreatedAt)
@@ -62,7 +41,7 @@ func TestContractApplicationService_Register(t *testing.T) {
 	})
 
 	t.Run("指定されたUserが存在しない時_validationErrorsにエラーメッセージが返ってくる", func(t *testing.T) {
-		dto, validationErrors, err := app.Register(-100, savedProductId, time.Now())
+		dto, validationErrors, err := app.Register(-100, savedProductDto.Id, time.Now())
 		assert.NoError(t, err)
 		assert.Len(t, validationErrors, 1)
 		assert.Len(t, validationErrors["user_id"], 1)
@@ -71,7 +50,7 @@ func TestContractApplicationService_Register(t *testing.T) {
 	})
 
 	t.Run("指定されたProductが存在しない時_validationErrorsにエラーメッセージが返ってくる", func(t *testing.T) {
-		dto, validationErrors, err := app.Register(savedUserId, -100, time.Now())
+		dto, validationErrors, err := app.Register(savedUserDto.Id, -100, time.Now())
 		assert.NoError(t, err)
 		assert.Len(t, validationErrors, 1)
 		assert.Len(t, validationErrors["product_id"], 1)
@@ -92,93 +71,69 @@ func TestContractApplicationService_Register(t *testing.T) {
 }
 
 func TestContractApplicationService_GetById(t *testing.T) {
+	userDto := createUser()
+	productDto := createProduct()
+	contractApp := NewContractApplicationService()
+	contractDto, validErrors, err := contractApp.Register(userDto.Id, productDto.Id, utils.CreateJstTime(2020, 1, 2, 2, 0, 0, 0))
+	if err != nil || len(validErrors) > 0 {
+		panic("データ作成失敗")
+	}
+
 	t.Run("Idを渡すと対応するデータが取得できる", func(t *testing.T) {
 		t.Run("データがある時はデータが取得できる", func(t *testing.T) {
-			returnContractEntity, err := entities.NewContractEntityWithData(
-				100,
-				2,
-				3,
-				time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC),
-				time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
-				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
-			)
+			contract, product, user, err := contractApp.GetById(contractDto.Id)
 			assert.NoError(t, err)
 
-			returnProductEntity, err := entities.NewProductEntityWithData(
-				3,
-				"商品A",
-				"2000",
-				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
-			)
-			assert.NoError(t, err)
+			assert.Equal(t, contractDto.Id, contract.Id)
+			assert.Equal(t, productDto.Id, contract.ProductId)
+			assert.Equal(t, userDto.Id, contract.UserId)
+			assert.True(t, contract.ContractDate.Equal(utils.CreateJstTime(2020, 1, 2, 2, 0, 0, 0)))
+			assert.True(t, contract.BillingStartDate.Equal(utils.CreateJstTime(2020, 1, 3, 0, 0, 0, 0)))
+			assert.True(t, contract.CreatedAt.Equal(contractDto.CreatedAt))
+			assert.True(t, contract.UpdatedAt.Equal(contractDto.UpdatedAt))
 
-			returnUserEntity, err := entities.NewUserCorporationEntityWithData(
-				2,
-				"イケイケ会社",
-				"担当太郎",
-				"社長次郎",
-				time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
-			)
-
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			repositoryMock := mock_interfaces.NewMockIContractRepository(ctrl)
-			repositoryMock.EXPECT().
-				GetById(
-					100,
-					gomock.Any(),
-				).Return(returnContractEntity, returnProductEntity, returnUserEntity, nil).
-				Times(1)
-
-			contractApp := NewContractApplicationServiceWithMock(repositoryMock)
-			contract, product, user, err := contractApp.GetById(100)
-			assert.NoError(t, err)
-
-			assert.Equal(t, 100, contract.Id)
-			assert.Equal(t, 3, contract.ProductId)
-			assert.Equal(t, 2, contract.UserId)
-			assert.EqualValues(t, time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC), contract.ContractDate)
-			assert.EqualValues(t, time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC), contract.BillingStartDate)
-			assert.True(t, contract.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
-			assert.True(t, contract.UpdatedAt.Equal(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)))
-
-			assert.Equal(t, 3, product.Id)
-			assert.Equal(t, "商品A", product.Name)
+			assert.Equal(t, productDto.Id, product.Id)
+			assert.Equal(t, productDto.Name, product.Name)
 			assert.Equal(t, "2000", product.Price)
-			assert.True(t, product.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
-			assert.True(t, product.UpdatedAt.Equal(time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)))
+			assert.True(t, product.CreatedAt.Equal(productDto.CreatedAt))
+			assert.True(t, product.UpdatedAt.Equal(productDto.UpdatedAt))
 
-			userDto, ok := user.(data_transfer_objects.UserCorporationDto)
+			gotUserDto, ok := user.(data_transfer_objects.UserIndividualDto)
 			assert.True(t, ok)
-			assert.Equal(t, 2, userDto.Id)
-			assert.Equal(t, "イケイケ会社", userDto.CorporationName)
-			assert.Equal(t, "担当太郎", userDto.ContactPersonName)
-			assert.Equal(t, "社長次郎", userDto.PresidentName)
-			assert.True(t, userDto.CreatedAt.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
-			assert.True(t, userDto.UpdatedAt.Equal(time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)))
+			assert.Equal(t, userDto.Id, gotUserDto.Id)
+			assert.Equal(t, "個人たろう", gotUserDto.Name)
+			assert.True(t, gotUserDto.CreatedAt.Equal(userDto.CreatedAt))
+			assert.True(t, gotUserDto.UpdatedAt.Equal(userDto.UpdatedAt))
 		})
 
 		t.Run("データがない時はゼロ値が返ってくる", func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			repositoryMock := mock_interfaces.NewMockIContractRepository(ctrl)
-			repositoryMock.EXPECT().
-				GetById(
-					100,
-					gomock.Any(),
-				).Return(nil, nil, nil, nil).
-				Times(1)
-
-			contractApp := NewContractApplicationServiceWithMock(repositoryMock)
-			contract, product, user, err := contractApp.GetById(100)
+			// 実行
+			contract, product, user, err := contractApp.GetById(-100)
 			assert.NoError(t, err)
 
+			// 検証
 			assert.Zero(t, contract)
 			assert.Zero(t, product)
 			assert.Nil(t, user)
 		})
 	})
+}
+
+func createProduct() data_transfer_objects.ProductDto {
+	productApp := NewProductApplicationService()
+	productDto, validErrors, err := productApp.Register(utils.CreateUniqProductNameForTest(), "2000")
+	if err != nil || len(validErrors) > 0 {
+		panic("データ作成失敗")
+	}
+
+	return productDto
+}
+
+func createUser() data_transfer_objects.UserIndividualDto {
+	userApp := NewUserApplicationService()
+	dto, validErrors, err := userApp.RegisterUserIndividual("個人たろう")
+	if err != nil || len(validErrors) > 0 {
+		panic("データ作成失敗")
+	}
+	return dto
 }
