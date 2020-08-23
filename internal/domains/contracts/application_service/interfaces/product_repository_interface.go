@@ -9,4 +9,5 @@ type IProductRepository interface {
 	Save(productEntity *entities.ProductEntity, executor gorp.SqlExecutor) (savedId int, err error)
 	GetById(id int, executor gorp.SqlExecutor) (*entities.ProductEntity, error)
 	GetByName(name string, executor gorp.SqlExecutor) (*entities.ProductEntity, error)
+	GetByRightToUseId(rightToUseId int, executor gorp.SqlExecutor) (*entities.ProductEntity, error)
 }

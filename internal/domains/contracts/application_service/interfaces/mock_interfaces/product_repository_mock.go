@@ -78,3 +78,18 @@ func (mr *MockIProductRepositoryMockRecorder) GetByName(name, executor interface
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByName", reflect.TypeOf((*MockIProductRepository)(nil).GetByName), name, executor)
 }
+
+// GetByRightToUseId mocks base method.
+func (m *MockIProductRepository) GetByRightToUseId(rightToUseId int, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByRightToUseId", rightToUseId, executor)
+	ret0, _ := ret[0].(*entities.ProductEntity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByRightToUseId indicates an expected call of GetByRightToUseId.
+func (mr *MockIProductRepositoryMockRecorder) GetByRightToUseId(rightToUseId, executor interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByRightToUseId", reflect.TypeOf((*MockIProductRepository)(nil).GetByRightToUseId), rightToUseId, executor)
+}
