@@ -48,3 +48,18 @@ func (mr *MockIRightToUseRepositoryMockRecorder) Create(rightToUseEntity, execut
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockIRightToUseRepository)(nil).Create), rightToUseEntity, executor)
 }
+
+// GetById mocks base method.
+func (m *MockIRightToUseRepository) GetById(id int, executor gorp.SqlExecutor) (*entities.RightToUseEntity, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetById", id, executor)
+	ret0, _ := ret[0].(*entities.RightToUseEntity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetById indicates an expected call of GetById.
+func (mr *MockIRightToUseRepositoryMockRecorder) GetById(id, executor interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockIRightToUseRepository)(nil).GetById), id, executor)
+}
