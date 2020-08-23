@@ -26,7 +26,7 @@ func TestRightToUseEntity_NewRightToUseEntity(t *testing.T) {
 func TestRightToUseEntity_NewRightToUseEntityWithData(t *testing.T) {
 	t.Run("すべての要素データを読み込ませてインスタンス化する", func(t *testing.T) {
 		// 実行
-		entity := NewRightToUseWithData(
+		entity := NewRightToUseEntityWithData(
 			1,
 			2,
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),

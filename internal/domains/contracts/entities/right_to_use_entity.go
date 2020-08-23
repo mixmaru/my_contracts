@@ -31,7 +31,7 @@ func (r *RightToUseEntity) ValidTo() time.Time {
 	return r.validTo
 }
 
-func NewRightToUseWithData(id, contractId int, validFrom, validTo, createdAt, updatedAt time.Time) *RightToUseEntity {
+func NewRightToUseEntityWithData(id, contractId int, validFrom, validTo, createdAt, updatedAt time.Time) *RightToUseEntity {
 	entity := &RightToUseEntity{}
 	entity.LoadData(id, contractId, validFrom, validTo, createdAt, updatedAt)
 	return entity

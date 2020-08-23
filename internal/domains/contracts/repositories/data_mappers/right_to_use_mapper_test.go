@@ -10,7 +10,7 @@ import (
 func TestRightToUser_NewRightToUserFromEntity(t *testing.T) {
 	t.Run("権利エンティティからマッパーを作成する", func(t *testing.T) {
 		// 準備
-		entity := entities.NewRightToUseWithData(
+		entity := entities.NewRightToUseEntityWithData(
 			1,
 			2,
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),

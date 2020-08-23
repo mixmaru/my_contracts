@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"database/sql"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/data_mappers"
 	"github.com/pkg/errors"
@@ -28,6 +29,37 @@ func (r *RightToUseRepository) Create(rightToUseEntity *entities.RightToUseEntit
 	}
 
 	return mapper.Id, nil
+}
+
+func (r *RightToUseRepository) GetById(id int, executor gorp.SqlExecutor) (*entities.RightToUseEntity, error) {
+	// データマッパー用意
+	mapper := &data_mappers.RightToUseMapper{}
+	// query用意
+	query := `
+SELECT 
+	id,
+	contract_id,
+	valid_from,
+	valid_to,
+	created_at,
+	updated_at
+FROM right_to_use
+WHERE id = $1;
+`
+	// 取得実行
+	err := executor.SelectOne(mapper, query, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		} else {
+			return nil, errors.Wrapf(err, "使用権データの取得失敗。id: %v, query: %v", id, query)
+		}
+	}
+
+	// entityに詰める
+	entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ContractId, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
+	// 返却
+	return entity, nil
 }
 
 //// 契約エンティティを新規保存する
