@@ -106,6 +106,37 @@ WHERE p.name = $1
 	return &productEntity, nil
 }
 
+func (r *ProductRepository) GetByRightToUseId(rightToUseId int, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
+	// データ取得
+	var productRecord productGetMapper
+	var productEntity entities.ProductEntity
+	query := `
+SELECT
+       p.id AS id,
+       p.name AS name,
+       p.created_at,
+       p.updated_at,
+       CASE
+           WHEN ppm.product_id IS NULL THEN false
+           ELSE true
+       END AS exist_price_monthly,
+       ppm.price AS price_monthly
+FROM products p
+INNER JOIN contracts c ON c.product_id = p.id
+INNER JOIN right_to_use rtu ON rtu.contract_id = c.id
+LEFT OUTER JOIN product_price_monthlies ppm on p.id = ppm.product_id
+WHERE rtu.id = $1
+`
+	noRow, err := r.selectOne(executor, &productRecord, &productEntity, query, rightToUseId)
+	if err != nil {
+		return nil, err
+	}
+	if noRow {
+		return nil, nil
+	}
+	return &productEntity, nil
+}
+
 type productGetMapper struct {
 	data_mappers.ProductMapper
 
