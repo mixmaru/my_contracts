@@ -7,7 +7,6 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -25,12 +24,8 @@ func TestContractDomainService_CreateContract(t *testing.T) {
 	assert.NoError(t, err)
 
 	// 事前準備。productを登録しとく
-	//productApp := application_service.NewProductApplicationService()
 	// 重複しない商品名でテストを行う
-	unixNano := time.Now().UnixNano()
-	suffix := strconv.FormatInt(unixNano, 10)
-	name := "商品" + suffix
-	productEntity, err := entities.NewProductEntity(name, "200")
+	productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "200")
 	assert.NoError(t, err)
 	productRepository := repositories.NewProductRepository()
 	productId, err := productRepository.Save(productEntity, db)
