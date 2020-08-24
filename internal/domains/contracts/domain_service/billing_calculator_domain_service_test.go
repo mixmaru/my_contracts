@@ -44,12 +44,11 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 
 	// 事前に31000円の商品を登録
 	productEntity := createProduct("31000")
-	productRep := repositories.NewProductRepository()
-	savedProductId, err := productRep.Save(productEntity, db)
+	savedProductId := productEntity.Id()
 	assert.NoError(t, err)
 
 	// ドメインサービスインスタンス化
-	billingDS := NewBillingCalculatorDomainService(repositories.NewProductRepository())
+	billingDS := NewBillingCalculatorDomainService(repositories.NewProductRepository(), repositories.NewContractRepository(), repositories.NewRightToUseRepository())
 
 	t.Run("31日ある月", func(t *testing.T) {
 		//// テスト用契約を新規作成する
