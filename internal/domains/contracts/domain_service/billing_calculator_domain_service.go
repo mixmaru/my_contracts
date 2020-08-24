@@ -2,6 +2,7 @@ package domain_service
 
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
@@ -25,73 +26,82 @@ func NewBillingCalculatorDomainService(productRepository interfaces.IProductRepo
 
 func (b *BillingCalculatorDomainService) BillingAmount(rightToUseId int, executor gorp.SqlExecutor) (decimal.Decimal, error) {
 	////// 満額請求金額を取得する
-	// 使用権データ取得
-	rightToUse, err := b.rightToUseRepository.GetById(rightToUseId, executor)
+	// 必要データ取得
+	rightToUse, contract, product, _, err := b.getEntitiesByRightToUseId(rightToUseId, executor)
 	if err != nil {
-		return decimal.Decimal{}, errors.WithMessagef(err, "使用権データの取得失敗。rightToUseId: %v", rightToUseId)
-	}
-	if rightToUse == nil {
-		return decimal.Decimal{}, errors.Errorf("使用権データが存在しない。rightToUseId: %v", rightToUseId)
-	}
-	// 商品データ、契約データ取得
-	contract, product, _, err := b.contractRepository.GetById(rightToUse.ContractId(), executor)
-	if err != nil {
-		return decimal.Decimal{}, errors.WithMessagef(err, "商品データ、契約データの取得失敗。rightToUse: %v", rightToUse)
+		return decimal.Decimal{}, err
 	}
 
-	////// 満額期間日数を取得計算する（今は月払い固定）
-	// 使用権の開始日から1ヶ月後の同日までに存在する日数を算出
-	subDuration := rightToUse.ValidFrom().AddDate(0, 1, 0).Sub(rightToUse.ValidFrom())
-	fullBillingDateNum := subDuration.Hours() / 24
+	////// 満額期間日数と理療機関を取得計算する（今は月払い固定）
+	usageDateNum, fullBillingDateNum := b.getUsageDate(rightToUse.ValidFrom(), rightToUse.ValidTo(), contract.BillingStartDate())
 
-	////// 使用権の課金対象期間を算出する
-	// 課金開始日を決定
-	var billingStartDate time.Time
-	if contract.BillingStartDate().After(rightToUse.ValidFrom()) {
-		billingStartDate = contract.BillingStartDate()
-	} else {
-		billingStartDate = rightToUse.ValidFrom()
-	}
-
-	// 課金対象日数を算出。時間を24で割って、余ったら切り上げ
-	billHours := rightToUse.ValidTo().Sub(billingStartDate).Hours()
-	billDate := math.Ceil(billHours / float64(24))
-
-	// 定価
+	// 定価取得
 	price, ok := product.MonthlyPrice()
 	if !ok {
 		return decimal.Decimal{}, errors.Errorf("月額金額が設定されてない。product: %+v", product)
 	}
 
 	////// 満額期間でないなら日割り計算する
-	if billDate == fullBillingDateNum {
+	if usageDateNum == fullBillingDateNum {
 		// 満了なので定価
 		return price, nil
 	} else {
-		// 日割り （1日あたり金額 * 課金日数）
-		fullBillingDateNumDecimal := decimal.NewFromFloat(fullBillingDateNum) // decimal化
-		billDateDecimal := decimal.NewFromFloat(billDate)                     // decimal化
-		byDayPrice := price.Div(fullBillingDateNumDecimal)
-		dailyRatePrice := byDayPrice.Mul(billDateDecimal)
-		return dailyRatePrice.Truncate(0), nil
+		// 日割り
+		return b.prorate(price, fullBillingDateNum, usageDateNum), nil
 	}
-	//// 商品データを取得する
-	//product, err := b.productRepository.GetById(contract.ProductId(), executor)
-	//if err != nil {
-	//	return decimal.Decimal{}, err
-	//}
-	//// 月額を取得
-	//price, exist := product.MonthlyPrice()
-	//if !exist {
-	//	return decimal.Decimal{}, errors.Errorf("月額料金が取得できなかった。product: %+v", product)
-	//}
-	//billingStartDate := contract.LastBillingStartDate(targetDate)
-	//// 課金開始日から次の課金開始日の間の日数を取得する
-	//thisTermFullDateNum := b.billingTermFullDateNum(billingStartDate)
-	//// 課金開始日からtargetDateの間の日数を計算する
-	//DateNumForTargetDate := int(math.Ceil(targetDate.Sub(billingStartDate).Hours() / 24))
-	//
-	//return b.prorate(price, thisTermFullDateNum, DateNumForTargetDate), nil
+}
+
+// 請求金額計算に必要なデータを取得する
+func (b *BillingCalculatorDomainService) getEntitiesByRightToUseId(rightToUseId int, executor gorp.SqlExecutor) (
+	*entities.RightToUseEntity,
+	*entities.ContractEntity,
+	*entities.ProductEntity,
+	interface{},
+	error,
+) {
+	// 使用権データ取得
+	rightToUse, err := b.rightToUseRepository.GetById(rightToUseId, executor)
+	if err != nil {
+		return nil, nil, nil, nil, errors.WithMessagef(err, "使用権データの取得失敗。rightToUseId: %v", rightToUseId)
+	}
+	if rightToUse == nil {
+		return nil, nil, nil, nil, errors.Errorf("使用権データが存在しない。rightToUseId: %v", rightToUseId)
+	}
+	// 商品データ、契約データ取得
+	contract, product, user, err := b.contractRepository.GetById(rightToUse.ContractId(), executor)
+	if err != nil {
+		return nil, nil, nil, nil, errors.WithMessagef(err, "商品データ、契約データの取得失敗。rightToUse: %v", rightToUse)
+	}
+	return rightToUse, contract, product, user, nil
+}
+
+/*
+利用権の開始・終了日と課金開始日から、課金対象日数と満了日数を返す
+
+args
+	validFrom			利用開始日
+	validTo				利用終了日
+	billingStartDate	課金開始日
+*/
+func (b *BillingCalculatorDomainService) getUsageDate(validFrom, validTo, billingStartDate time.Time) (usageDateNum, fullBillingDateNum int) {
+	// 使用権の開始日から1ヶ月後の同日までに存在する日数を算出
+	subDuration := validFrom.AddDate(0, 1, 0).Sub(validFrom)
+	fullBillingDateNum = int(subDuration.Hours() / 24)
+
+	////// 使用権の課金対象期間を算出する
+	// 課金開始日を決定
+	var realBillingStartDate time.Time
+	if billingStartDate.After(validFrom) {
+		realBillingStartDate = billingStartDate
+	} else {
+		realBillingStartDate = validFrom
+	}
+
+	// 課金対象日数を算出。時間を24で割って、余ったら切り上げ
+	billHours := validTo.Sub(realBillingStartDate).Hours()
+	usageDateNum = int(math.Ceil(billHours / float64(24)))
+
+	return usageDateNum, fullBillingDateNum
 }
 
 /*
