@@ -57,20 +57,24 @@ func (b *BillingCalculatorDomainService) BillingAmount(rightToUseId int, executo
 	billHours := rightToUse.ValidTo().Sub(billingStartDate).Hours()
 	billDate := math.Ceil(billHours / float64(24))
 
+	// 定価
+	price, ok := product.MonthlyPrice()
+	if !ok {
+		return decimal.Decimal{}, errors.Errorf("月額金額が設定されてない。product: %+v", product)
+	}
+
 	////// 満額期間でないなら日割り計算する
 	if billDate == fullBillingDateNum {
 		// 満了なので定価
-		price, ok := product.MonthlyPrice()
-		if !ok {
-			return decimal.Decimal{}, errors.Errorf("月額金額が設定されてない。product: %+v", product)
-		}
 		return price, nil
 	} else {
-		// 日割り
-		return decimal.Decimal{}, errors.Errorf("まだ実装されてない。")
+		// 日割り （1日あたり金額 * 課金日数）
+		fullBillingDateNumDecimal := decimal.NewFromFloat(fullBillingDateNum) // decimal化
+		billDateDecimal := decimal.NewFromFloat(billDate)                     // decimal化
+		byDayPrice := price.Div(fullBillingDateNumDecimal)
+		dailyRatePrice := byDayPrice.Mul(billDateDecimal)
+		return dailyRatePrice.Truncate(0), nil
 	}
-
-	return decimal.Decimal{}, nil
 	//// 商品データを取得する
 	//product, err := b.productRepository.GetById(contract.ProductId(), executor)
 	//if err != nil {
