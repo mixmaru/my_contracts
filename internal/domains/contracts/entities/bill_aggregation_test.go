@@ -41,7 +41,20 @@ func TestBillAggregation_AddBillDetail(t *testing.T) {
 		assert.Error(t, err)
 	})
 
-	t.Run("同じBillingDetailEntityを2回追加するとエラーになる", func(t *testing.T) {
+	t.Run("同じBillingDetailEntityを2回追加するとエラーになる_orderNumが重複して結果的に実現できてる", func(t *testing.T) {
+		// 準備
+		billAggregation := NewBillingAggregation(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0))
+		billDetailEntity0 := NewBillingDetailEntity(1, 1)
+		billDetailEntity1 := NewBillingDetailEntity(2, 2)
+
+		err := billAggregation.AddBillDetail(billDetailEntity0)
+		assert.NoError(t, err)
+		err = billAggregation.AddBillDetail(billDetailEntity1)
+		assert.NoError(t, err)
+
+		// 実行・検証
+		err = billAggregation.AddBillDetail(billDetailEntity1)
+		assert.Error(t, err)
 	})
 }
 
