@@ -48,5 +48,10 @@ func (b *BillAggregation) AddBillDetail(billDetailEntity *BillDetailEntity) erro
 }
 
 func (b *BillAggregation) BillDetails() []*BillDetailEntity {
-	return nil
+	retDetails := make([]*BillDetailEntity, 0, len(b.billDetails))
+	for _, detail := range b.billDetails {
+		retDetail := *detail
+		retDetails = append(retDetails, &retDetail)
+	}
+	return retDetails
 }

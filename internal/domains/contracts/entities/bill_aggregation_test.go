@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"fmt"
 	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -59,8 +60,25 @@ func TestBillAggregation_AddBillDetail(t *testing.T) {
 }
 
 func TestBillAggregation_BillDetails(t *testing.T) {
-	t.Run("BillDetailエンティティスライスを取得できる", func(t *testing.T) {
+	t.Run("BillDetailエンティティスライスを取得できる　ただし別メモリにコピーされたやつ　変更されないために", func(t *testing.T) {
+		// 準備
+		billAggregation := NewBillingAggregation(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0))
+		billDetailEntity0 := NewBillingDetailEntity(1, 1)
+		billDetailEntity1 := NewBillingDetailEntity(2, 2)
+		err := billAggregation.AddBillDetail(billDetailEntity0)
+		assert.NoError(t, err)
+		err = billAggregation.AddBillDetail(billDetailEntity1)
+		assert.NoError(t, err)
 
+		// 実行
+		details := billAggregation.BillDetails()
+
+		// 検証
+		assert.Len(t, details, 2)
+		assert.NotEqual(t, fmt.Sprintf("%p", billAggregation.billDetails[0]), fmt.Sprintf("%p", details[0]))
+		assert.EqualValues(t, billAggregation.billDetails[0], details[0])
+		assert.NotEqual(t, fmt.Sprintf("%p", billAggregation.billDetails[1]), fmt.Sprintf("%p", details[1]))
+		assert.EqualValues(t, billAggregation.billDetails[1], details[1])
 	})
 }
 
