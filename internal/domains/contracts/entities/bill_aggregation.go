@@ -2,6 +2,7 @@ package entities
 
 import (
 	"database/sql"
+	"github.com/pkg/errors"
 	"sort"
 	"time"
 )
@@ -27,7 +28,14 @@ func (b *BillAggregation) PaymentConfirmedAt() (confirmedAt time.Time, isNull bo
 	return time.Time{}, false
 }
 
-func (b *BillAggregation) AddBillDetail(billDetailEntity *BillDetailEntity) {
+func (b *BillAggregation) AddBillDetail(billDetailEntity *BillDetailEntity) error {
+	// 同じorderNumが既にあればエラーを返す
+	for _, billDetail := range b.billDetails {
+		if billDetail.orderNum == billDetailEntity.orderNum {
+			return errors.Errorf("orderNumは既に存在してます。billDetailEntity: %+v", billDetailEntity)
+		}
+	}
+
 	// 追加する
 	b.billDetails = append(b.billDetails, billDetailEntity)
 
@@ -35,6 +43,8 @@ func (b *BillAggregation) AddBillDetail(billDetailEntity *BillDetailEntity) {
 	sort.Slice(b.billDetails, func(i, j int) bool {
 		return b.billDetails[i].OrderNum() < b.billDetails[j].OrderNum()
 	})
+
+	return nil
 }
 
 func (b *BillAggregation) BillDetails() []*BillDetailEntity {
