@@ -84,10 +84,30 @@ func TestBillAggregation_BillDetails(t *testing.T) {
 
 func TestBillAggregation_PaymentConfirmedAt(t *testing.T) {
 	t.Run("PaymentConfirmedAtがセットされていればtime.Timeで取得できる", func(t *testing.T) {
+		// 準備
+		billAggregation := NewBillingAggregation(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0))
+		err := billAggregation.SetPaymentConfirmedAt(utils.CreateJstTime(2020, 1, 15, 15, 0, 0, 0))
+		assert.NoError(t, err)
 
+		// 実行
+		actual, isNull, err := billAggregation.PaymentConfirmedAt()
+		assert.NoError(t, err)
+
+		// 検証
+		assert.False(t, isNull)
+		assert.True(t, actual.Equal(utils.CreateJstTime(2020, 1, 15, 15, 0, 0, 0)))
 	})
 
 	t.Run("PaymentConfirmedAtがセットされてなければIsNullがtrueで返る", func(t *testing.T) {
+		// 準備
+		billAggregation := NewBillingAggregation(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0))
 
+		// 実行
+		actual, isNull, err := billAggregation.PaymentConfirmedAt()
+		assert.NoError(t, err)
+
+		// 検証
+		assert.True(t, isNull)
+		assert.Zero(t, actual)
 	})
 }

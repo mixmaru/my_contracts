@@ -24,8 +24,26 @@ func (b *BillAggregation) BillingDate() time.Time {
 	return b.billingDate
 }
 
-func (b *BillAggregation) PaymentConfirmedAt() (confirmedAt time.Time, isNull bool) {
-	return time.Time{}, false
+func (b *BillAggregation) PaymentConfirmedAt() (confirmedAt time.Time, isNull bool, err error) {
+	if !b.paymentConfirmedAt.Valid {
+		// nullの場合
+		return time.Time{}, true, nil
+	}
+
+	// nullではない場合
+	retTime, err := b.paymentConfirmedAt.Value()
+	if err != nil {
+		return time.Time{}, false, errors.Wrapf(err, "paymentConfirmedAtの取得に失敗しました。billingAggregation: %+v", b)
+	}
+	return retTime.(time.Time), false, nil
+}
+
+func (b *BillAggregation) SetPaymentConfirmedAt(confirmedAt time.Time) error {
+	err := b.paymentConfirmedAt.Scan(confirmedAt)
+	if err != nil {
+		return errors.Wrapf(err, "confirmedAtのセットに失敗しました。billingAggregation: %+v, confirmedAt: %v", b, confirmedAt)
+	}
+	return nil
 }
 
 func (b *BillAggregation) AddBillDetail(billDetailEntity *BillDetailEntity) error {
