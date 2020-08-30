@@ -2,6 +2,7 @@ package entities
 
 import (
 	"database/sql"
+	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/pkg/errors"
 	"sort"
 	"time"
@@ -72,4 +73,12 @@ func (b *BillAggregation) BillDetails() []*BillDetailEntity {
 		retDetails = append(retDetails, &retDetail)
 	}
 	return retDetails
+}
+
+func (b *BillAggregation) TotalAmountExcludingTax() decimal.Decimal {
+	retAmount := decimal.NewFromInt(0)
+	for _, detail := range b.billDetails {
+		retAmount = retAmount.Add(detail.billingAmount)
+	}
+	return retAmount
 }
