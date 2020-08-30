@@ -74,6 +74,66 @@ func TestBillRepository_Create(t *testing.T) {
 	})
 }
 
+func TestBillRepository_GetById(t *testing.T) {
+	t.Run("idを渡すとデータを取得できる", func(t *testing.T) {
+		////// 準備
+		// 使用権作成
+		rightToUse1Id, rightToUse2Id := createRightToUseDataForTest()
+
+		// 請求データ作成
+		billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 31, 0, 10, 0, 0))
+		err := billAgg.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse1Id, decimal.NewFromInt(100)))
+		assert.NoError(t, err)
+		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(2, rightToUse2Id, decimal.NewFromInt(1000)))
+		assert.NoError(t, err)
+
+		db, err := db_connection.GetConnection()
+		assert.NoError(t, err)
+		defer db.Db.Close()
+
+		// 請求データ保存
+		rep := NewBillRepository()
+		tran, err := db.Begin()
+		assert.NoError(t, err)
+		billId, err := rep.Create(billAgg, tran)
+		assert.NoError(t, err)
+		err = tran.Commit()
+		assert.NoError(t, err)
+
+		// データ取得
+		actual, err := rep.GetById(billId, db)
+		assert.NoError(t, err)
+
+		assert.Equal(t, billId, actual.Id())
+		assert.True(t, actual.BillingDate().Equal(utils.CreateJstTime(2020, 8, 31, 0, 10, 0, 0)))
+		confirmedAt, isNull, err := actual.PaymentConfirmedAt()
+		assert.NoError(t, err)
+		assert.True(t, isNull)
+		assert.Zero(t, confirmedAt)
+		assert.NotZero(t, actual.CreatedAt())
+		assert.NotZero(t, actual.UpdatedAt())
+
+		details := actual.BillDetails()
+		assert.Len(t, details, 2)
+
+		assert.NotZero(t, details[0].Id())
+		assert.Equal(t, 1, details[0].OrderNum())
+		assert.Equal(t, rightToUse1Id, details[0].RightToUseId())
+		billingAmount1 := details[0].BillingAmount()
+		assert.Equal(t, "100", billingAmount1.String())
+		assert.NotZero(t, details[0].CreatedAt())
+		assert.NotZero(t, details[0].UpdatedAt())
+
+		assert.NotZero(t, details[1].Id())
+		assert.Equal(t, 2, details[1].OrderNum())
+		assert.Equal(t, rightToUse2Id, details[1].RightToUseId())
+		billingAmount2 := details[1].BillingAmount()
+		assert.Equal(t, "1000", billingAmount2.String())
+		assert.NotZero(t, details[1].CreatedAt())
+		assert.NotZero(t, details[1].UpdatedAt())
+	})
+}
+
 func createRightToUseDataForTest() (rightToUse1Id, rightToUse2Id int) {
 	db, err := db_connection.GetConnection()
 	if err != nil {

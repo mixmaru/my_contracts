@@ -48,3 +48,7 @@ func (b *BillRepository) Create(billAggregation *entities.BillAggregation, execu
 	}
 	return billMap.Id, nil
 }
+
+func (b *BillRepository) GetById(id int, executor gorp.SqlExecutor) (aggregation *entities.BillAggregation, err error) {
+	return nil, nil
+}
