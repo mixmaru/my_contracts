@@ -20,6 +20,24 @@ func NewBillingDetailEntity(orderNum, rightToUseId int, billingAmount decimal.De
 	}
 }
 
+func NewBillingDetailsEntityWithData(
+	id int,
+	orderNum int,
+	rightToUseId int,
+	billingAmount decimal.Decimal,
+	createdAt time.Time,
+	updatedAt time.Time,
+) *BillDetailEntity {
+	retEntity := &BillDetailEntity{}
+	retEntity.id = id
+	retEntity.orderNum = orderNum
+	retEntity.rightToUseId = rightToUseId
+	retEntity.billingAmount = billingAmount
+	retEntity.createdAt = createdAt
+	retEntity.updatedAt = updatedAt
+	return retEntity
+}
+
 func (b *BillDetailEntity) OrderNum() int {
 	return b.orderNum
 }

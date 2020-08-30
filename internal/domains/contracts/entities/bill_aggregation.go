@@ -21,6 +21,24 @@ func NewBillingAggregation(billingDate time.Time) *BillAggregation {
 	}
 }
 
+func NewBillingAggregationWithData(
+	id int,
+	billingDate time.Time,
+	paymentConfirmedAt sql.NullTime,
+	billDetails []*BillDetailEntity,
+	createdAt time.Time,
+	updatedAt time.Time,
+) *BillAggregation {
+	retBill := &BillAggregation{}
+	retBill.id = id
+	retBill.billingDate = billingDate
+	retBill.paymentConfirmedAt = paymentConfirmedAt
+	retBill.billDetails = billDetails
+	retBill.createdAt = createdAt
+	retBill.updatedAt = updatedAt
+	return retBill
+}
+
 func (b *BillAggregation) BillingDate() time.Time {
 	return b.billingDate
 }
