@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
 	"testing"
+	"time"
 )
 
 func TestRightToUseRepository_Create(t *testing.T) {
@@ -17,7 +18,11 @@ func TestRightToUseRepository_Create(t *testing.T) {
 
 	////// テスト用契約を作成する
 	// 契約の作成
-	savedContractId := createPreparedContractData(db)
+	savedContractId := createPreparedContractData(
+		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0),
+		db,
+	)
 
 	t.Run("権利エンティティとdbコネクションを渡すとDBへ新規保存されて_保存Idを返す", func(t *testing.T) {
 		// 準備
@@ -43,7 +48,11 @@ func TestRightToUseRepository_GetById(t *testing.T) {
 
 	// 事前に使用権を登録する
 	r := NewRightToUseRepository()
-	savedContractId := createPreparedContractData(db)
+	savedContractId := createPreparedContractData(
+		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0),
+		db,
+	)
 	rightToUseEntity := entities.NewRightToUseEntity(
 		savedContractId,
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
@@ -77,13 +86,19 @@ func TestRightToUseRepository_GetById(t *testing.T) {
 }
 
 // 使用権データを作成するのに事前に必要なデータを準備する
-func createPreparedContractData(executor gorp.SqlExecutor) int {
+func createPreparedContractData(contractDate, billingStartDate time.Time, executor gorp.SqlExecutor) int {
 	// userの作成
 	savedUserId := createUser(executor)
 	// 商品の作成
 	savedProductId := createProduct(executor)
 	// 契約の作成
-	savedContractId := createContract(savedUserId, savedProductId, executor)
+	savedContractId := createContract(
+		savedUserId,
+		savedProductId,
+		contractDate,
+		billingStartDate,
+		executor,
+	)
 	return savedContractId
 }
 
@@ -113,13 +128,13 @@ func createProduct(executor gorp.SqlExecutor) int {
 	return savedProductId
 }
 
-func createContract(userId, productId int, executor gorp.SqlExecutor) int {
+func createContract(userId, productId int, contractDate, billingStartDate time.Time, executor gorp.SqlExecutor) int {
 	// 契約の作成
 	contractEntity := entities.NewContractEntity(
 		userId,
 		productId,
-		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
-		utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0),
+		contractDate,
+		billingStartDate,
 	)
 	contractRepository := NewContractRepository()
 	savedContractId, err := contractRepository.Create(contractEntity, executor)
