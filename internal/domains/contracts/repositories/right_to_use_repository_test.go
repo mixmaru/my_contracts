@@ -86,89 +86,127 @@ func TestRightToUseRepository_GetById(t *testing.T) {
 	})
 }
 
+func createBillTestData(db gorp.SqlExecutor) (rightToUseIds []int, billId int) {
+	rightToUseRep := NewRightToUseRepository()
+
+	// 商品登録
+	productId := createProduct(db)
+
+	// user作成
+	// 6/1 ~ 6/30 の使用権（未請求）=> 取得される
+	// 6/1 ~ 6/30 の使用権（請求済）
+	// 7/1 ~ 7/31 の使用権（未請求）=> 取得される
+	// 8/1 ~ 8/31 の使用権（未請求）
+	userId := createUser(db)
+	contractId1 := createContract(
+		userId,
+		productId,
+		utils.CreateJstTime(2020, 6, 1, 18, 21, 0, 0),
+		utils.CreateJstTime(2020, 6, 2, 0, 0, 0, 0),
+		db,
+	)
+
+	// 使用権
+	rightToUseEntity1 := entities.NewRightToUseEntity(
+		contractId1,
+		utils.CreateJstTime(2020, 6, 1, 18, 21, 0, 0),
+		utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
+	)
+	rightToUseId1, err := rightToUseRep.Create(rightToUseEntity1, db)
+	if err != nil {
+		panic("rightToUseデータ保存失敗")
+	}
+
+	rightToUseEntity2 := entities.NewRightToUseEntity(
+		contractId1,
+		utils.CreateJstTime(2020, 6, 1, 18, 21, 0, 0),
+		utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
+	)
+	rightToUseId2, err := rightToUseRep.Create(rightToUseEntity2, db)
+	if err != nil {
+		panic("rightToUseデータ保存失敗")
+	}
+
+	rightToUseEntity3 := entities.NewRightToUseEntity(
+		contractId1,
+		utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0),
+	)
+	rightToUseId3, err := rightToUseRep.Create(rightToUseEntity3, db)
+	if err != nil {
+		panic("rightToUseデータ保存失敗")
+	}
+
+	rightToUseEntity4 := entities.NewRightToUseEntity(
+		contractId1,
+		utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 9, 1, 0, 0, 0, 0),
+	)
+	rightToUseId4, err := rightToUseRep.Create(rightToUseEntity4, db)
+	if err != nil {
+		panic("rightToUseデータ保存失敗")
+	}
+
+	// rightToUse1bに対して請求情報を登録しておく（請求済にしておく）
+	billDetailEntity := entities.NewBillingDetailEntity(1, rightToUseId2, decimal.NewFromInt(1000))
+	billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 7, 1, 12, 0, 0, 0))
+	err = billAgg.AddBillDetail(billDetailEntity)
+
+	billRep := NewBillRepository()
+	billId, err = billRep.Create(billAgg, db)
+	if err != nil {
+		panic("billデータ保存失敗")
+	}
+
+	return []int{rightToUseId1, rightToUseId2, rightToUseId3, rightToUseId4}, billId
+}
+
 func TestRightToUseRepository_GetBillingTargetByBillingDate(t *testing.T) {
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
+
 	r := NewRightToUseRepository()
 	t.Run("請求実行日を渡すとその日以前で請求実行をしていない使用権データがuserId、rightToUserId順で全て返る", func(t *testing.T) {
 		// 準備
-		// 商品登録
-		productId := createProduct(db)
+		// 事前に対象になる使用権を削除しておく
+		query := `
+DELETE FROM right_to_use WHERE id IN (
+    SELECT rtu.id FROM right_to_use rtu
+    LEFT OUTER JOIN bill_details bd on rtu.id = bd.right_to_use_id
+    WHERE bd.id IS NULL
+);
+`
+		tran, err := db.Begin()
+		assert.NoError(t, err)
 
-		// user1
+		_, err = tran.Exec(query)
+		assert.NoError(t, err)
+
+		// 2userに対して、以下の使用権を作成する。
 		// 6/1 ~ 6/30 の使用権（未請求）=> 取得される
 		// 6/1 ~ 6/30 の使用権（請求済）
 		// 7/1 ~ 7/31 の使用権（未請求）=> 取得される
 		// 8/1 ~ 8/31 の使用権（未請求）
-		userId1 := createUser(db)
-		contractId1 := createContract(
-			userId1,
-			productId,
-			utils.CreateJstTime(2020, 6, 1, 18, 21, 0, 0),
-			utils.CreateJstTime(2020, 6, 2, 0, 0, 0, 0),
-			db,
-		)
-
-		// 使用権
-		rightToUseEntity1a := entities.NewRightToUseEntity(
-			contractId1,
-			utils.CreateJstTime(2020, 6, 1, 18, 21, 0, 0),
-			utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
-		)
-		rightToUseId1a, err := r.Create(rightToUseEntity1a, db)
-		assert.NoError(t, err)
-
-		rightToUseEntity1b := entities.NewRightToUseEntity(
-			contractId1,
-			utils.CreateJstTime(2020, 6, 1, 18, 21, 0, 0),
-			utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
-		)
-		rightToUseId1b, err := r.Create(rightToUseEntity1b, db)
-		assert.NoError(t, err)
-
-		rightToUseEntity1c := entities.NewRightToUseEntity(
-			contractId1,
-			utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
-			utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0),
-		)
-		rightToUseId1c, err := r.Create(rightToUseEntity1c, db)
-		assert.NoError(t, err)
-
-		rightToUseEntity1d := entities.NewRightToUseEntity(
-			contractId1,
-			utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0),
-			utils.CreateJstTime(2020, 9, 1, 0, 0, 0, 0),
-		)
-		rightToUseId1d, err := r.Create(rightToUseEntity1d, db)
-		assert.NoError(t, err)
-
-		// rightToUse1bに対して請求情報を登録しておく（請求済にしておく）
-		billDetailEntity := entities.NewBillingDetailEntity(1, rightToUseId1b, decimal.NewFromInt(1000))
-		billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 7, 1, 12, 0, 0, 0))
-		err = billAgg.AddBillDetail(billDetailEntity)
-		assert.NoError(t, err)
-
-		billRep := NewBillRepository()
-		billId, err := billRep.Create(billAgg, db)
-		assert.NoError(t, err)
-
-		assert.NotZero(t, rightToUseId1a)
-		assert.NotZero(t, rightToUseId1b)
-		assert.NotZero(t, rightToUseId1c)
-		assert.NotZero(t, rightToUseId1d)
-		assert.NotZero(t, billId)
-
-		// user2
-		// 6/1 ~ 6/30 の使用権（未請求）=> 取得される
-		// 6/1 ~ 6/30 の使用権（請求済）
-		// 7/1 ~ 7/31 の使用権（未請求）=> 取得される
-		// 8/1 ~ 8/31 の使用権（未請求）
+		rightToUseIds1, billId1 := createBillTestData(tran)
+		rightToUseIds2, billId2 := createBillTestData(tran)
+		assert.NotZero(t, rightToUseIds1)
+		assert.NotZero(t, billId1)
+		assert.NotZero(t, rightToUseIds2)
+		assert.NotZero(t, billId2)
 
 		// 実行
 		billingDate := utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0)
-		r.GetBillingTargetByBillingDate(billingDate)
+		actual := r.GetBillingTargetByBillingDate(billingDate)
+
+		err = tran.Commit()
+		assert.NoError(t, err)
 
 		// 検証
+		assert.Len(t, actual, 4)
+		assert.Equal(t, rightToUseIds1[0], actual[0].Id())
+		assert.Equal(t, rightToUseIds1[2], actual[1].Id())
+		assert.Equal(t, rightToUseIds2[0], actual[2].Id())
+		assert.Equal(t, rightToUseIds2[2], actual[3].Id())
 	})
 }
 
