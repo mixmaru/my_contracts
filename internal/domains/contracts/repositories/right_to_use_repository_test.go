@@ -195,8 +195,9 @@ DELETE FROM right_to_use WHERE id IN (
 		assert.NotZero(t, billId2)
 
 		// 実行
-		billingDate := utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0)
-		actual := r.GetBillingTargetByBillingDate(billingDate)
+		billingDate := utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0)
+		actual, err := r.GetBillingTargetByBillingDate(billingDate, tran)
+		assert.NoError(t, err)
 
 		err = tran.Commit()
 		assert.NoError(t, err)
