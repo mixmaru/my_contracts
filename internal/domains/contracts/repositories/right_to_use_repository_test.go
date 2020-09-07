@@ -102,7 +102,7 @@ func createBillTestData(db gorp.SqlExecutor) (rightToUseIds []int, billId int) {
 		userId,
 		productId,
 		utils.CreateJstTime(2020, 6, 1, 18, 21, 0, 0),
-		utils.CreateJstTime(2020, 6, 2, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 6, 11, 0, 0, 0, 0),
 		db,
 	)
 
@@ -161,6 +161,20 @@ func createBillTestData(db gorp.SqlExecutor) (rightToUseIds []int, billId int) {
 	return []int{rightToUseId1, rightToUseId2, rightToUseId3, rightToUseId4}, billId
 }
 
+func deleteTestRightToUseData(executor gorp.SqlExecutor) {
+	query := `
+DELETE FROM right_to_use WHERE id IN (
+    SELECT rtu.id FROM right_to_use rtu
+    LEFT OUTER JOIN bill_details bd on rtu.id = bd.right_to_use_id
+    WHERE bd.id IS NULL
+);
+`
+	_, err := executor.Exec(query)
+	if err != nil {
+		panic("事前データ削除失敗")
+	}
+}
+
 func TestRightToUseRepository_GetBillingTargetByBillingDate(t *testing.T) {
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
@@ -169,30 +183,18 @@ func TestRightToUseRepository_GetBillingTargetByBillingDate(t *testing.T) {
 	t.Run("請求実行日を渡すとその日以前で請求実行をしていない使用権データがuserId、rightToUserId順で全て返る", func(t *testing.T) {
 		// 準備
 		// 事前に対象になる使用権を削除しておく
-		query := `
-DELETE FROM right_to_use WHERE id IN (
-    SELECT rtu.id FROM right_to_use rtu
-    LEFT OUTER JOIN bill_details bd on rtu.id = bd.right_to_use_id
-    WHERE bd.id IS NULL
-);
-`
 		tran, err := db.Begin()
 		assert.NoError(t, err)
 
-		_, err = tran.Exec(query)
-		assert.NoError(t, err)
+		deleteTestRightToUseData(tran)
 
-		// 2userに対して、以下の使用権を作成する。
-		// 6/1 ~ 6/30 の使用権（未請求）=> 取得される
+		// 2userに対して、契約の課金開始日が6/11の以下の使用権を作成する。
+		// 6/1 ~ 6/30 の使用権（未請求)
 		// 6/1 ~ 6/30 の使用権（請求済）
-		// 7/1 ~ 7/31 の使用権（未請求）=> 取得される
+		// 7/1 ~ 7/31 の使用権（未請求)
 		// 8/1 ~ 8/31 の使用権（未請求）
-		rightToUseIds1, billId1 := createBillTestData(tran)
-		rightToUseIds2, billId2 := createBillTestData(tran)
-		assert.NotZero(t, rightToUseIds1)
-		assert.NotZero(t, billId1)
-		assert.NotZero(t, rightToUseIds2)
-		assert.NotZero(t, billId2)
+		rightToUseIds1, _ := createBillTestData(tran)
+		rightToUseIds2, _ := createBillTestData(tran)
 
 		// 実行
 		billingDate := utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0)
@@ -203,11 +205,68 @@ DELETE FROM right_to_use WHERE id IN (
 		assert.NoError(t, err)
 
 		// 検証
+		// 6/1 ~ 6/30 の使用権（未請求) => 取得される（未請求だから）
+		// 6/1 ~ 6/30 の使用権（請求済）=> 取得されない（請求実行済だから）
+		// 7/1 ~ 7/31 の使用権（未請求) => 取得される（未請求だから）
+		// 8/1 ~ 8/31 の使用権（未請求） => 取得されない（まだ請求しない使用権だから）
 		assert.Len(t, actual, 4)
 		assert.Equal(t, rightToUseIds1[0], actual[0].Id())
 		assert.Equal(t, rightToUseIds1[2], actual[1].Id())
 		assert.Equal(t, rightToUseIds2[0], actual[2].Id())
 		assert.Equal(t, rightToUseIds2[2], actual[3].Id())
+	})
+
+	t.Run("渡した請求実行日が契約の課金開始日以前である使用権は返却データに含まれない_課金開始日以前の使用権には請求が発生しない", func(t *testing.T) {
+		tran, err := db.Begin()
+		assert.NoError(t, err)
+
+		// 事前に影響のあるデータを削除
+		deleteTestRightToUseData(tran)
+
+		// 準備（以下の使用権データを作成する）
+		// 6/1 ~ 6/30 の使用権（未請求）=> 取得されない（契約の課金開始日が6/11だから）
+		// 6/1 ~ 6/30 の使用権（請求済）=> 取得されない
+		// 7/1 ~ 7/31 の使用権（未請求）=> 取得されない
+		// 8/1 ~ 8/31 の使用権（未請求）=> 取得されない
+		_, _ = createBillTestData(tran)
+
+		// 実行
+		billingDate := utils.CreateJstTime(2020, 6, 10, 0, 0, 0, 0)
+		actual, err := r.GetBillingTargetByBillingDate(billingDate, tran)
+		assert.NoError(t, err)
+
+		err = tran.Commit()
+		assert.NoError(t, err)
+
+		// 検証
+		assert.Len(t, actual, 0)
+	})
+
+	t.Run("渡した請求実行日が契約の課金開始日ちょうどである使用権は返却データに含まれる", func(t *testing.T) {
+		tran, err := db.Begin()
+		assert.NoError(t, err)
+
+		// 事前に影響のあるデータを削除
+		deleteTestRightToUseData(tran)
+
+		// 準備（以下の使用権データを作成する）
+		// 6/1 ~ 6/30 の使用権（未請求）=> 取得される（契約の課金開始日が6/11だから）
+		// 6/1 ~ 6/30 の使用権（請求済）=> 取得されない
+		// 7/1 ~ 7/31 の使用権（未請求）=> 取得されない
+		// 8/1 ~ 8/31 の使用権（未請求）=> 取得されない
+		rightToUseIds, _ := createBillTestData(tran)
+
+		// 実行
+		billingDate := utils.CreateJstTime(2020, 6, 11, 0, 0, 0, 0)
+		actual, err := r.GetBillingTargetByBillingDate(billingDate, tran)
+		assert.NoError(t, err)
+
+		err = tran.Commit()
+		assert.NoError(t, err)
+
+		// 検証
+		assert.Len(t, actual, 1)
+		assert.Equal(t, rightToUseIds[0], actual[0].Id())
 	})
 }
 
