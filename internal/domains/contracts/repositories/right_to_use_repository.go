@@ -65,6 +65,11 @@ WHERE id = $1;
 
 /*
 渡した日（請求実行日）以前の請求すべき請求（まだ請求実行されていない）がある使用権データをすべて返す
+
+例）請求実行日が6/1の場合
+契約の課金開始日が6/1の使用権（期間：6/1 ~ 6/30）=> 請求すべき。
+契約の課金開始日が6/2の使用権（期間：6/1 ~ 6/30）=> 請求すべきでない。
+契約の課金開始日が6/2の使用権（期間：7/1 ~ 7/31）=> 請求すべきでない。
 */
 func (r *RightToUseRepository) GetBillingTargetByBillingDate(billingDate time.Time, executor gorp.SqlExecutor) ([]*entities.RightToUseEntity, error) {
 	query := `
@@ -76,9 +81,11 @@ SELECT
 	rtu.created_at,
 	rtu.updated_at
 FROM right_to_use rtu
-LEFT OUTER JOIN bill_details bd on rtu.id = bd.right_to_use_id
+LEFT OUTER JOIN bill_details bd ON rtu.id = bd.right_to_use_id
+INNER JOIN contracts c ON c.id = rtu.contract_id
 WHERE bd.id IS NULL
 AND valid_from <= $1
+AND c.billing_start_date <= $1
 ORDER BY rtu.id
 ;
 `
