@@ -24,6 +24,7 @@ func (b *BillRepository) Create(billAggregation *entities.BillAggregation, execu
 	// マッパーを用意
 	billMap := data_mappers.BillMapper{}
 	billMap.BillingDate = billAggregation.BillingDate()
+	billMap.UserId = billAggregation.UserId()
 
 	// 保存実行
 	err = executor.Insert(&billMap)
@@ -57,6 +58,7 @@ func (b *BillRepository) GetById(id int, executor gorp.SqlExecutor) (aggregation
 SELECT
        bills.id AS id,
        bills.billing_date AS billing_date,
+       bills.user_id AS user_id,
        bills.payment_confirmed_at AS payment_confirmed_at,
        bills.created_at AS created_at,
        bills.updated_at AS updated_at,
@@ -97,6 +99,7 @@ ORDER BY bd.order_num
 	billAgg := entities.NewBillingAggregationWithData(
 		mappers[0].Id,
 		mappers[0].BillingDate,
+		mappers[0].UserId,
 		mappers[0].PaymentConfirmedAt,
 		detailEntities,
 		mappers[0].CreatedAt,

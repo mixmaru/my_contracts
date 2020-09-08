@@ -11,19 +11,22 @@ import (
 type BillAggregation struct {
 	BaseEntity
 	billingDate        time.Time
+	userId             int
 	paymentConfirmedAt sql.NullTime
 	billDetails        []*BillDetailEntity
 }
 
-func NewBillingAggregation(billingDate time.Time) *BillAggregation {
+func NewBillingAggregation(billingDate time.Time, userId int) *BillAggregation {
 	return &BillAggregation{
 		billingDate: billingDate,
+		userId:      userId,
 	}
 }
 
 func NewBillingAggregationWithData(
 	id int,
 	billingDate time.Time,
+	userId int,
 	paymentConfirmedAt sql.NullTime,
 	billDetails []*BillDetailEntity,
 	createdAt time.Time,
@@ -32,6 +35,7 @@ func NewBillingAggregationWithData(
 	retBill := &BillAggregation{}
 	retBill.id = id
 	retBill.billingDate = billingDate
+	retBill.userId = userId
 	retBill.paymentConfirmedAt = paymentConfirmedAt
 	retBill.billDetails = billDetails
 	retBill.createdAt = createdAt
@@ -41,6 +45,10 @@ func NewBillingAggregationWithData(
 
 func (b *BillAggregation) BillingDate() time.Time {
 	return b.billingDate
+}
+
+func (b *BillAggregation) UserId() int {
+	return b.userId
 }
 
 func (b *BillAggregation) PaymentConfirmedAt() (confirmedAt time.Time, isNull bool, err error) {

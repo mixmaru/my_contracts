@@ -149,7 +149,7 @@ func createBillTestData(db gorp.SqlExecutor) (rightToUseIds []int, billId int) {
 
 	// rightToUse1bに対して請求情報を登録しておく（請求済にしておく）
 	billDetailEntity := entities.NewBillingDetailEntity(1, rightToUseId2, decimal.NewFromInt(1000))
-	billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 7, 1, 12, 0, 0, 0))
+	billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 7, 1, 12, 0, 0, 0), userId)
 	err = billAgg.AddBillDetail(billDetailEntity)
 
 	billRep := NewBillRepository()

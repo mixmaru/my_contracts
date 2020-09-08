@@ -14,10 +14,10 @@ func TestBillRepository_Create(t *testing.T) {
 	t.Run("Bill集約を渡すと保存できる", func(t *testing.T) {
 		////// 準備
 		// 使用権作成
-		rightToUse1Id, rightToUse2Id := createRightToUseDataForTest()
+		rightToUse1Id, rightToUse2Id, userId := createRightToUseDataForTest()
 
 		// 請求データ作成
-		billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 31, 0, 10, 0, 0))
+		billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 31, 0, 10, 0, 0), userId)
 		err := billAgg.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse1Id, decimal.NewFromInt(100)))
 		assert.NoError(t, err)
 		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(2, rightToUse2Id, decimal.NewFromInt(1000)))
@@ -78,10 +78,10 @@ func TestBillRepository_GetById(t *testing.T) {
 	t.Run("idを渡すとデータを取得できる", func(t *testing.T) {
 		////// 準備
 		// 使用権作成
-		rightToUse1Id, rightToUse2Id := createRightToUseDataForTest()
+		rightToUse1Id, rightToUse2Id, userId := createRightToUseDataForTest()
 
 		// 請求データ作成
-		billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 31, 0, 10, 0, 0))
+		billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 31, 0, 10, 0, 0), userId)
 		err := billAgg.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse1Id, decimal.NewFromInt(100)))
 		assert.NoError(t, err)
 		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(2, rightToUse2Id, decimal.NewFromInt(1000)))
@@ -135,7 +135,7 @@ func TestBillRepository_GetById(t *testing.T) {
 	})
 }
 
-func createRightToUseDataForTest() (rightToUse1Id, rightToUse2Id int) {
+func createRightToUseDataForTest() (rightToUse1Id, rightToUse2Id, userId int) {
 	db, err := db_connection.GetConnection()
 	if err != nil {
 		panic("dbコネクション取得失敗")
@@ -166,7 +166,7 @@ func createRightToUseDataForTest() (rightToUse1Id, rightToUse2Id int) {
 		panic("ユーザーデータ作成失敗")
 	}
 	userRep := NewUserRepository()
-	userId, err := userRep.SaveUserIndividual(userEntity, db)
+	userId, err = userRep.SaveUserIndividual(userEntity, db)
 	if err != nil {
 		panic("ユーザーデータ登録失敗")
 	}
@@ -196,5 +196,5 @@ func createRightToUseDataForTest() (rightToUse1Id, rightToUse2Id int) {
 	if err != nil {
 		panic("使用権データ登録失敗")
 	}
-	return rightToUse1Id, rightToUse2Id
+	return rightToUse1Id, rightToUse2Id, userId
 }
