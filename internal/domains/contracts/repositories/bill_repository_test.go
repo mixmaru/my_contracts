@@ -107,6 +107,7 @@ func TestBillRepository_GetById(t *testing.T) {
 		// 検証
 		assert.Equal(t, billId, actual.Id())
 		assert.True(t, actual.BillingDate().Equal(utils.CreateJstTime(2020, 8, 31, 0, 10, 0, 0)))
+		assert.Equal(t, userId, actual.UserId())
 		confirmedAt, isNull, err := actual.PaymentConfirmedAt()
 		assert.NoError(t, err)
 		assert.True(t, isNull)
