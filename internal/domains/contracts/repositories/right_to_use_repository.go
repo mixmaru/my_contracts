@@ -86,7 +86,7 @@ INNER JOIN contracts c ON c.id = rtu.contract_id
 WHERE bd.id IS NULL
 AND valid_from <= $1
 AND c.billing_start_date <= $1
-ORDER BY rtu.id
+ORDER BY c.user_id, rtu.id
 ;
 `
 	var mappers []*data_mappers.RightToUseMapper
