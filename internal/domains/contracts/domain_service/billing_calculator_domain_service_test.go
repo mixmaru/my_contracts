@@ -346,7 +346,7 @@ func TestBillingCalculatorDomainService_ExecuteBilling(t *testing.T) {
 			////// 検証（billingデータを取得して検証する。2ユーザーの6/1~6/30, 7/1~7/31の請求分がbillsに作成される）
 
 			billRep := repositories.NewBillRepository()
-			actual1, err := billRep.GetById(user1Id, tran)
+			actual1, err := billRep.GetByUserId(user1Id, tran)
 			assert.NoError(t, err)
 			err = tran.Commit()
 			assert.NoError(t, err)
@@ -360,7 +360,7 @@ func TestBillingCalculatorDomainService_ExecuteBilling(t *testing.T) {
 			err = expect.AddBillDetail(entities.NewBillingDetailEntity(2, rightToUse1BId, decimal.NewFromInt(1000)))
 			assert.NoError(t, err)
 
-			assertBill(t, actual1, expect)
+			assertBill(t, actual1[0], expect)
 		})
 	})
 }
