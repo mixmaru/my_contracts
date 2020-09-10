@@ -93,8 +93,57 @@ func (b *BillRepository) GetById(id int, executor gorp.SqlExecutor) (aggregation
 }
 
 func (b *BillRepository) GetByUserId(userId int, executor gorp.SqlExecutor) (aggregation []*entities.BillAggregation, err error) {
-	_ = createGetByUserIdQuery()
-	return nil, nil
+	query := createGetByUserIdQuery()
+	// マッパー用意
+	var mappers []*BillAndBillDetailsMapper
+
+	// データ取得
+	_, err = executor.Select(&mappers, query, userId)
+	if err != nil {
+		return nil, errors.Wrapf(err, "billデータ取得失敗。query: %v ,userId: %v", query, userId)
+	}
+
+	// 返却データに組み立てる
+	var retBillAggs []*entities.BillAggregation
+	prevId := 0
+	var billAgg *entities.BillAggregation
+	for _, record := range mappers {
+		if record.Id != prevId {
+			// 前回ループで作ったbillAggがあればretBillAggsに追加する
+			if billAgg != nil {
+				retBillAggs = append(retBillAggs, billAgg)
+			}
+			// 新しいbillAggを作成する
+			billAgg = entities.NewBillingAggregationWithData(
+				record.Id,
+				record.BillingDate,
+				record.UserId,
+				record.PaymentConfirmedAt,
+				[]*entities.BillDetailEntity{},
+				record.CreatedAt,
+				record.UpdatedAt,
+			)
+		}
+		// detailsを作ってbillAggに追加する
+		detail := entities.NewBillingDetailsEntityWithData(
+			record.DetailId,
+			record.DetailOrderNum,
+			record.DetailRightToUseId,
+			record.DetailBillingAmount,
+			record.DetailCreatedAt,
+			record.DetailUpdatedAt,
+		)
+		err := billAgg.AddBillDetail(detail)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// 前回ループで作ったbillAggがあればretBillAggsに追加する
+	if billAgg != nil {
+		retBillAggs = append(retBillAggs, billAgg)
+	}
+
+	return retBillAggs, nil
 }
 
 type BillAndBillDetailsMapper struct {
