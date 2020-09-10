@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/data_mappers"
@@ -54,26 +55,7 @@ func (b *BillRepository) Create(billAggregation *entities.BillAggregation, execu
 
 func (b *BillRepository) GetById(id int, executor gorp.SqlExecutor) (aggregation *entities.BillAggregation, err error) {
 	// クエリ作成
-	query := `
-SELECT
-       bills.id AS id,
-       bills.billing_date AS billing_date,
-       bills.user_id AS user_id,
-       bills.payment_confirmed_at AS payment_confirmed_at,
-       bills.created_at AS created_at,
-       bills.updated_at AS updated_at,
-       bd.id AS detail_id,
-       bd.order_num AS detail_order_num,
-       bd.right_to_use_id AS detail_right_to_use_id,
-       bd.billing_amount AS detail_billing_amount,
-       bd.created_at AS detail_created_at,
-       bd.updated_at AS detail_updated_at
-FROM bills
-INNER JOIN bill_details bd on bills.id = bd.bill_id
-WHERE bills.id = $1
-ORDER BY bd.order_num
-;
-`
+	query := createGetByIdQuery()
 	// マッパー用意
 	var mappers []*BillAndBillDetailsMapper
 
@@ -110,6 +92,11 @@ ORDER BY bd.order_num
 	return billAgg, nil
 }
 
+func (b *BillRepository) GetByUserId(userId int, executor gorp.SqlExecutor) (aggregation []*entities.BillAggregation, err error) {
+	_ = createGetByUserIdQuery()
+	return nil, nil
+}
+
 type BillAndBillDetailsMapper struct {
 	data_mappers.BillMapper
 	DetailId            int             `db:"detail_id"`
@@ -118,4 +105,40 @@ type BillAndBillDetailsMapper struct {
 	DetailBillingAmount decimal.Decimal `db:"detail_billing_amount"`
 	DetailCreatedAt     time.Time       `db:"detail_created_at"`
 	DetailUpdatedAt     time.Time       `db:"detail_updated_at"`
+}
+
+func createGetByIdQuery() string {
+	baseQuery := createGetBaseQuery()
+	query := fmt.Sprintf(baseQuery, "bills.id = $1")
+	return query
+}
+
+func createGetByUserIdQuery() string {
+	baseQuery := createGetBaseQuery()
+	query := fmt.Sprintf(baseQuery, "bills.user_id = $1")
+	return query
+}
+
+func createGetBaseQuery() string {
+	baseQuery := `
+SELECT
+       bills.id AS id,
+       bills.billing_date AS billing_date,
+       bills.user_id AS user_id,
+       bills.payment_confirmed_at AS payment_confirmed_at,
+       bills.created_at AS created_at,
+       bills.updated_at AS updated_at,
+       bd.id AS detail_id,
+       bd.order_num AS detail_order_num,
+       bd.right_to_use_id AS detail_right_to_use_id,
+       bd.billing_amount AS detail_billing_amount,
+       bd.created_at AS detail_created_at,
+       bd.updated_at AS detail_updated_at
+FROM bills
+INNER JOIN bill_details bd on bills.id = bd.bill_id
+WHERE %v
+ORDER BY bd.order_num
+;
+`
+	return baseQuery
 }
