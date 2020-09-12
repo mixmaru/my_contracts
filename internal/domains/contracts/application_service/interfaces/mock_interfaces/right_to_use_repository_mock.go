@@ -9,6 +9,7 @@ import (
 	entities "github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	gorp "gopkg.in/gorp.v2"
 	reflect "reflect"
+	time "time"
 )
 
 // MockIRightToUseRepository is a mock of IRightToUseRepository interface.
@@ -62,4 +63,19 @@ func (m *MockIRightToUseRepository) GetById(id int, executor gorp.SqlExecutor) (
 func (mr *MockIRightToUseRepositoryMockRecorder) GetById(id, executor interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockIRightToUseRepository)(nil).GetById), id, executor)
+}
+
+// GetBillingTargetByBillingDate mocks base method.
+func (m *MockIRightToUseRepository) GetBillingTargetByBillingDate(billingDate time.Time, executor gorp.SqlExecutor) ([]*entities.RightToUseEntity, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBillingTargetByBillingDate", billingDate, executor)
+	ret0, _ := ret[0].([]*entities.RightToUseEntity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBillingTargetByBillingDate indicates an expected call of GetBillingTargetByBillingDate.
+func (mr *MockIRightToUseRepositoryMockRecorder) GetBillingTargetByBillingDate(billingDate, executor interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBillingTargetByBillingDate", reflect.TypeOf((*MockIRightToUseRepository)(nil).GetBillingTargetByBillingDate), billingDate, executor)
 }
