@@ -112,52 +112,94 @@ func TestBillRepository_GetById(t *testing.T) {
 
 func TestBillRepository_GetByUserId(t *testing.T) {
 	t.Run("UserIdを渡すとデータを取得できる", func(t *testing.T) {
-		////// 準備
-		// 使用権作成
-		rightToUse1Id, rightToUse2Id, userId := createRightToUseDataForTest()
+		t.Run("billが複数あれば複数がスライスで取れる", func(t *testing.T) {
+			////// 準備
+			// 使用権作成
+			rightToUse1Id, rightToUse2Id, userId := createRightToUseDataForTest()
 
-		// 請求データ作成
-		billAgg1 := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 1, 0, 10, 0, 0), userId)
-		err := billAgg1.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse1Id, decimal.NewFromInt(100)))
-		assert.NoError(t, err)
+			// 請求データ作成
+			billAgg1 := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 1, 0, 10, 0, 0), userId)
+			err := billAgg1.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse1Id, decimal.NewFromInt(100)))
+			assert.NoError(t, err)
 
-		billAgg2 := entities.NewBillingAggregation(utils.CreateJstTime(2020, 9, 1, 0, 10, 0, 0), userId)
-		err = billAgg2.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse2Id, decimal.NewFromInt(1000)))
-		assert.NoError(t, err)
+			billAgg2 := entities.NewBillingAggregation(utils.CreateJstTime(2020, 9, 1, 0, 10, 0, 0), userId)
+			err = billAgg2.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse2Id, decimal.NewFromInt(1000)))
+			assert.NoError(t, err)
 
-		db, err := db_connection.GetConnection()
-		assert.NoError(t, err)
-		defer db.Db.Close()
+			db, err := db_connection.GetConnection()
+			assert.NoError(t, err)
+			defer db.Db.Close()
 
-		// 請求データ保存
-		rep := NewBillRepository()
-		tran, err := db.Begin()
-		assert.NoError(t, err)
-		billId1, err := rep.Create(billAgg1, tran)
-		assert.NoError(t, err)
-		billId2, err := rep.Create(billAgg2, tran)
-		assert.NoError(t, err)
-		err = tran.Commit()
-		assert.NoError(t, err)
+			// 請求データ保存
+			rep := NewBillRepository()
+			tran, err := db.Begin()
+			assert.NoError(t, err)
+			billId1, err := rep.Create(billAgg1, tran)
+			assert.NoError(t, err)
+			billId2, err := rep.Create(billAgg2, tran)
+			assert.NoError(t, err)
+			err = tran.Commit()
+			assert.NoError(t, err)
 
-		// データ取得
-		actual, err := rep.GetByUserId(userId, db)
-		assert.NoError(t, err)
+			// データ取得
+			actual, err := rep.GetByUserId(userId, db)
+			assert.NoError(t, err)
 
-		// 検証
-		assert.Len(t, actual, 2) // userIdのbillは2つあるので。
-		// Idを検証
-		assert.Equal(t, billId1, actual[0].Id())
-		assert.Equal(t, billId2, actual[1].Id())
-		// その他の要素の検証
-		expect := []*entities.BillAggregation{
-			billAgg1,
-			billAgg2,
-		}
-		for i, _ := range actual {
-			assertBillAgg(t, expect[i], actual[i])
-		}
+			// 検証
+			assert.Len(t, actual, 2) // userIdのbillは2つあるので。
+			// Idを検証
+			assert.Equal(t, billId1, actual[0].Id())
+			assert.Equal(t, billId2, actual[1].Id())
+			// その他の要素の検証
+			expect := []*entities.BillAggregation{
+				billAgg1,
+				billAgg2,
+			}
+			for i, _ := range actual {
+				assertBillAgg(t, expect[i], actual[i])
+			}
+		})
 
+		t.Run("一つのbillに複数のbillDetailがある場合そのようにデータが返却される", func(t *testing.T) {
+			////// 準備
+			// 使用権作成
+			rightToUse1Id, rightToUse2Id, userId := createRightToUseDataForTest()
+
+			// 請求データ作成
+			billAgg1 := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 1, 0, 10, 0, 0), userId)
+			err := billAgg1.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse1Id, decimal.NewFromInt(100)))
+			err = billAgg1.AddBillDetail(entities.NewBillingDetailEntity(2, rightToUse2Id, decimal.NewFromInt(1000)))
+			assert.NoError(t, err)
+
+			db, err := db_connection.GetConnection()
+			assert.NoError(t, err)
+			defer db.Db.Close()
+
+			// 請求データ保存
+			rep := NewBillRepository()
+			tran, err := db.Begin()
+			assert.NoError(t, err)
+			billId1, err := rep.Create(billAgg1, tran)
+			assert.NoError(t, err)
+			err = tran.Commit()
+			assert.NoError(t, err)
+
+			// データ取得
+			actual, err := rep.GetByUserId(userId, db)
+			assert.NoError(t, err)
+
+			// 検証
+			assert.Len(t, actual, 1) // userIdのbillは1つあるので。
+			// Idを検証
+			assert.Equal(t, billId1, actual[0].Id())
+			// その他の要素の検証
+			expect := []*entities.BillAggregation{
+				billAgg1,
+			}
+			for i, _ := range actual {
+				assertBillAgg(t, expect[i], actual[i])
+			}
+		})
 	})
 }
 

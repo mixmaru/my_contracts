@@ -165,6 +165,7 @@ func createBillAggsFromMappers(mappers []*BillAndBillDetailsMapper) ([]*entities
 	var billAgg *entities.BillAggregation
 	for _, record := range mappers {
 		if record.Id != prevId {
+			prevId = record.Id
 			// 前回ループで作ったbillAggがあればretBillAggsに追加する
 			if billAgg != nil {
 				retBillAggs = append(retBillAggs, billAgg)
