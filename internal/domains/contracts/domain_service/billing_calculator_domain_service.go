@@ -4,6 +4,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
+	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
 	"math"
@@ -14,14 +15,69 @@ type BillingCalculatorDomainService struct {
 	productRepository    interfaces.IProductRepository
 	contractRepository   interfaces.IContractRepository
 	rightToUseRepository interfaces.IRightToUseRepository
+	billRepository       interfaces.IBillRepository
 }
 
-func NewBillingCalculatorDomainService(productRepository interfaces.IProductRepository, contractRepository interfaces.IContractRepository, rightToUseRepository interfaces.IRightToUseRepository) *BillingCalculatorDomainService {
+func NewBillingCalculatorDomainService(productRepository interfaces.IProductRepository, contractRepository interfaces.IContractRepository, rightToUseRepository interfaces.IRightToUseRepository, billRepository interfaces.IBillRepository) *BillingCalculatorDomainService {
 	return &BillingCalculatorDomainService{
 		productRepository:    productRepository,
 		contractRepository:   contractRepository,
 		rightToUseRepository: rightToUseRepository,
+		billRepository:       billRepository,
 	}
+}
+
+// 渡した指定日を実行日として請求の実行をする
+func (b *BillingCalculatorDomainService) ExecuteBilling(executeDate time.Time, executor gorp.SqlExecutor) error {
+	// 対象使用権を取得する
+	rightToUses, err := b.rightToUseRepository.GetBillingTargetByBillingDate(executeDate, executor)
+	if err != nil {
+		return err
+	}
+
+	prevUserId := 0
+	var billAgg *entities.BillAggregation
+	orderNum := 0
+	for _, rightToUse := range rightToUses {
+
+		// userIdを取得
+		contract, _, _, err := b.contractRepository.GetById(rightToUse.ContractId(), executor)
+		if err != nil {
+			return err
+		}
+		userId := contract.UserId()
+
+		// userId毎にbillAggを作成する
+		if userId != prevUserId {
+			// 保存する
+			if billAgg != nil {
+				_, err = b.billRepository.Create(billAgg, executor)
+				if err != nil {
+					return err
+				}
+				orderNum = 0
+			}
+			billAgg = entities.NewBillingAggregation(executeDate, userId)
+			prevUserId = userId
+		}
+		orderNum += 1
+		amount, err := b.BillingAmount(rightToUse.Id(), executor)
+		if err != nil {
+			return err
+		}
+		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(orderNum, rightToUse.Id(), amount))
+		if err != nil {
+			return err
+		}
+	}
+	if billAgg != nil {
+		_, err = b.billRepository.Create(billAgg, executor)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (b *BillingCalculatorDomainService) BillingAmount(rightToUseId int, executor gorp.SqlExecutor) (decimal.Decimal, error) {
@@ -84,21 +140,25 @@ args
 	billingStartDate	課金開始日
 */
 func (b *BillingCalculatorDomainService) getUsageDate(validFrom, validTo, billingStartDate time.Time) (usageDateNum, fullBillingDateNum int) {
+	// jstで扱うようにする（そうしないと日割り計算の基準日がおかしくなる）
+	jst := utils.CreateJstLocation()
+	from := validFrom.In(jst)
+	to := validTo.In(jst)
 	// 使用権の開始日から1ヶ月後の同日までに存在する日数を算出
-	subDuration := validFrom.AddDate(0, 1, 0).Sub(validFrom)
+	subDuration := from.AddDate(0, 1, 0).Sub(from)
 	fullBillingDateNum = int(subDuration.Hours() / 24)
 
 	////// 使用権の課金対象期間を算出する
 	// 課金開始日を決定
 	var realBillingStartDate time.Time
-	if billingStartDate.After(validFrom) {
+	if billingStartDate.After(from) {
 		realBillingStartDate = billingStartDate
 	} else {
-		realBillingStartDate = validFrom
+		realBillingStartDate = from
 	}
 
 	// 課金対象日数を算出。時間を24で割って、余ったら切り上げ
-	billHours := validTo.Sub(realBillingStartDate).Hours()
+	billHours := to.Sub(realBillingStartDate).Hours()
 	usageDateNum = int(math.Ceil(billHours / float64(24)))
 
 	return usageDateNum, fullBillingDateNum

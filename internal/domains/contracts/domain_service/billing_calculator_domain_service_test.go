@@ -50,7 +50,12 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 	assert.NoError(t, err)
 
 	// ドメインサービスインスタンス化
-	billingDS := NewBillingCalculatorDomainService(repositories.NewProductRepository(), repositories.NewContractRepository(), repositories.NewRightToUseRepository())
+	billingDS := NewBillingCalculatorDomainService(
+		repositories.NewProductRepository(),
+		repositories.NewContractRepository(),
+		repositories.NewRightToUseRepository(),
+		repositories.NewBillRepository(),
+	)
 
 	t.Run("31日ある月", func(t *testing.T) {
 		t.Run("使用権の有効期間が契約の課金単位期間_月払いとか年払いとか_の満了期間だと満額が返る", func(t *testing.T) {
@@ -263,7 +268,7 @@ func createTestData(executor gorp.SqlExecutor, t *testing.T) (userId, rightToUse
 		user1Id,
 		product.Id(),
 		utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0),
-		utils.CreateJstTime(2020, 6, 11, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0),
 	)
 	contract1Id, err := contractRep.Create(contract1, executor)
 	assert.NoError(t, err)
@@ -297,11 +302,11 @@ func createTestData(executor gorp.SqlExecutor, t *testing.T) (userId, rightToUse
 
 func assertBill(t *testing.T, actual, expect *entities.BillAggregation) {
 	assert.NotZero(t, actual.Id())
-	assert.Equal(t, utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0).String(), actual.BillingDate().String())
+	assert.True(t, utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0).Equal(actual.BillingDate()))
 	assert.Equal(t, expect.UserId(), actual.UserId())
 	_, isNil, err := actual.PaymentConfirmedAt()
 	assert.NoError(t, err)
-	assert.Nil(t, isNil)
+	assert.True(t, isNil)
 	actualTotal := actual.TotalAmountExcludingTax()
 	expectTotal := expect.TotalAmountExcludingTax()
 	assert.Equal(t, expectTotal.String(), actualTotal.String())
@@ -309,19 +314,14 @@ func assertBill(t *testing.T, actual, expect *entities.BillAggregation) {
 	actualDetails := actual.BillDetails()
 	expectDetails := expect.BillDetails()
 	assert.Equal(t, len(expectDetails), len(actualDetails))
-	assert.NotZero(t, actualDetails[0].Id())
-	assert.Equal(t, expectDetails[0].OrderNum(), actualDetails[0].OrderNum())
-	assert.Equal(t, expectDetails[0].RightToUseId(), actualDetails[0].RightToUseId())
-	actualBillingAmount := actualDetails[0].BillingAmount()
-	expectBillingAmount := expectDetails[0].BillingAmount()
-	assert.Equal(t, expectBillingAmount.String(), actualBillingAmount.String())
-
-	assert.NotZero(t, actualDetails[1].Id())
-	assert.Equal(t, expectDetails[1].OrderNum(), actualDetails[1].OrderNum())
-	assert.Equal(t, expectDetails[1].RightToUseId(), actualDetails[1].RightToUseId())
-	actualBillingAmount = actualDetails[1].BillingAmount()
-	expectBillingAmount = expectDetails[1].BillingAmount()
-	assert.Equal(t, expectBillingAmount.String(), actualBillingAmount.String())
+	for i := range actualDetails {
+		assert.NotZero(t, actualDetails[i].Id())
+		assert.Equal(t, expectDetails[i].OrderNum(), actualDetails[i].OrderNum())
+		assert.Equal(t, expectDetails[i].RightToUseId(), actualDetails[i].RightToUseId())
+		actualBillingAmount := actualDetails[i].BillingAmount()
+		expectBillingAmount := expectDetails[i].BillingAmount()
+		assert.Equal(t, expectBillingAmount.String(), actualBillingAmount.String())
+	}
 }
 
 func TestBillingCalculatorDomainService_ExecuteBilling(t *testing.T) {
@@ -339,8 +339,9 @@ func TestBillingCalculatorDomainService_ExecuteBilling(t *testing.T) {
 				repositories.NewProductRepository(),
 				repositories.NewContractRepository(),
 				repositories.NewRightToUseRepository(),
+				repositories.NewBillRepository(),
 			)
-			err = ds.ExecuteBilling(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0))
+			err = ds.ExecuteBilling(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0), tran)
 			assert.NoError(t, err)
 
 			////// 検証（billingデータを取得して検証する。2ユーザーの6/1~6/30, 7/1~7/31の請求分がbillsに作成される）
