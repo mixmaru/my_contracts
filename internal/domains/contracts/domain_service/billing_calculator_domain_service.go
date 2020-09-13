@@ -35,6 +35,20 @@ func (b *BillingCalculatorDomainService) ExecuteBilling(executeDate time.Time, e
 		return err
 	}
 
+	billAggs, err := b.createBillAggligationsFromRightToUseEntities(executeDate, rightToUses, executor)
+
+	for _, billAgg := range billAggs {
+		_, err := b.billRepository.Create(billAgg, executor)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (b *BillingCalculatorDomainService) createBillAggligationsFromRightToUseEntities(executeDate time.Time, rightToUses []*entities.RightToUseEntity, executor gorp.SqlExecutor) ([]*entities.BillAggregation, error) {
+	var retBillAggs []*entities.BillAggregation
+
 	prevUserId := 0
 	var billAgg *entities.BillAggregation
 	orderNum := 0
@@ -43,41 +57,29 @@ func (b *BillingCalculatorDomainService) ExecuteBilling(executeDate time.Time, e
 		// userIdを取得
 		contract, _, _, err := b.contractRepository.GetById(rightToUse.ContractId(), executor)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		userId := contract.UserId()
 
 		// userId毎にbillAggを作成する
 		if userId != prevUserId {
-			// 保存する
-			if billAgg != nil {
-				_, err = b.billRepository.Create(billAgg, executor)
-				if err != nil {
-					return err
-				}
-				orderNum = 0
-			}
-			billAgg = entities.NewBillingAggregation(executeDate, userId)
+			orderNum = 0
 			prevUserId = userId
+			billAgg = entities.NewBillingAggregation(executeDate, userId)
+			retBillAggs = append(retBillAggs, billAgg)
 		}
 		orderNum += 1
 		amount, err := b.BillingAmount(rightToUse.Id(), executor)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(orderNum, rightToUse.Id(), amount))
 		if err != nil {
-			return err
-		}
-	}
-	if billAgg != nil {
-		_, err = b.billRepository.Create(billAgg, executor)
-		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return retBillAggs, nil
 }
 
 func (b *BillingCalculatorDomainService) BillingAmount(rightToUseId int, executor gorp.SqlExecutor) (decimal.Decimal, error) {
