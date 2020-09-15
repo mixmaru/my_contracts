@@ -18,9 +18,9 @@ func TestBillRepository_Create(t *testing.T) {
 
 		// 請求データ作成
 		billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 31, 0, 10, 0, 0), userId)
-		err := billAgg.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse1Id, decimal.NewFromInt(100)))
+		err := billAgg.AddBillDetail(entities.NewBillingDetailEntity(rightToUse1Id, decimal.NewFromInt(100)))
 		assert.NoError(t, err)
-		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(2, rightToUse2Id, decimal.NewFromInt(1000)))
+		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(rightToUse2Id, decimal.NewFromInt(1000)))
 		assert.NoError(t, err)
 
 		db, err := db_connection.GetConnection()
@@ -82,9 +82,9 @@ func TestBillRepository_GetById(t *testing.T) {
 
 		// 請求データ作成
 		billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 31, 0, 10, 0, 0), userId)
-		err := billAgg.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse1Id, decimal.NewFromInt(100)))
+		err := billAgg.AddBillDetail(entities.NewBillingDetailEntity(rightToUse1Id, decimal.NewFromInt(100)))
 		assert.NoError(t, err)
-		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(2, rightToUse2Id, decimal.NewFromInt(1000)))
+		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(rightToUse2Id, decimal.NewFromInt(1000)))
 		assert.NoError(t, err)
 
 		db, err := db_connection.GetConnection()
@@ -119,11 +119,11 @@ func TestBillRepository_GetByUserId(t *testing.T) {
 
 			// 請求データ作成
 			billAgg1 := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 1, 0, 10, 0, 0), userId)
-			err := billAgg1.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse1Id, decimal.NewFromInt(100)))
+			err := billAgg1.AddBillDetail(entities.NewBillingDetailEntity(rightToUse1Id, decimal.NewFromInt(100)))
 			assert.NoError(t, err)
 
 			billAgg2 := entities.NewBillingAggregation(utils.CreateJstTime(2020, 9, 1, 0, 10, 0, 0), userId)
-			err = billAgg2.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse2Id, decimal.NewFromInt(1000)))
+			err = billAgg2.AddBillDetail(entities.NewBillingDetailEntity(rightToUse2Id, decimal.NewFromInt(1000)))
 			assert.NoError(t, err)
 
 			db, err := db_connection.GetConnection()
@@ -155,7 +155,7 @@ func TestBillRepository_GetByUserId(t *testing.T) {
 				billAgg1,
 				billAgg2,
 			}
-			for i, _ := range actual {
+			for i := range actual {
 				assertBillAgg(t, expect[i], actual[i])
 			}
 		})
@@ -167,8 +167,8 @@ func TestBillRepository_GetByUserId(t *testing.T) {
 
 			// 請求データ作成
 			billAgg1 := entities.NewBillingAggregation(utils.CreateJstTime(2020, 8, 1, 0, 10, 0, 0), userId)
-			err := billAgg1.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse1Id, decimal.NewFromInt(100)))
-			err = billAgg1.AddBillDetail(entities.NewBillingDetailEntity(2, rightToUse2Id, decimal.NewFromInt(1000)))
+			err := billAgg1.AddBillDetail(entities.NewBillingDetailEntity(rightToUse1Id, decimal.NewFromInt(100)))
+			err = billAgg1.AddBillDetail(entities.NewBillingDetailEntity(rightToUse2Id, decimal.NewFromInt(1000)))
 			assert.NoError(t, err)
 
 			db, err := db_connection.GetConnection()
@@ -196,7 +196,7 @@ func TestBillRepository_GetByUserId(t *testing.T) {
 			expect := []*entities.BillAggregation{
 				billAgg1,
 			}
-			for i, _ := range actual {
+			for i := range actual {
 				assertBillAgg(t, expect[i], actual[i])
 			}
 		})
@@ -221,7 +221,7 @@ func assertBillAgg(t *testing.T, expect, actual *entities.BillAggregation) {
 	expectDetails := expect.BillDetails()
 	actualDetails := actual.BillDetails()
 	assert.Equal(t, len(expectDetails), len(actualDetails))
-	for i, _ := range expectDetails {
+	for i := range expectDetails {
 		assert.NotZero(t, actualDetails[i].Id())
 		assert.Equal(t, expectDetails[i].RightToUseId(), actualDetails[i].RightToUseId())
 		expectBillingAmount := expectDetails[i].BillingAmount()

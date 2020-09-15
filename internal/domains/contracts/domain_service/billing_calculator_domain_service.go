@@ -54,7 +54,6 @@ func (b *BillingCalculatorDomainService) createBillAggligationsFromRightToUseEnt
 
 	prevUserId := 0
 	var billAgg *entities.BillAggregation
-	orderNum := 0
 	for _, rightToUse := range rightToUses {
 
 		// userIdを取得
@@ -66,17 +65,15 @@ func (b *BillingCalculatorDomainService) createBillAggligationsFromRightToUseEnt
 
 		// userId毎にbillAggを作成する
 		if userId != prevUserId {
-			orderNum = 0
 			prevUserId = userId
 			billAgg = entities.NewBillingAggregation(executeDate, userId)
 			retBillAggs = append(retBillAggs, billAgg)
 		}
-		orderNum += 1
 		amount, err := b.BillingAmount(rightToUse.Id(), executor)
 		if err != nil {
 			return nil, err
 		}
-		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(orderNum, rightToUse.Id(), amount))
+		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(rightToUse.Id(), amount))
 		if err != nil {
 			return nil, err
 		}

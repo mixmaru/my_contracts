@@ -316,7 +316,6 @@ func assertBill(t *testing.T, actual, expect *entities.BillAggregation) {
 	assert.Equal(t, len(expectDetails), len(actualDetails))
 	for i := range actualDetails {
 		assert.NotZero(t, actualDetails[i].Id())
-		assert.Equal(t, expectDetails[i].OrderNum(), actualDetails[i].OrderNum())
 		assert.Equal(t, expectDetails[i].RightToUseId(), actualDetails[i].RightToUseId())
 		actualBillingAmount := actualDetails[i].BillingAmount()
 		expectBillingAmount := expectDetails[i].BillingAmount()
@@ -356,9 +355,9 @@ func TestBillingCalculatorDomainService_ExecuteBilling(t *testing.T) {
 				utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
 				user1Id,
 			)
-			err = expect.AddBillDetail(entities.NewBillingDetailEntity(1, rightToUse1AId, decimal.NewFromInt(1000)))
+			err = expect.AddBillDetail(entities.NewBillingDetailEntity(rightToUse1AId, decimal.NewFromInt(1000)))
 			assert.NoError(t, err)
-			err = expect.AddBillDetail(entities.NewBillingDetailEntity(2, rightToUse1BId, decimal.NewFromInt(1000)))
+			err = expect.AddBillDetail(entities.NewBillingDetailEntity(rightToUse1BId, decimal.NewFromInt(1000)))
 			assert.NoError(t, err)
 
 			assertBill(t, actual1[0], expect)
