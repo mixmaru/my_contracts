@@ -36,3 +36,27 @@ func NewContractApplicationService() *ContractApplicationService {
 func NewContractApplicationServiceWithMock(contractRepository interfaces.IContractRepository) *ContractApplicationService {
 	return &ContractApplicationService{ContractRepository: contractRepository}
 }
+
+// BillApplicationService
+func NewBillApplicationService() *BillApplicationService {
+	return &BillApplicationService{
+		productRepository:    repositories.NewProductRepository(),
+		contractRepository:   repositories.NewContractRepository(),
+		rightToUseRepository: repositories.NewRightToUseRepository(),
+		billRepository:       repositories.NewBillRepository(),
+	}
+}
+
+func NewBillApplicationServiceWithMock(
+	productRepository interfaces.IProductRepository,
+	contractRepository interfaces.IContractRepository,
+	rightToUseRepository interfaces.IRightToUseRepository,
+	billRepository interfaces.IBillRepository,
+) *BillApplicationService {
+	return &BillApplicationService{
+		productRepository:    productRepository,
+		contractRepository:   contractRepository,
+		rightToUseRepository: rightToUseRepository,
+		billRepository:       billRepository,
+	}
+}
