@@ -36,11 +36,13 @@ func (b *BillRepository) Create(billAggregation *entities.BillAggregation, execu
 	// マッパー用意
 	billDetails := billAggregation.BillDetails()
 	billDetailMaps := make([]interface{}, 0, len(billDetails))
+	orderNum := 0
 	for _, detail := range billDetails {
+		orderNum += 1
 		detailMap := data_mappers.BillDetailMapper{}
 		detailMap.BillingAmount = detail.BillingAmount()
 		detailMap.RightToUseId = detail.RightToUseId()
-		detailMap.OrderNum = detail.OrderNum()
+		detailMap.OrderNum = orderNum
 		detailMap.BillId = billMap.Id
 		billDetailMaps = append(billDetailMaps, &detailMap)
 	}
@@ -70,7 +72,6 @@ func (b *BillRepository) GetById(id int, executor gorp.SqlExecutor) (aggregation
 	for _, detail := range mappers {
 		entity := entities.NewBillingDetailsEntityWithData(
 			detail.DetailId,
-			detail.DetailOrderNum,
 			detail.DetailRightToUseId,
 			detail.DetailBillingAmount,
 			detail.DetailCreatedAt,
@@ -184,7 +185,6 @@ func createBillAggsFromMappers(mappers []*BillAndBillDetailsMapper) ([]*entities
 		// detailsを作ってbillAggに追加する
 		detail := entities.NewBillingDetailsEntityWithData(
 			record.DetailId,
-			record.DetailOrderNum,
 			record.DetailRightToUseId,
 			record.DetailBillingAmount,
 			record.DetailCreatedAt,

@@ -22,7 +22,6 @@ func (b *BillDetailMapper) SetDataToEntity(entity interface{}) error {
 	}
 	value.LoadData(
 		b.Id,
-		b.OrderNum,
 		b.RightToUseId,
 		b.BillingAmount,
 		b.CreatedAt,

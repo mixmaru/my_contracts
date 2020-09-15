@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/pkg/errors"
-	"sort"
 	"time"
 )
 
@@ -74,21 +73,15 @@ func (b *BillAggregation) SetPaymentConfirmedAt(confirmedAt time.Time) error {
 }
 
 func (b *BillAggregation) AddBillDetail(billDetailEntity *BillDetailEntity) error {
-	// 同じorderNumが既にあればエラーを返す
-	for _, billDetail := range b.billDetails {
-		if billDetail.orderNum == billDetailEntity.orderNum {
-			return errors.Errorf("orderNumは既に存在してます。billDetailEntity: %+v", billDetailEntity)
+	// 同じdetailが既に存在していたらエラー
+	for _, detail := range b.billDetails {
+		if detail == billDetailEntity {
+			return errors.Errorf("既に存在するbillDetailEntityをaddしようとしました。billDetailEntity: %+v", billDetailEntity)
 		}
 	}
 
 	// 追加する
 	b.billDetails = append(b.billDetails, billDetailEntity)
-
-	// ソートする
-	sort.Slice(b.billDetails, func(i, j int) bool {
-		return b.billDetails[i].OrderNum() < b.billDetails[j].OrderNum()
-	})
-
 	return nil
 }
 

@@ -9,16 +9,16 @@ import (
 )
 
 func TestBillAggregation_AddBillDetail(t *testing.T) {
-	t.Run("BillDetailエンティティを追加できる_順番はorderNum順になる", func(t *testing.T) {
+	t.Run("BillDetailエンティティを追加できる_順番は追加順になる", func(t *testing.T) {
 		// 準備
 		billAggregation := NewBillingAggregation(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0), 1)
-		billDetailEntity0 := NewBillingDetailEntity(1, 1, decimal.NewFromInt(100))
-		billDetailEntity1 := NewBillingDetailEntity(2, 2, decimal.NewFromInt(100))
+		billDetailEntity0 := NewBillingDetailEntity(1, decimal.NewFromInt(100))
+		billDetailEntity1 := NewBillingDetailEntity(2, decimal.NewFromInt(100))
 
 		// 実行
-		err := billAggregation.AddBillDetail(billDetailEntity1)
+		err := billAggregation.AddBillDetail(billDetailEntity0)
 		assert.NoError(t, err)
-		err = billAggregation.AddBillDetail(billDetailEntity0)
+		err = billAggregation.AddBillDetail(billDetailEntity1)
 		assert.NoError(t, err)
 
 		// 検証
@@ -27,27 +27,11 @@ func TestBillAggregation_AddBillDetail(t *testing.T) {
 		assert.Equal(t, billDetailEntity1, billAggregation.billDetails[1])
 	})
 
-	t.Run("追加するBillingDetailEntityのOrderNumが重複するとエラーになる", func(t *testing.T) {
+	t.Run("同じBillingDetailEntityを2回追加するとエラーになる", func(t *testing.T) {
 		// 準備
 		billAggregation := NewBillingAggregation(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0), 1)
-		billDetailEntity0 := NewBillingDetailEntity(1, 1, decimal.NewFromInt(100))
-		billDetailEntity1 := NewBillingDetailEntity(2, 2, decimal.NewFromInt(100))
-		billDetailEntity2 := NewBillingDetailEntity(2, 3, decimal.NewFromInt(100))
-
-		// 実行・検証
-		err := billAggregation.AddBillDetail(billDetailEntity1)
-		assert.NoError(t, err)
-		err = billAggregation.AddBillDetail(billDetailEntity0)
-		assert.NoError(t, err)
-		err = billAggregation.AddBillDetail(billDetailEntity2)
-		assert.Error(t, err)
-	})
-
-	t.Run("同じBillingDetailEntityを2回追加するとエラーになる_orderNumが重複して結果的に実現できてる", func(t *testing.T) {
-		// 準備
-		billAggregation := NewBillingAggregation(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0), 1)
-		billDetailEntity0 := NewBillingDetailEntity(1, 1, decimal.NewFromInt(100))
-		billDetailEntity1 := NewBillingDetailEntity(2, 2, decimal.NewFromInt(100))
+		billDetailEntity0 := NewBillingDetailEntity(1, decimal.NewFromInt(100))
+		billDetailEntity1 := NewBillingDetailEntity(2, decimal.NewFromInt(100))
 
 		err := billAggregation.AddBillDetail(billDetailEntity0)
 		assert.NoError(t, err)
@@ -64,8 +48,8 @@ func TestBillAggregation_BillDetails(t *testing.T) {
 	t.Run("BillDetailエンティティスライスを取得できる　ただし別メモリにコピーされたやつ　変更されないために", func(t *testing.T) {
 		// 準備
 		billAggregation := NewBillingAggregation(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0), 1)
-		billDetailEntity0 := NewBillingDetailEntity(1, 1, decimal.NewFromInt(100))
-		billDetailEntity1 := NewBillingDetailEntity(2, 2, decimal.NewFromInt(100))
+		billDetailEntity0 := NewBillingDetailEntity(1, decimal.NewFromInt(100))
+		billDetailEntity1 := NewBillingDetailEntity(2, decimal.NewFromInt(100))
 		err := billAggregation.AddBillDetail(billDetailEntity0)
 		assert.NoError(t, err)
 		err = billAggregation.AddBillDetail(billDetailEntity1)
@@ -117,8 +101,8 @@ func TestBillAggregation_TotalAmountExcludingTax(t *testing.T) {
 	t.Run("税抜き請求合計金額を取得できる", func(t *testing.T) {
 		// 準備
 		billAggregation := NewBillingAggregation(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0), 1)
-		billDetailEntity0 := NewBillingDetailEntity(1, 1, decimal.NewFromInt(100))
-		billDetailEntity1 := NewBillingDetailEntity(2, 2, decimal.NewFromInt(1000))
+		billDetailEntity0 := NewBillingDetailEntity(1, decimal.NewFromInt(100))
+		billDetailEntity1 := NewBillingDetailEntity(2, decimal.NewFromInt(1000))
 		err := billAggregation.AddBillDetail(billDetailEntity0)
 		assert.NoError(t, err)
 		err = billAggregation.AddBillDetail(billDetailEntity1)

@@ -223,7 +223,6 @@ func assertBillAgg(t *testing.T, expect, actual *entities.BillAggregation) {
 	assert.Equal(t, len(expectDetails), len(actualDetails))
 	for i, _ := range expectDetails {
 		assert.NotZero(t, actualDetails[i].Id())
-		assert.Equal(t, expectDetails[i].OrderNum(), actualDetails[i].OrderNum())
 		assert.Equal(t, expectDetails[i].RightToUseId(), actualDetails[i].RightToUseId())
 		expectBillingAmount := expectDetails[i].BillingAmount()
 		actualBillingAmount := actualDetails[i].BillingAmount()
