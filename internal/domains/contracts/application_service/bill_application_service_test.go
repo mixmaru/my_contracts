@@ -48,6 +48,6 @@ func TestBillApplicationService_ExecuteBilling(t *testing.T) {
 		billDetails := expectBill[0].BillDetails()
 		assert.Len(t, billDetails, 1)
 		billingAmount := billDetails[0].BillingAmount()
-		assert.Equal(t, "1234", billingAmount.String())
+		assert.Equal(t, "1234", billingAmount.String()) // 6/2 ~ 7/2が使用権の期間になってるので日割りにはならない
 	})
 }
