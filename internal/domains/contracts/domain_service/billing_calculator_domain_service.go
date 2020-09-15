@@ -28,6 +28,9 @@ func NewBillingCalculatorDomainService(productRepository interfaces.IProductRepo
 }
 
 // 渡した指定日を実行日として請求の実行をする
+//
+// ※もしデータ量がもの凄く多かったら、長期間ロックがかかるかも。それであれば、1件1件取得 => commitを長時間続けたほうがいいのかもしれない。
+// その場合、長時間処理時間がかかるので、別スレッドとかで非同期に動かすことを検討する
 func (b *BillingCalculatorDomainService) ExecuteBilling(executeDate time.Time, executor gorp.SqlExecutor) error {
 	// 対象使用権を取得する
 	rightToUses, err := b.rightToUseRepository.GetBillingTargetByBillingDate(executeDate, executor)
