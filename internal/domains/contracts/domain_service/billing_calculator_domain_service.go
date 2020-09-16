@@ -1,6 +1,7 @@
 package domain_service
 
 import (
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
@@ -31,11 +32,11 @@ func NewBillingCalculatorDomainService(productRepository interfaces.IProductRepo
 //
 // ※もしデータ量がもの凄く多かったら、長期間ロックがかかるかも。それであれば、1件1件取得 => commitを長時間続けたほうがいいのかもしれない。
 // その場合、長時間処理時間がかかるので、別スレッドとかで非同期に動かすことを検討する
-func (b *BillingCalculatorDomainService) ExecuteBilling(executeDate time.Time, executor gorp.SqlExecutor) error {
+func (b *BillingCalculatorDomainService) ExecuteBilling(executeDate time.Time, executor gorp.SqlExecutor) ([]data_transfer_objects.BillDto, error) {
 	// 対象使用権を取得する
 	rightToUses, err := b.rightToUseRepository.GetBillingTargetByBillingDate(executeDate, executor)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	billAggs, err := b.createBillAggligationsFromRightToUseEntities(executeDate, rightToUses, executor)
@@ -43,10 +44,10 @@ func (b *BillingCalculatorDomainService) ExecuteBilling(executeDate time.Time, e
 	for _, billAgg := range billAggs {
 		_, err := b.billRepository.Create(billAgg, executor)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func (b *BillingCalculatorDomainService) createBillAggligationsFromRightToUseEntities(executeDate time.Time, rightToUses []*entities.RightToUseEntity, executor gorp.SqlExecutor) ([]*entities.BillAggregation, error) {
