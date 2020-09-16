@@ -4,7 +4,6 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
-	"github.com/mixmaru/my_contracts/internal/lib/decimal"
 	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
@@ -258,12 +257,15 @@ func createTestData(executor gorp.SqlExecutor, t *testing.T) (userId, rightToUse
 	rightToUseRep := repositories.NewRightToUseRepository()
 	userRep := repositories.NewUserRepository()
 
-	////// 準備（2ユーザーに対して、6/1~6/30, 7/1~7/31, 8/1~8/31の未請求使用権データを作成する）
+	////// 準備（1ユーザーに対して、6/1~6/30, 7/1~7/31, 8/1~8/31の未請求使用権データを作成する）
+	// 商品登録
 	product := createProduct("1000")
+	// user登録
 	user1, err := entities.NewUserIndividualEntity("ユーザー1")
 	assert.NoError(t, err)
 	user1Id, err := userRep.SaveUserIndividual(user1, executor)
-
+	assert.NoError(t, err)
+	// 契約作成
 	contract1 := entities.NewContractEntity(
 		user1Id,
 		product.Id(),
@@ -272,7 +274,7 @@ func createTestData(executor gorp.SqlExecutor, t *testing.T) (userId, rightToUse
 	)
 	contract1Id, err := contractRep.Create(contract1, executor)
 	assert.NoError(t, err)
-
+	// 使用権作成
 	rightToUse1A := entities.NewRightToUseEntity(
 		contract1Id,
 		utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0),
@@ -280,7 +282,7 @@ func createTestData(executor gorp.SqlExecutor, t *testing.T) (userId, rightToUse
 	)
 	rightToUse1AId, err := rightToUseRep.Create(rightToUse1A, executor)
 	assert.NoError(t, err)
-
+	// 使用権作成
 	rightToUse1B := entities.NewRightToUseEntity(
 		contract1Id,
 		utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
@@ -288,7 +290,7 @@ func createTestData(executor gorp.SqlExecutor, t *testing.T) (userId, rightToUse
 	)
 	rightToUse1BId, err := rightToUseRep.Create(rightToUse1B, executor)
 	assert.NoError(t, err)
-
+	// 使用権作成
 	rightToUse1C := entities.NewRightToUseEntity(
 		contract1Id,
 		utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0),
@@ -340,27 +342,34 @@ func TestBillingCalculatorDomainService_ExecuteBilling(t *testing.T) {
 				repositories.NewRightToUseRepository(),
 				repositories.NewBillRepository(),
 			)
-			err = ds.ExecuteBilling(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0), tran)
+			billDtos, err := ds.ExecuteBilling(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0), tran)
 			assert.NoError(t, err)
 
-			////// 検証（billingデータを取得して検証する。2ユーザーの6/1~6/30, 7/1~7/31の請求分がbillsに作成される）
-
-			billRep := repositories.NewBillRepository()
-			actual1, err := billRep.GetByUserId(user1Id, tran)
-			assert.NoError(t, err)
-			err = tran.Commit()
-			assert.NoError(t, err)
-
-			expect := entities.NewBillingAggregation(
-				utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
-				user1Id,
-			)
-			err = expect.AddBillDetail(entities.NewBillingDetailEntity(rightToUse1AId, decimal.NewFromInt(1000)))
-			assert.NoError(t, err)
-			err = expect.AddBillDetail(entities.NewBillingDetailEntity(rightToUse1BId, decimal.NewFromInt(1000)))
-			assert.NoError(t, err)
-
-			assertBill(t, actual1[0], expect)
+			////// 検証（billingデータを取得して検証する。1ユーザーの6/1~6/30, 7/1~7/31の請求分がbillsに作成される）
+			assert.Len(t, billDtos, 1)
+			assert.NotZero(t, billDtos[0].Id)
+			assert.NotZero(t, billDtos[0].CreatedAt)
+			assert.NotZero(t, billDtos[0].UpdatedAt)
+			assert.Equal(t, user1Id, billDtos[0].UserId)
+			assert.False(t, billDtos[0].PaymentConfirmed)
+			assert.Zero(t, billDtos[0].PaymentConfirmedAt)
+			assert.True(t, billDtos[0].BillingDate.Equal(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0)))
+			assert.Equal(t, "2000", billDtos[0].TotalAmountExcludingTax)
+			// details
+			actualDetails := billDtos[0].BillDetails
+			assert.Len(t, actualDetails, 2)
+			// detail1つめ
+			assert.NotZero(t, actualDetails[0].Id)
+			assert.NotZero(t, actualDetails[0].CreatedAt)
+			assert.NotZero(t, actualDetails[0].UpdatedAt)
+			assert.Equal(t, "1000", actualDetails[0].BillingAmount)
+			assert.Equal(t, rightToUse1AId, actualDetails[0].RightToUseId)
+			// detail2つめ
+			assert.NotZero(t, actualDetails[1].Id)
+			assert.NotZero(t, actualDetails[1].CreatedAt)
+			assert.NotZero(t, actualDetails[1].UpdatedAt)
+			assert.Equal(t, "1000", actualDetails[1].BillingAmount)
+			assert.Equal(t, rightToUse1BId, actualDetails[1].RightToUseId)
 		})
 	})
 }
