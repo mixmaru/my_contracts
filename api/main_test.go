@@ -6,6 +6,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
+	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -723,5 +724,77 @@ func TestMain_getContract(t *testing.T) {
 		}
 		assert.Equal(t, http.StatusNotFound, rec.Code)
 		assert.Equal(t, expect, jsonValues)
+	})
+}
+
+func TestMain_executeBilling(t *testing.T) {
+	router := newRouter()
+	t.Run("指定した日付を基準日にして請求実行を行う", func(t *testing.T) {
+		////// 準備（商品、ユーザー、契約、使用権を作成する）
+		// user作成
+		userApp := application_service.NewUserApplicationService()
+		user, validErrors, err := userApp.RegisterUserIndividual("請求実行バッチapiテスト用顧客")
+		assert.NoError(t, err)
+		assert.Len(t, validErrors, 0)
+		// 商品作成
+		productApp := application_service.NewProductApplicationService()
+		product, validErrors, err := productApp.Register(utils.CreateUniqProductNameForTest(), "10000")
+		assert.NoError(t, err)
+		assert.Len(t, validErrors, 0)
+		// 契約作成（使用権も内部で作成されている）
+		contractApp := application_service.NewContractApplicationService()
+		_, validErrors, err = contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 6, 1, 12, 30, 26, 111111))
+		assert.NoError(t, err)
+		assert.Len(t, validErrors, 0)
+
+		// リクエスト実行
+		req := httptest.NewRequest("POST", "/batches/bills/billing?date=20200602", nil)
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		////// 検証
+		assert.Equal(t, http.StatusCreated, rec.Code)
+		// jsonパース
+		var registeredBills []*data_transfer_objects.BillDto
+		err = json.Unmarshal(rec.Body.Bytes(), &registeredBills)
+		assert.NoError(t, err)
+
+		expectBills := []data_transfer_objects.BillDto{
+			{
+				BillingDate:             utils.CreateJstTime(2020, 6, 2, 0, 0, 0, 0),
+				UserId:                  user.Id,
+				PaymentConfirmed:        false,
+				PaymentConfirmedAt:      time.Time{},
+				TotalAmountExcludingTax: "10000",
+				BillDetails: []data_transfer_objects.BillDetailDto{
+					data_transfer_objects.BillDetailDto{
+						BillingAmount: "10000",
+					},
+				},
+			},
+		}
+		assert.Len(t, registeredBills, 1)
+		assert.NotZero(t, registeredBills[0].Id)
+		assert.NotZero(t, registeredBills[0].CreatedAt)
+		assert.NotZero(t, registeredBills[0].UpdatedAt)
+		assert.Equal(t, expectBills[0].UserId, registeredBills[0].UserId)
+		assert.Equal(t, expectBills[0].PaymentConfirmed, registeredBills[0].PaymentConfirmed)
+		assert.True(t, registeredBills[0].PaymentConfirmedAt.Equal(expectBills[0].PaymentConfirmedAt))
+		assert.Equal(t, expectBills[0].TotalAmountExcludingTax, registeredBills[0].TotalAmountExcludingTax)
+		// details
+		actualDetails := registeredBills[0].BillDetails
+		expectDetails := expectBills[0].BillDetails
+		assert.Len(t, actualDetails, 1)
+		assert.NotZero(t, actualDetails[0].Id)
+		assert.NotZero(t, actualDetails[0].CreatedAt)
+		assert.NotZero(t, actualDetails[0].UpdatedAt)
+		assert.Equal(t, expectDetails[0].BillingAmount, actualDetails[0].BillingAmount)
+	})
+
+	t.Run("指定日付がなければ当日指定で請求実行を行う", func(t *testing.T) {
+	})
+
+	t.Run("指定日付のフォーマットがYYYYMMDDでなければエラーになる", func(t *testing.T) {
 	})
 }
