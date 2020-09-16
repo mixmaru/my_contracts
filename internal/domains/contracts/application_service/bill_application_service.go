@@ -1,6 +1,7 @@
 package application_service
 
 import (
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/domain_service"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
@@ -16,22 +17,22 @@ type BillApplicationService struct {
 }
 
 // 渡した指定日を実行日として請求の実行をする
-func (b *BillApplicationService) ExecuteBilling(executeDate time.Time) error {
+func (b *BillApplicationService) ExecuteBilling(executeDate time.Time) ([]data_transfer_objects.BillDto, error) {
 	db, err := db_connection.GetConnection()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer db.Db.Close()
 	tran, err := db.Begin()
 	billDomain := domain_service.NewBillingCalculatorDomainService(b.productRepository, b.contractRepository, b.rightToUseRepository, b.billRepository)
-	err = billDomain.ExecuteBilling(executeDate, tran)
+	billDtos, err := billDomain.ExecuteBilling(executeDate, tran)
 	if err != nil {
 		tran.Rollback()
-		return err
+		return nil, err
 	}
 	err = tran.Commit()
 	if err != nil {
-		return errors.Wrapf(err, "コミットに失敗しました。")
+		return nil, errors.Wrapf(err, "コミットに失敗しました。")
 	}
-	return nil
+	return billDtos, nil
 }
