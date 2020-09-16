@@ -351,11 +351,11 @@ func executeBilling(c echo.Context) error {
 	}
 
 	billApp := application_service.NewBillApplicationService()
-	err = billApp.ExecuteBilling(executeDate)
+	billDtos, err := billApp.ExecuteBilling(executeDate)
 	if err != nil {
 		logger.Sugar().Errorw("請求実行に失敗。", "executeDate", executeDate, "err", err)
 		c.Error(err)
 		return err
 	}
-	return c.JSON(http.StatusCreated, []int{})
+	return c.JSON(http.StatusCreated, billDtos)
 }
