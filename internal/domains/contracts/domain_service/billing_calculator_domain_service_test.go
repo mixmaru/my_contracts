@@ -328,21 +328,28 @@ func assertBill(t *testing.T, actual, expect *entities.BillAggregation) {
 func TestBillingCalculatorDomainService_ExecuteBilling(t *testing.T) {
 	t.Run("渡した日時を実行日として_請求を実行する（billsとbill_detailsデータを作成する）", func(t *testing.T) {
 		t.Run("2020/7/1を渡すと_7/1時点で使用権が開始されていて克つ_契約の課金開始日以降である使用権の使用量が請求される", func(t *testing.T) {
-			db, err := db_connection.GetConnection()
-			assert.NoError(t, err)
-			tran, err := db.Begin()
-
-			// テストデータ作成
-			user1Id, rightToUse1AId, rightToUse1BId, _ := createTestData(tran, t)
-
-			////// 実行
 			ds := NewBillingCalculatorDomainService(
 				repositories.NewProductRepository(),
 				repositories.NewContractRepository(),
 				repositories.NewRightToUseRepository(),
 				repositories.NewBillRepository(),
 			)
+
+			db, err := db_connection.GetConnection()
+			assert.NoError(t, err)
+			tran, err := db.Begin()
+
+			// 事前に同日で実行してすべて請求実行済にしておく。テストのために。
+			_, err = ds.ExecuteBilling(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0), tran)
+			assert.NoError(t, err)
+
+			// テストデータ作成
+			user1Id, rightToUse1AId, rightToUse1BId, _ := createTestData(tran, t)
+
+			////// 実行
 			billDtos, err := ds.ExecuteBilling(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0), tran)
+			assert.NoError(t, err)
+			err = tran.Commit()
 			assert.NoError(t, err)
 
 			////// 検証（billingデータを取得して検証する。1ユーザーの6/1~6/30, 7/1~7/31の請求分がbillsに作成される）
