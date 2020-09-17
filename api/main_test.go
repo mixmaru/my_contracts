@@ -749,13 +749,18 @@ func createTestDate(t *testing.T) (data_transfer_objects.UserIndividualDto, data
 func TestMain_executeBilling(t *testing.T) {
 	router := newRouter()
 	t.Run("指定した日付を基準日にして請求実行を行い作成されたbillデータを返却する", func(t *testing.T) {
+		// 事前に請求実行してきれいにしておく
+		req := httptest.NewRequest("POST", "/batches/bills/billing?date=20200602", nil)
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
 		////// 準備（商品、ユーザー、契約、使用権を作成する）
 		user, _, _ := createTestDate(t)
 
 		// リクエスト実行
-		req := httptest.NewRequest("POST", "/batches/bills/billing?date=20200602", nil)
+		req = httptest.NewRequest("POST", "/batches/bills/billing?date=20200602", nil)
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-		rec := httptest.NewRecorder()
+		rec = httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
 
 		////// 検証
@@ -798,13 +803,18 @@ func TestMain_executeBilling(t *testing.T) {
 	})
 
 	t.Run("指定日付がなければ当日指定で請求実行を行い作成されたbillデータを返却する", func(t *testing.T) {
+		// 事前に請求実行してきれいにしておく
+		req := httptest.NewRequest("POST", "/batches/bills/billing", nil)
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
 		////// 準備（商品、ユーザー、契約、使用権を作成する）
 		user, _, _ := createTestDate(t)
 
 		// リクエスト実行（日付指定なし。上記で新たに作成された使用権の請求データが作成されるはず）
-		req := httptest.NewRequest("POST", "/batches/bills/billing", nil)
+		req = httptest.NewRequest("POST", "/batches/bills/billing", nil)
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-		rec := httptest.NewRecorder()
+		rec = httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
 
 		////// 検証
@@ -847,10 +857,15 @@ func TestMain_executeBilling(t *testing.T) {
 	})
 
 	t.Run("作成されたbillデータがなければ（対象請求がなければ）空配列が返る", func(t *testing.T) {
-		// リクエスト実行（日付をめっちゃ過去にして実行 => 請求が発生しないはず）
+		// 事前に請求実行してきれいにしておく
 		req := httptest.NewRequest("POST", "/batches/bills/billing?date=10010101", nil)
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
 		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		// リクエスト実行（日付をめっちゃ過去にして実行 => 請求が発生しないはず）
+		req = httptest.NewRequest("POST", "/batches/bills/billing?date=10010101", nil)
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec = httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
 
 		////// 検証
