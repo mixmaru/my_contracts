@@ -11,10 +11,10 @@ import (
 )
 
 type ContractApplicationService struct {
-	ContractRepository   interfaces.IContractRepository
-	UserRepository       interfaces.IUserRepository
-	ProductRepository    interfaces.IProductRepository
-	RightToUseRepository interfaces.IRightToUseRepository
+	contractRepository   interfaces.IContractRepository
+	userRepository       interfaces.IUserRepository
+	productRepository    interfaces.IProductRepository
+	rightToUseRepository interfaces.IRightToUseRepository
 }
 
 func (c *ContractApplicationService) Register(userId int, productId int, contractDateTime time.Time) (productDto data_transfer_objects.ContractDto, validationErrors map[string][]string, err error) {
@@ -30,7 +30,7 @@ func (c *ContractApplicationService) Register(userId int, productId int, contrac
 	}
 
 	// ドメインサービス作成
-	contractDomainService := domain_service.NewContractDomainService(c.ContractRepository, c.UserRepository, c.ProductRepository, c.RightToUseRepository)
+	contractDomainService := domain_service.NewContractDomainService(c.contractRepository, c.userRepository, c.productRepository, c.rightToUseRepository)
 	contractDto, validationErrors, err := contractDomainService.CreateContract(userId, productId, contractDateTime, tran)
 	if err != nil {
 		tran.Rollback()
@@ -56,7 +56,7 @@ func (c *ContractApplicationService) GetById(id int) (contractDto data_transfer_
 	defer conn.Db.Close()
 
 	// リポジトリつかってデータ取得
-	contractEntity, productEntity, userEntity, err := c.ContractRepository.GetById(id, conn)
+	contractEntity, productEntity, userEntity, err := c.contractRepository.GetById(id, conn)
 	if err != nil {
 		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, err
 	}

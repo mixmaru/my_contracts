@@ -60,5 +60,25 @@ func TestApplicationServiceFactory_NewContractApplicationServiceWithMock(t *test
 	// インスタンス化テスト
 	app := NewContractApplicationServiceWithMock(repositoryMock)
 	assert.IsType(t, &ContractApplicationService{}, app)
+}
 
+////// BillApplicationService
+func TestApplicationServiceFactory_NewBillApplicationService(t *testing.T) {
+	// インスタンス化テスト
+	app := NewBillApplicationService()
+	assert.IsType(t, &BillApplicationService{}, app)
+}
+
+func TestApplicationServiceFactory_NewBillApplicationServiceWithMock(t *testing.T) {
+	// mock作成
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	product := mock_interfaces.NewMockIProductRepository(ctrl)
+	contract := mock_interfaces.NewMockIContractRepository(ctrl)
+	rightToUse := mock_interfaces.NewMockIRightToUseRepository(ctrl)
+	bill := mock_interfaces.NewMockIBillRepository(ctrl)
+
+	// インスタンス化テスト
+	app := NewBillApplicationServiceWithMock(product, contract, rightToUse, bill)
+	assert.IsType(t, &BillApplicationService{}, app)
 }

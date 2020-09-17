@@ -105,3 +105,61 @@ func TestProductRepository_GetByName(t *testing.T) {
 		assert.Nil(t, loadedEntity)
 	})
 }
+func TestProductRepository_GetByRightToUseId(t *testing.T) {
+	db, err := db_connection.GetConnection()
+	assert.NoError(t, err)
+
+	r := NewProductRepository()
+
+	t.Run("RightToUseIdを渡すと関連づいている商品データを返す", func(t *testing.T) {
+		////// 準備
+		// テスト用userの登録
+		userEntity, err := entities.NewUserIndividualEntity("請求計算用顧客")
+		assert.NoError(t, err)
+		userRep := NewUserRepository()
+		savedUserId, err := userRep.SaveUserIndividual(userEntity, db)
+
+		// 事前に31000円の商品を登録
+		productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "3100")
+		assert.NoError(t, err)
+		productRep := NewProductRepository()
+		savedProductId, err := productRep.Save(productEntity, db)
+		assert.NoError(t, err)
+
+		// 契約を作成
+		contractEntity := entities.NewContractEntity(
+			savedUserId,
+			savedProductId,
+			utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
+			utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
+		)
+		contractRep := NewContractRepository()
+		savedContractId, err := contractRep.Create(contractEntity, db)
+		assert.NoError(t, err)
+
+		// 使用権を作成
+		rightToUse := entities.NewRightToUseEntity(
+			savedContractId,
+			utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
+			utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+		)
+		rightToUseRep := NewRightToUseRepository()
+		savedRightToUseId, err := rightToUseRep.Create(rightToUse, db)
+		assert.NoError(t, err)
+
+		////// 実行
+		actual, err := r.GetByRightToUseId(savedRightToUseId, db)
+		assert.NoError(t, err)
+
+		// 検証
+		assert.Equal(t, savedProductId, actual.Id())
+		assert.Equal(t, productEntity.Name(), actual.Name())
+		expectPrice, ok := productEntity.MonthlyPrice()
+		assert.True(t, ok)
+		actualPrice, ok := actual.MonthlyPrice()
+		assert.True(t, ok)
+		assert.Equal(t, expectPrice.String(), actualPrice.String())
+		assert.NotZero(t, actual.CreatedAt())
+		assert.NotZero(t, actual.UpdatedAt())
+	})
+}
