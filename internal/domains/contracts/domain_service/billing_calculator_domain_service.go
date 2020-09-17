@@ -33,7 +33,7 @@ func NewBillingCalculatorDomainService(productRepository interfaces.IProductRepo
 // ※もしデータ量がもの凄く多かったら、長期間ロックがかかるかも。それであれば、1件1件取得 => commitを長時間続けたほうがいいのかもしれない。
 // その場合、長時間処理時間がかかるので、別スレッドとかで非同期に動かすことを検討する
 func (b *BillingCalculatorDomainService) ExecuteBilling(executeDate time.Time, executor gorp.SqlExecutor) ([]data_transfer_objects.BillDto, error) {
-	var retBillDtos []data_transfer_objects.BillDto
+	retBillDtos := []data_transfer_objects.BillDto{}
 
 	// 対象使用権を取得する
 	rightToUses, err := b.rightToUseRepository.GetBillingTargetByBillingDate(executeDate, executor)

@@ -378,5 +378,31 @@ func TestBillingCalculatorDomainService_ExecuteBilling(t *testing.T) {
 			assert.Equal(t, "1000", actualDetails[1].BillingAmount)
 			assert.Equal(t, rightToUse1BId, actualDetails[1].RightToUseId)
 		})
+
+		t.Run("対象がなくて請求データが作成されなかった場合は空スライスが返る", func(t *testing.T) {
+			ds := NewBillingCalculatorDomainService(
+				repositories.NewProductRepository(),
+				repositories.NewContractRepository(),
+				repositories.NewRightToUseRepository(),
+				repositories.NewBillRepository(),
+			)
+
+			db, err := db_connection.GetConnection()
+			assert.NoError(t, err)
+			tran, err := db.Begin()
+
+			// 事前に同日で実行してすべて請求実行済にしておく。テストのために。
+			_, err = ds.ExecuteBilling(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0), tran)
+			assert.NoError(t, err)
+
+			////// 実行（既に実行されているので、この実行で新たに作成される請求は無いはず）
+			billDtos, err := ds.ExecuteBilling(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0), tran)
+			assert.NoError(t, err)
+			err = tran.Commit()
+			assert.NoError(t, err)
+
+			////// 検証（billingデータを取得して検証する。1ユーザーの6/1~6/30, 7/1~7/31の請求分がbillsに作成される）
+			assert.Len(t, billDtos, 0)
+		})
 	})
 }
