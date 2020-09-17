@@ -863,5 +863,19 @@ func TestMain_executeBilling(t *testing.T) {
 	})
 
 	t.Run("指定日付のフォーマットがYYYYMMDDでなければエラーになる", func(t *testing.T) {
+		// リクエスト実行（日付指定をaaaaa）で実行
+		req := httptest.NewRequest("POST", "/batches/bills/billing?date=aaaaa", nil)
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		////// 検証
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		// jsonパース
+		var returnData map[string][]string
+		err := json.Unmarshal(rec.Body.Bytes(), &returnData)
+		assert.NoError(t, err)
+		assert.Len(t, returnData["date"], 1)
+		assert.Equal(t, "YYYYMMDDの形式ではありません", returnData["date"][0])
 	})
 }
