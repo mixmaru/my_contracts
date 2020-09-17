@@ -729,7 +729,7 @@ func TestMain_getContract(t *testing.T) {
 
 func TestMain_executeBilling(t *testing.T) {
 	router := newRouter()
-	t.Run("指定した日付を基準日にして請求実行を行う", func(t *testing.T) {
+	t.Run("指定した日付を基準日にして請求実行を行い作成されたbillデータを返却する", func(t *testing.T) {
 		////// 準備（商品、ユーザー、契約、使用権を作成する）
 		// user作成
 		userApp := application_service.NewUserApplicationService()
@@ -792,7 +792,23 @@ func TestMain_executeBilling(t *testing.T) {
 		assert.Equal(t, expectDetails[0].BillingAmount, actualDetails[0].BillingAmount)
 	})
 
-	t.Run("指定日付がなければ当日指定で請求実行を行う", func(t *testing.T) {
+	t.Run("作成されたbillデータがなければ（対象請求がなければ）空配列が返る", func(t *testing.T) {
+		// リクエスト実行（日付をめっちゃ過去にして実行 => 請求が発生しないはず）
+		req := httptest.NewRequest("POST", "/batches/bills/billing?date=10010101", nil)
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		////// 検証
+		assert.Equal(t, http.StatusCreated, rec.Code)
+		// jsonパース
+		var registeredBills []*data_transfer_objects.BillDto
+		err := json.Unmarshal(rec.Body.Bytes(), &registeredBills)
+		assert.NoError(t, err)
+		assert.Len(t, registeredBills, 0)
+	})
+
+	t.Run("指定日付がなければ当日指定で請求実行を行い作成されたbillデータを返却する", func(t *testing.T) {
 	})
 
 	t.Run("指定日付のフォーマットがYYYYMMDDでなければエラーになる", func(t *testing.T) {

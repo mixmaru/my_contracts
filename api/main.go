@@ -349,6 +349,9 @@ func executeBilling(c echo.Context) error {
 			}
 		}
 	}
+	if len(validErrs) > 0 {
+		return c.JSON(http.StatusBadRequest, validErrs)
+	}
 
 	billApp := application_service.NewBillApplicationService()
 	billDtos, err := billApp.ExecuteBilling(executeDate)
