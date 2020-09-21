@@ -328,3 +328,95 @@ func createContract(userId, productId int, contractDate, billingStartDate time.T
 	}
 	return savedContractId
 }
+
+func TestRightToUseRepository_GetRecurTargets(t *testing.T) {
+	t.Run("2020/6/1を渡すと使用期間終了日が6/1 ~ 6/5でかつ次の期間の使用権がまだない使用権が返る", func(t *testing.T) {
+		db, err := db_connection.GetConnection()
+		assert.NoError(t, err)
+		defer db.Db.Close()
+		tran, err := db.Begin()
+		assert.NoError(t, err)
+
+		////// 準備
+		contractIdA := createPreparedContractData(
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			tran,
+		)
+		contractIdB := createPreparedContractData(
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			tran,
+		)
+		contractIdC := createPreparedContractData(
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			tran,
+		)
+		contractIdD := createPreparedContractData(
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			tran,
+		)
+		contractIdE := createPreparedContractData(
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			tran,
+		)
+		// 使用権を作成（終了日が5/31, 6/1, 6/5, 6/5（ただし次の使用権データがある） 6/6）
+		rightToUseRep := NewRightToUseRepository()
+		rightToUse1 := entities.NewRightToUseEntity(
+			contractIdA,
+			utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 5, 31, 0, 0, 0, 0),
+		)
+		_, err = rightToUseRep.Create(rightToUse1, tran)
+		assert.NoError(t, err)
+		rightToUse2 := entities.NewRightToUseEntity(
+			contractIdB,
+			utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0),
+		)
+		rightToUse2Id, err := rightToUseRep.Create(rightToUse2, tran)
+		assert.NoError(t, err)
+		rightToUse3 := entities.NewRightToUseEntity(
+			contractIdC,
+			utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 6, 5, 0, 0, 0, 0),
+		)
+		rightToUse3Id, err := rightToUseRep.Create(rightToUse3, tran)
+		assert.NoError(t, err)
+		rightToUse4 := entities.NewRightToUseEntity(
+			contractIdD,
+			utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 6, 5, 0, 0, 0, 0),
+		)
+		_, err = rightToUseRep.Create(rightToUse4, tran)
+		assert.NoError(t, err)
+		rightToUse4Next := entities.NewRightToUseEntity(
+			contractIdD,
+			utils.CreateJstTime(2020, 6, 6, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 7, 5, 0, 0, 0, 0),
+		)
+		_, err = rightToUseRep.Create(rightToUse4Next, tran)
+		assert.NoError(t, err)
+		rightToUse5 := entities.NewRightToUseEntity(
+			contractIdE,
+			utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 6, 6, 0, 0, 0, 0),
+		)
+		_, err = rightToUseRep.Create(rightToUse5, tran)
+		assert.NoError(t, err)
+
+		////// 実行
+		expects, err := rightToUseRep.GetRecurTargets(utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0), tran)
+		assert.NoError(t, err)
+		err = tran.Commit()
+		assert.NoError(t, err)
+
+		////// 検証
+		assert.Len(t, expects, 2)
+		assert.Equal(t, rightToUse2Id, expects[0].Id())
+		assert.Equal(t, rightToUse3Id, expects[1].Id())
+	})
+}
