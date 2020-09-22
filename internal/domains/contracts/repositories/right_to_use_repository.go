@@ -115,35 +115,33 @@ ORDER BY c.user_id, rtu.id
 使用権の終了日が6/1だが、次（6/2 ~ 7/1の期間）の使用権が存在する=> 返らない
 */
 func (r *RightToUseRepository) GetRecurTargets(executeDate time.Time, executor gorp.SqlExecutor) ([]*entities.RightToUseEntity, error) {
-	//	query := `
-	//SELECT
-	//	rtu.id,
-	//	rtu.contract_id,
-	//	rtu.valid_from,
-	//	rtu.valid_to,
-	//	rtu.created_at,
-	//	rtu.updated_at
-	//FROM right_to_use rtu
-	//LEFT OUTER JOIN bill_details bd ON rtu.id = bd.right_to_use_id
-	//INNER JOIN contracts c ON c.id = rtu.contract_id
-	//WHERE bd.id IS NULL
-	//AND valid_from <= $1
-	//AND c.billing_start_date <= $1
-	//ORDER BY c.user_id, rtu.id
-	//;
-	//`
-	//	var mappers []*data_mappers.RightToUseMapper
-	//	var _, err = executor.Select(&mappers, query, billingDate)
-	//	if err != nil {
-	//		return nil, errors.Wrapf(err, "請求対象使用権の取得に失敗しました。query: %v, billingDate: %v", query, billingDate)
-	//	}
-	//
-	//	// mapperからentityを作る
-	//	retEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
-	//	for _, mapper := range mappers {
-	//		entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ContractId, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
-	//		retEntities = append(retEntities, entity)
-	//	}
+	from := executeDate
+	to := executeDate.AddDate(0, 0, 5)
 
-	return nil, nil
+	query := `
+SELECT * FROM (
+	SELECT
+		DISTINCT ON (contract_id)
+		*
+	FROM
+	right_to_use
+	ORDER BY contract_id, valid_to DESC
+	) AS last_right_to_use
+WHERE $1 <= last_right_to_use.valid_to
+AND last_right_to_use.valid_to < $2`
+
+	var mappers []*data_mappers.RightToUseMapper
+	var _, err = executor.Select(&mappers, query, from, to)
+	if err != nil {
+		return nil, errors.Wrapf(err, "継続処理対象使用権の取得に失敗しました。query: %v, from: %v, to: %v", query, from, to)
+	}
+
+	// mapperからentityを作る
+	retEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
+	for _, mapper := range mappers {
+		entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ContractId, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
+		retEntities = append(retEntities, entity)
+	}
+
+	return retEntities, nil
 }

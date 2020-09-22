@@ -338,6 +338,15 @@ func TestRightToUseRepository_GetRecurTargets(t *testing.T) {
 		assert.NoError(t, err)
 
 		////// 準備
+		// 事前に影響するデータを削除しておく
+		query := "DELETE FROM right_to_use WHERE $1 <= valid_to AND valid_to <= $2"
+		_, err = tran.Exec(
+			query,
+			utils.CreateJstTime(2020, 5, 31, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 6, 6, 0, 0, 0, 0),
+		)
+		assert.NoError(t, err)
+		// テスト用データの登録
 		contractIdA := createPreparedContractData(
 			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
 			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
