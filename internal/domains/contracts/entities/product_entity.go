@@ -115,3 +115,15 @@ func (p *ProductEntity) GetTermType() (termType string, err error) {
 	}
 	return "", errors.Errorf("考慮外。productEntity: %+v", p)
 }
+
+/*
+カスタム期間商品の場合、カスタム期間を返す。
+カスタム期間商品ではない場合、エラーを返す
+*/
+func (p *ProductEntity) GetCustomTerm() (int, error) {
+	if p.priceCustomTerm == nil {
+		return 0, errors.Errorf("カスタム機関商品ではありません。productEntity: %+v", p)
+	}
+
+	return p.priceCustomTerm.term, nil
+}
