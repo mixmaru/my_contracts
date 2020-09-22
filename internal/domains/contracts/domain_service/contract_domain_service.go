@@ -122,3 +122,10 @@ func (c *ContractDomainService) calculateBillingStartDate(contractDate time.Time
 	addFreeDays := contractDate.AddDate(0, 0, freeDays).In(locale)
 	return time.Date(addFreeDays.Year(), addFreeDays.Month(), addFreeDays.Day(), 0, 0, 0, 0, locale)
 }
+
+/*
+渡された使用権の次の期間の使用権を作成して永続化する。永続化したデータを返却する
+*/
+func (c *ContractDomainService) CreateNextTermRightToUse(currentRightToUse *entities.RightToUseEntity) (*entities.RightToUseEntity, error) {
+	return nil, nil
+}
