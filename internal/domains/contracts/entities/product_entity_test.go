@@ -74,3 +74,15 @@ func TestProductEntity_MonthlyPrice(t *testing.T) {
 		t.Skip("まだ月契約しか設定できないのでスキップ")
 	})
 }
+
+func TestProductEntity_GetTermType(t *testing.T) {
+	t.Run("月契約だったらmonthlyが返る", func(t *testing.T) {
+		productEntity, err := NewProductEntity("name", "1000")
+		assert.NoError(t, err)
+
+		expect, err := productEntity.GetTermType()
+		assert.NoError(t, err)
+		assert.Equal(t, TermMonthly, expect)
+	})
+
+}

@@ -3,6 +3,7 @@ package entities
 import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities/values"
 	"github.com/mixmaru/my_contracts/internal/lib/decimal"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -93,4 +94,24 @@ func (p *ProductEntity) LoadData(id int, name string, price string, createdAt ti
 	p.createdAt = createdAt
 	p.updatedAt = updatedAt
 	return nil
+}
+
+const (
+	TermMonthly string = "monthly"
+	TermYearly  string = "yearly"
+	TermCustom  string = "custom"
+	TermLump    string = "lump" // 一括購入
+)
+
+func (p *ProductEntity) GetTermType() (termType string, err error) {
+	if p.priceMonthly != nil {
+		return TermMonthly, nil
+	} else if p.priceYearly != nil {
+		return TermYearly, nil
+	} else if p.priceCustomTerm != nil {
+		return TermCustom, nil
+	} else if p.priceLump != nil {
+		return TermLump, nil
+	}
+	return "", errors.Errorf("考慮外。productEntity: %+v", p)
 }
