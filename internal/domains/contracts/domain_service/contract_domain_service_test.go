@@ -116,7 +116,9 @@ func TestNewContractDomainService_CreateNextTermRightToUse(t *testing.T) {
 		assert.NoError(t, err)
 
 		////// 実行
-		nextTermRightToUse, err := contractDomainService.CreateNextTermRightToUse(currentRightToUseEntity)
+		nextTermRightToUse, err := contractDomainService.CreateNextTermRightToUse(currentRightToUseEntity, tran)
+		assert.NoError(t, err)
+		err = tran.Commit()
 		assert.NoError(t, err)
 
 		////// 検証
