@@ -41,7 +41,7 @@ func TestContractDomainService_CreateContract(t *testing.T) {
 		assert.Equal(t, userId, actualContractDto.UserId)
 		assert.Equal(t, productId, actualContractDto.ProductId)
 		assert.True(t, actualContractDto.ContractDate.Equal(utils.CreateJstTime(2020, 1, 1, 15, 0, 0, 0)))
-		assert.True(t, actualContractDto.BillingStartDate.Equal(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0)))
+		assert.True(t, actualContractDto.BillingStartDate.Equal(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0)))
 		assert.NotZero(t, actualContractDto.ContractDate)
 		assert.NotZero(t, actualContractDto.UpdatedAt)
 
@@ -57,7 +57,7 @@ func TestContractDomainService_CreateContract(t *testing.T) {
 		assert.NotZero(t, mapper.Id)
 		assert.Equal(t, contractEntity.Id(), mapper.ContractId)
 		assert.True(t, mapper.ValidFrom.Equal(utils.CreateJstTime(2020, 1, 1, 15, 0, 0, 0)))
-		assert.True(t, mapper.ValidTo.Equal(utils.CreateJstTime(2020, 2, 2, 0, 0, 0, 0)))
+		assert.True(t, mapper.ValidTo.Equal(utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0)))
 		assert.NotZero(t, mapper.CreatedAt)
 		assert.NotZero(t, mapper.UpdatedAt)
 	})

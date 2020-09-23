@@ -42,7 +42,7 @@ func (c *ContractDomainService) CreateContract(userId, productId int, executeDat
 	}
 
 	// 課金開始日算出
-	billingStartDate := c.calculateBillingStartDate(executeDate, 1, utils.CreateJstLocation())
+	billingStartDate := c.calculateBillingStartDate(executeDate, 0, utils.CreateJstLocation())
 
 	// 契約の作成
 	savedContractId, err := c.createNewContract(userId, productId, executeDate, billingStartDate, executor)
@@ -51,7 +51,9 @@ func (c *ContractDomainService) CreateContract(userId, productId int, executeDat
 	}
 
 	// 使用権の作成
-	validTo := billingStartDate.AddDate(0, 1, 0)
+	jst := utils.CreateJstLocation()
+	executeDateJst := executeDate.In(jst)
+	validTo := utils.CreateJstTime(executeDateJst.Year(), executeDateJst.Month()+1, executeDateJst.Day(), 0, 0, 0, 0)
 	_, err = c.createNewRightToUse(savedContractId, executeDate, validTo, executor)
 
 	// 再読込
