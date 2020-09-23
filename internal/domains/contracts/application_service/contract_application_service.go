@@ -80,3 +80,31 @@ func (c *ContractApplicationService) GetById(id int) (contractDto data_transfer_
 	// 返却
 	return contractDto, productDto, userDto, nil
 }
+
+/*
+渡した実行日から5日以内に期間終了である使用権に対して、次の期間の使用権データを作成して永続化して返却する
+*/
+func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time) (nextTermRightToUseDtos []data_transfer_objects.RightToUseDto, err error) {
+	db, err := db_connection.GetConnection()
+	if err != nil {
+		return nil, err
+	}
+	// 対象使用権を取得
+	rightToUses, err := c.rightToUseRepository.GetRecurTargets(executeDate, db)
+	if err != nil {
+		return nil, err
+	}
+
+	// 次の使用権を作成する
+	contractDomainService := domain_service.NewContractDomainService(c.contractRepository, c.userRepository, c.productRepository, c.rightToUseRepository)
+	//nextTermRights := make([]*entities.RightToUseEntity, 0, len(rightToUses))
+	nextTermRightToUseDtos = make([]data_transfer_objects.RightToUseDto, 0, len(rightToUses))
+	for _, rightToUse := range rightToUses {
+		nextTermRight, err := contractDomainService.CreateNextTermRightToUse(rightToUse, db)
+		if err != nil {
+			return nil, err
+		}
+		nextTermRightToUseDtos = append(nextTermRightToUseDtos, data_transfer_objects.NewRightToUseDtoFromEntity(nextTermRight))
+	}
+	return nextTermRightToUseDtos, nil
+}

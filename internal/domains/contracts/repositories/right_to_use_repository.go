@@ -133,6 +133,7 @@ FROM tmp_t
 WHERE num = 1
 AND $1 <= tmp_t.valid_to
 AND tmp_t.valid_to < $2
+ORDER BY id
 ;`
 
 	var mappers []*data_mappers.RightToUseMapper
