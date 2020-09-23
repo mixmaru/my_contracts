@@ -23,7 +23,7 @@ func TestContractApplicationService_Register(t *testing.T) {
 
 	app := NewContractApplicationService()
 
-	t.Run("顧客Idと商品IDを契約日時を渡すと課金開始日が翌日で契約が作成される", func(t *testing.T) {
+	t.Run("顧客Idと商品IDを契約日時を渡すと課金開始日が当日で契約が作成される", func(t *testing.T) {
 		// 実行
 		contractDateTime := utils.CreateJstTime(2020, 2, 28, 23, 0, 0, 0)
 		dto, validErrors, err := app.Register(savedUserDto.Id, savedProductDto.Id, contractDateTime)
@@ -35,7 +35,7 @@ func TestContractApplicationService_Register(t *testing.T) {
 		assert.Equal(t, savedUserDto.Id, dto.UserId)
 		assert.Equal(t, savedProductDto.Id, dto.ProductId)
 		assert.True(t, contractDateTime.Equal(dto.ContractDate))
-		assert.True(t, utils.CreateJstTime(2020, 2, 29, 0, 0, 0, 0).Equal(dto.BillingStartDate))
+		assert.True(t, utils.CreateJstTime(2020, 2, 28, 0, 0, 0, 0).Equal(dto.BillingStartDate))
 		assert.NotZero(t, dto.CreatedAt)
 		assert.NotZero(t, dto.UpdatedAt)
 	})
@@ -88,7 +88,7 @@ func TestContractApplicationService_GetById(t *testing.T) {
 			assert.Equal(t, productDto.Id, contract.ProductId)
 			assert.Equal(t, userDto.Id, contract.UserId)
 			assert.True(t, contract.ContractDate.Equal(utils.CreateJstTime(2020, 1, 2, 2, 0, 0, 0)))
-			assert.True(t, contract.BillingStartDate.Equal(utils.CreateJstTime(2020, 1, 3, 0, 0, 0, 0)))
+			assert.True(t, contract.BillingStartDate.Equal(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0)))
 			assert.True(t, contract.CreatedAt.Equal(contractDto.CreatedAt))
 			assert.True(t, contract.UpdatedAt.Equal(contractDto.UpdatedAt))
 
@@ -179,7 +179,7 @@ func TestContractApplicationService_CreateNextRightToUse(t *testing.T) {
 		assert.NotZero(t, nextRights[1].CreatedAt)
 		assert.NotZero(t, nextRights[1].UpdatedAt)
 		assert.True(t, nextRights[1].ValidFrom.Equal(utils.CreateJstTime(2020, 5, 30, 0, 0, 0, 0)))
-		assert.True(t, nextRights[1].ValidTo.Equal(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0)))
+		assert.True(t, nextRights[1].ValidTo.Equal(utils.CreateJstTime(2020, 6, 30, 0, 0, 0, 0)))
 		assert.Equal(t, contractDto2.Id, nextRights[1].ContractId)
 	})
 }
