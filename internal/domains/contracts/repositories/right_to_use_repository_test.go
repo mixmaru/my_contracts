@@ -295,7 +295,7 @@ func createUser(executor gorp.SqlExecutor) int {
 	userRepository := NewUserRepository()
 	savedUserId, err := userRepository.SaveUserIndividual(userEntity, executor)
 	if err != nil {
-		panic("userEntity保存失敗")
+		panic(err.Error())
 	}
 	return savedUserId
 }
@@ -339,11 +339,14 @@ func TestRightToUseRepository_GetRecurTargets(t *testing.T) {
 
 		////// 準備
 		// 事前に影響するデータを削除しておく
-		query := "DELETE FROM right_to_use WHERE $1 <= valid_to AND valid_to <= $2"
+		query1 := "DELETE FROM bill_details"
+		query2 := "DELETE FROM right_to_use"
 		_, err = tran.Exec(
-			query,
-			utils.CreateJstTime(2020, 5, 31, 0, 0, 0, 0),
-			utils.CreateJstTime(2020, 6, 6, 0, 0, 0, 0),
+			query1,
+		)
+		assert.NoError(t, err)
+		_, err = tran.Exec(
+			query2,
 		)
 		assert.NoError(t, err)
 		// テスト用データの登録

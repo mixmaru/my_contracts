@@ -151,7 +151,7 @@ func TestContractApplicationService_CreateNextRightToUse(t *testing.T) {
 		user := createUser()
 		product := createProduct()
 		contractApp := NewContractApplicationService()
-		contractDto1, validErrors, err := contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0))
+		contractDto1, validErrors, err := contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 5, 1, 3, 0, 0, 0))
 		if err != nil || len(validErrors) > 0 {
 			panic("データ作成失敗")
 		}
