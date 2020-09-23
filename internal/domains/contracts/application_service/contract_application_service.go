@@ -89,22 +89,32 @@ func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time)
 	if err != nil {
 		return nil, err
 	}
+	defer db.Db.Close()
+	tran, err := db.Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "トランザクション開始失敗")
+	}
+
 	// 対象使用権を取得
-	rightToUses, err := c.rightToUseRepository.GetRecurTargets(executeDate, db)
+	rightToUses, err := c.rightToUseRepository.GetRecurTargets(executeDate, tran)
 	if err != nil {
 		return nil, err
 	}
 
 	// 次の使用権を作成する
 	contractDomainService := domain_service.NewContractDomainService(c.contractRepository, c.userRepository, c.productRepository, c.rightToUseRepository)
-	//nextTermRights := make([]*entities.RightToUseEntity, 0, len(rightToUses))
 	nextTermRightToUseDtos = make([]data_transfer_objects.RightToUseDto, 0, len(rightToUses))
 	for _, rightToUse := range rightToUses {
-		nextTermRight, err := contractDomainService.CreateNextTermRightToUse(rightToUse, db)
+		nextTermRight, err := contractDomainService.CreateNextTermRightToUse(rightToUse, tran)
 		if err != nil {
 			return nil, err
 		}
 		nextTermRightToUseDtos = append(nextTermRightToUseDtos, data_transfer_objects.NewRightToUseDtoFromEntity(nextTermRight))
 	}
+	err = tran.Commit()
+	if err != nil {
+		return nil, errors.Wrap(err, "コミットに失敗しました")
+	}
+
 	return nextTermRightToUseDtos, nil
 }
