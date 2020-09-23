@@ -119,16 +119,21 @@ func (r *RightToUseRepository) GetRecurTargets(executeDate time.Time, executor g
 	to := executeDate.AddDate(0, 0, 5)
 
 	query := `
-SELECT * FROM (
-	SELECT
-		DISTINCT ON (contract_id)
-		*
-	FROM
-	right_to_use
-	ORDER BY contract_id, valid_to DESC
-	) AS last_right_to_use
-WHERE $1 <= last_right_to_use.valid_to
-AND last_right_to_use.valid_to < $2`
+WITH tmp_t AS (
+    SELECT *, row_number() over (partition by contract_id order by valid_to DESC) AS num FROM right_to_use
+)
+SELECT 
+	id,
+	contract_id,
+	valid_from,
+	valid_to,
+	created_at,
+	updated_at
+FROM tmp_t
+WHERE num = 1
+AND $1 <= tmp_t.valid_to
+AND tmp_t.valid_to < $2
+;`
 
 	var mappers []*data_mappers.RightToUseMapper
 	var _, err = executor.Select(&mappers, query, from, to)
