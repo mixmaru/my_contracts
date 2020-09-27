@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
-	"github.com/mixmaru/my_contracts/internal/utils"
+	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
+	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

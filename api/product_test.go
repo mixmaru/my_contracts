@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/data_transfer_objects"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
+	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
+	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
+	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
