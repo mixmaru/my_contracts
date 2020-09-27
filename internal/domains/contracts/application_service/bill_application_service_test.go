@@ -1,6 +1,7 @@
 package application_service
 
 import (
+	"github.com/mixmaru/my_contracts/internal/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -13,6 +14,13 @@ func TestBillApplicationService_ExecuteBilling(t *testing.T) {
 	billApp := NewBillApplicationService()
 	t.Run("渡した日付時点で有効な使用権でまだ請求実行データ（billsテーブル）が作成されていないものに請求データを作成する", func(t *testing.T) {
 		////// 準備 2020/6/1 ~ 2020/6/30の使用権を作成する
+		// 影響するデータを事前削除しておく
+		db, err := db_connection.GetConnection()
+		assert.NoError(t, err)
+		_, err = db.Exec("DELETE FROM bill_details")
+		assert.NoError(t, err)
+		_, err = db.Exec("DELETE FROM right_to_use")
+		assert.NoError(t, err)
 		// 商品作成
 		product, validErrors, err := productApp.Register(utils.CreateUniqProductNameForTest(), "1234")
 		assert.NoError(t, err)

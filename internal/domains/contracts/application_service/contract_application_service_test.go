@@ -23,7 +23,7 @@ func TestContractApplicationService_Register(t *testing.T) {
 
 	app := NewContractApplicationService()
 
-	t.Run("顧客Idと商品IDを契約日時を渡すと課金開始日が翌日で契約が作成される", func(t *testing.T) {
+	t.Run("顧客Idと商品IDを契約日時を渡すと課金開始日が当日で契約が作成される", func(t *testing.T) {
 		// 実行
 		contractDateTime := utils.CreateJstTime(2020, 2, 28, 23, 0, 0, 0)
 		dto, validErrors, err := app.Register(savedUserDto.Id, savedProductDto.Id, contractDateTime)
@@ -35,7 +35,7 @@ func TestContractApplicationService_Register(t *testing.T) {
 		assert.Equal(t, savedUserDto.Id, dto.UserId)
 		assert.Equal(t, savedProductDto.Id, dto.ProductId)
 		assert.True(t, contractDateTime.Equal(dto.ContractDate))
-		assert.True(t, utils.CreateJstTime(2020, 2, 29, 0, 0, 0, 0).Equal(dto.BillingStartDate))
+		assert.True(t, utils.CreateJstTime(2020, 2, 28, 0, 0, 0, 0).Equal(dto.BillingStartDate))
 		assert.NotZero(t, dto.CreatedAt)
 		assert.NotZero(t, dto.UpdatedAt)
 	})
@@ -88,7 +88,7 @@ func TestContractApplicationService_GetById(t *testing.T) {
 			assert.Equal(t, productDto.Id, contract.ProductId)
 			assert.Equal(t, userDto.Id, contract.UserId)
 			assert.True(t, contract.ContractDate.Equal(utils.CreateJstTime(2020, 1, 2, 2, 0, 0, 0)))
-			assert.True(t, contract.BillingStartDate.Equal(utils.CreateJstTime(2020, 1, 3, 0, 0, 0, 0)))
+			assert.True(t, contract.BillingStartDate.Equal(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0)))
 			assert.True(t, contract.CreatedAt.Equal(contractDto.CreatedAt))
 			assert.True(t, contract.UpdatedAt.Equal(contractDto.UpdatedAt))
 
@@ -136,4 +136,50 @@ func createUser() data_transfer_objects.UserIndividualDto {
 		panic("データ作成失敗")
 	}
 	return dto
+}
+
+func TestContractApplicationService_CreateNextRightToUse(t *testing.T) {
+	t.Run("渡した実行日から5日以内に期間終了である使用権に対して、次の期間の使用権データを作成して永続化して返却する", func(t *testing.T) {
+		// 事前に影響のあるデータを削除しておく（ちょっと広めに削除）
+		db, err := db_connection.GetConnection()
+		assert.NoError(t, err)
+		defer db.Db.Close()
+		_, err = db.Exec("DELETE FROM right_to_use WHERE '2020-05-25' <= valid_to AND valid_to <= '2020-06-02'")
+		assert.NoError(t, err)
+
+		////// 準備（2020-05-31が終了日である使用権と2020-05-29が終了日である使用権を作成する）
+		user := createUser()
+		product := createProduct()
+		contractApp := NewContractApplicationService()
+		contractDto1, validErrors, err := contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 5, 1, 3, 0, 0, 0))
+		if err != nil || len(validErrors) > 0 {
+			panic("データ作成失敗")
+		}
+		contractDto2, validErrors, err := contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 4, 30, 0, 0, 0, 0))
+		if err != nil || len(validErrors) > 0 {
+			panic("データ作成失敗")
+		}
+
+		////// 実行
+		app := NewContractApplicationService()
+		nextRights, err := app.CreateNextRightToUse(utils.CreateJstTime(2020, 5, 28, 0, 10, 0, 0))
+		assert.NoError(t, err)
+
+		////// 検証
+		assert.Len(t, nextRights, 2)
+		// 1つめ
+		assert.NotZero(t, nextRights[0].Id)
+		assert.NotZero(t, nextRights[0].CreatedAt)
+		assert.NotZero(t, nextRights[0].UpdatedAt)
+		assert.True(t, nextRights[0].ValidFrom.Equal(utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0)))
+		assert.True(t, nextRights[0].ValidTo.Equal(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0)))
+		assert.Equal(t, contractDto1.Id, nextRights[0].ContractId)
+		// 2つめ
+		assert.NotZero(t, nextRights[1].Id)
+		assert.NotZero(t, nextRights[1].CreatedAt)
+		assert.NotZero(t, nextRights[1].UpdatedAt)
+		assert.True(t, nextRights[1].ValidFrom.Equal(utils.CreateJstTime(2020, 5, 30, 0, 0, 0, 0)))
+		assert.True(t, nextRights[1].ValidTo.Equal(utils.CreateJstTime(2020, 6, 30, 0, 0, 0, 0)))
+		assert.Equal(t, contractDto2.Id, nextRights[1].ContractId)
+	})
 }

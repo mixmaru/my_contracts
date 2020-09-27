@@ -5,6 +5,7 @@ import (
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/internal/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/internal/utils"
+	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
 	"time"
 )
@@ -41,7 +42,7 @@ func (c *ContractDomainService) CreateContract(userId, productId int, executeDat
 	}
 
 	// 課金開始日算出
-	billingStartDate := c.calculateBillingStartDate(executeDate, 1, utils.CreateJstLocation())
+	billingStartDate := c.calculateBillingStartDate(executeDate, 0, utils.CreateJstLocation())
 
 	// 契約の作成
 	savedContractId, err := c.createNewContract(userId, productId, executeDate, billingStartDate, executor)
@@ -50,7 +51,9 @@ func (c *ContractDomainService) CreateContract(userId, productId int, executeDat
 	}
 
 	// 使用権の作成
-	validTo := billingStartDate.AddDate(0, 1, 0)
+	jst := utils.CreateJstLocation()
+	executeDateJst := executeDate.In(jst)
+	validTo := utils.CreateJstTime(executeDateJst.Year(), executeDateJst.Month()+1, executeDateJst.Day(), 0, 0, 0, 0)
 	_, err = c.createNewRightToUse(savedContractId, executeDate, validTo, executor)
 
 	// 再読込
@@ -121,4 +124,60 @@ func (c *ContractDomainService) registerValidation(userId int, productId int, ex
 func (c *ContractDomainService) calculateBillingStartDate(contractDate time.Time, freeDays int, locale *time.Location) time.Time {
 	addFreeDays := contractDate.AddDate(0, 0, freeDays).In(locale)
 	return time.Date(addFreeDays.Year(), addFreeDays.Month(), addFreeDays.Day(), 0, 0, 0, 0, locale)
+}
+
+/*
+渡された使用権の次の期間の使用権を作成して永続化する。永続化したデータを返却する
+*/
+func (c *ContractDomainService) CreateNextTermRightToUse(currentRightToUse *entities.RightToUseEntity, executor gorp.SqlExecutor) (*entities.RightToUseEntity, error) {
+	jst := utils.CreateJstLocation()
+
+	// 商品集約を取得する
+	product, err := c.productRepository.GetByRightToUseId(currentRightToUse.Id(), executor)
+	if err != nil {
+		return nil, err
+	}
+
+	// 商品の期間（年、月、カスタム期間）を取得する
+	termType, err := product.GetTermType()
+	if err != nil {
+		return nil, err
+	}
+
+	// 期間から次の期間を算出する
+	from := currentRightToUse.ValidTo().In(jst)
+	var to time.Time
+	switch termType {
+	case entities.TermMonthly:
+		to = from.AddDate(0, 1, 0)
+	case entities.TermYearly:
+		to = from.AddDate(1, 0, 0)
+	case entities.TermCustom:
+		term, err := product.GetCustomTerm()
+		if err != nil {
+			return nil, err
+		}
+		to = from.AddDate(0, 0, term)
+	case entities.TermLump:
+		return nil, errors.Errorf("一括購入タイプの商品は継続処理できません。termType: %v, product: %+v", termType, product)
+	default:
+		return nil, errors.Errorf("考慮外のtermType。termType: %v, product: %+v", termType, product)
+	}
+
+	// entityを作る
+	nextTermEntity := entities.NewRightToUseEntity(currentRightToUse.ContractId(), from, to)
+
+	// 保存する。
+	nextTermEntityId, err := c.rightToUseRepository.Create(nextTermEntity, executor)
+	if err != nil {
+		return nil, err
+	}
+
+	// 再読込
+	nextTermEntity, err = c.rightToUseRepository.GetById(nextTermEntityId, executor)
+	if err != nil {
+		return nil, err
+	}
+
+	return nextTermEntity, nil
 }

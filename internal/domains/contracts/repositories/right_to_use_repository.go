@@ -104,3 +104,50 @@ ORDER BY c.user_id, rtu.id
 
 	return retEntities, nil
 }
+
+/*
+渡した日（実行日）から5日以内に終了し、かつ、まだ次の期間の使用権データが存在しない使用権を全て返す
+
+例）実行日が6/1の場合
+使用権の終了日が6/1の使用権=> 返る
+使用権の終了日が6/6の使用権=> 返る
+使用権の終了日が6/7の使用権=> 返らない
+使用権の終了日が6/1だが、次（6/2 ~ 7/1の期間）の使用権が存在する=> 返らない
+*/
+func (r *RightToUseRepository) GetRecurTargets(executeDate time.Time, executor gorp.SqlExecutor) ([]*entities.RightToUseEntity, error) {
+	from := executeDate
+	to := executeDate.AddDate(0, 0, 5)
+
+	query := `
+WITH tmp_t AS (
+    SELECT *, row_number() over (partition by contract_id order by valid_to DESC) AS num FROM right_to_use
+)
+SELECT 
+	id,
+	contract_id,
+	valid_from,
+	valid_to,
+	created_at,
+	updated_at
+FROM tmp_t
+WHERE num = 1
+AND $1 <= tmp_t.valid_to
+AND tmp_t.valid_to < $2
+ORDER BY id
+;`
+
+	var mappers []*data_mappers.RightToUseMapper
+	var _, err = executor.Select(&mappers, query, from, to)
+	if err != nil {
+		return nil, errors.Wrapf(err, "継続処理対象使用権の取得に失敗しました。query: %v, from: %v, to: %v", query, from, to)
+	}
+
+	// mapperからentityを作る
+	retEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
+	for _, mapper := range mappers {
+		entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ContractId, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
+		retEntities = append(retEntities, entity)
+	}
+
+	return retEntities, nil
+}
