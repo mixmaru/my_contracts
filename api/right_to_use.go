@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mixmaru/my_contracts/internal/domains/contracts/application_service"
-	"github.com/mixmaru/my_contracts/internal/utils"
-	"github.com/mixmaru/my_contracts/internal/utils/my_logger"
+	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
+	"github.com/mixmaru/my_contracts/utils"
+	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
 	"time"
 )
