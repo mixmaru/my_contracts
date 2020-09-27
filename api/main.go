@@ -35,6 +35,8 @@ func newRouter() *echo.Echo {
 	e.GET("/contracts/:id", getContract)
 	// 請求実行バッチ
 	e.POST("/batches/bills/billing", executeBilling)
+	// 使用権継続処理実行バッチ
+	e.POST("/batches/right_to_uses/recur", executeRecur)
 
 	return e
 }
