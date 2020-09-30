@@ -92,15 +92,6 @@ func (p *ProductApplicationService) registerValidation(name string, price string
 		validationErrors["name"] = append(validationErrors["name"], errorMessage)
 	}
 
-	// 重複チェック
-	productEntity, err := p.productRepository.GetByName(name, executor)
-	if err != nil {
-		return validationErrors, err
-	}
-	if productEntity != nil {
-		validationErrors["name"] = append(validationErrors["name"], "すでに存在します")
-	}
-
 	// 価格バリデーション
 	productPriceValidErrors, err := values.ProductPriceValue{}.Validate(price)
 	if err != nil {

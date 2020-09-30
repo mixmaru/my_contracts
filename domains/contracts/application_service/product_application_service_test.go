@@ -53,8 +53,6 @@ func TestProductApplicationService_Get(t *testing.T) {
 }
 
 func TestProductApplicationService_registerValidation(t *testing.T) {
-	savedProduct := createProduct()
-
 	conn, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 
@@ -75,17 +73,6 @@ func TestProductApplicationService_registerValidation(t *testing.T) {
 			},
 			"price": []string{
 				"数値ではありません",
-			},
-		}
-		assert.Equal(t, expect, validationErrors)
-	})
-
-	t.Run("nameがすでに存在する商品名だった場合_バリデーションエラーメッセージが返ってくる", func(t *testing.T) {
-		validationErrors, err := productAppService.registerValidation(savedProduct.Name, "1000", conn)
-		assert.NoError(t, err)
-		expect := map[string][]string{
-			"name": []string{
-				"すでに存在します",
 			},
 		}
 		assert.Equal(t, expect, validationErrors)
