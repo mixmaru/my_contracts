@@ -10,10 +10,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"strconv"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestMain_saveProduct(t *testing.T) {
@@ -25,13 +23,9 @@ func TestMain_saveProduct(t *testing.T) {
 
 	t.Run("商品名と値段を渡すと商品登録して登録データを返す", func(t *testing.T) {
 		//////// 準備
-		// 重複しない商品名でテストを行う
-		unixNano := time.Now().UnixNano()
-		suffix := strconv.FormatInt(unixNano, 10)
-		name := "商品" + suffix
 		// リクエストパラメータ作成
 		body := url.Values{}
-		body.Set("name", name)
+		body.Set("name", "商品")
 		body.Set("price", "1000.01")
 
 		// リクエスト実行
@@ -46,7 +40,7 @@ func TestMain_saveProduct(t *testing.T) {
 		var registeredProduct data_transfer_objects.ProductDto
 		err := json.Unmarshal(rec.Body.Bytes(), &registeredProduct)
 		assert.NoError(t, err)
-		assert.Equal(t, name, registeredProduct.Name)
+		assert.Equal(t, "商品", registeredProduct.Name)
 		assert.Equal(t, "1000.01", registeredProduct.Price)
 	})
 
@@ -112,14 +106,9 @@ func TestMain_saveProduct(t *testing.T) {
 }
 
 func TestMain_getProduct(t *testing.T) {
-	// 重複しない商品名でテストを行う
-	unixNano := time.Now().UnixNano()
-	suffix := strconv.FormatInt(unixNano, 10)
-	name := "商品" + suffix
-
 	// 検証用データ登録
 	productAppService := application_service.NewProductApplicationService()
-	registeredProduct, validErrors, err := productAppService.Register(name, "1000.001")
+	registeredProduct, validErrors, err := productAppService.Register("商品", "1000.001")
 	assert.NoError(t, err)
 	assert.Len(t, validErrors, 0)
 

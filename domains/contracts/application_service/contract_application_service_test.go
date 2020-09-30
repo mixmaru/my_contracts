@@ -121,7 +121,7 @@ func TestContractApplicationService_GetById(t *testing.T) {
 
 func createProduct() data_transfer_objects.ProductDto {
 	productApp := NewProductApplicationService()
-	productDto, validErrors, err := productApp.Register(utils.CreateUniqProductNameForTest(), "2000")
+	productDto, validErrors, err := productApp.Register("商品", "2000")
 	if err != nil || len(validErrors) > 0 {
 		panic("データ作成失敗")
 	}

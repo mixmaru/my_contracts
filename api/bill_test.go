@@ -20,7 +20,7 @@ func createTestDate(t *testing.T) (data_transfer_objects.UserIndividualDto, data
 	assert.Len(t, validErrors, 0)
 	// 商品作成
 	productApp := application_service.NewProductApplicationService()
-	product, validErrors, err := productApp.Register(utils.CreateUniqProductNameForTest(), "10000")
+	product, validErrors, err := productApp.Register("商品", "10000")
 	assert.NoError(t, err)
 	assert.Len(t, validErrors, 0)
 	// 契約作成（使用権も内部で作成されている）

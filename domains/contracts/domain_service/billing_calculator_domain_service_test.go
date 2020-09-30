@@ -15,7 +15,7 @@ func createProduct(price string) *entities.ProductEntity {
 	if err != nil {
 		panic("db接続エラー")
 	}
-	productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), price)
+	productEntity, err := entities.NewProductEntity("商品", price)
 	if err != nil {
 		panic("データ作成エラー")
 	}

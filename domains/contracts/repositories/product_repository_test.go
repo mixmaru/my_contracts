@@ -20,7 +20,7 @@ func TestProductRepository_Save(t *testing.T) {
 
 		// 実行
 		r := NewProductRepository()
-		productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "1000")
+		productEntity, err := entities.NewProductEntity("商品", "1000")
 		assert.NoError(t, err)
 		savedId, err := r.Save(productEntity, tran)
 		assert.NoError(t, err)
@@ -40,7 +40,7 @@ func TestProductRepository_GetById(t *testing.T) {
 	r := NewProductRepository()
 
 	// 検証用データ登録
-	productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "1000")
+	productEntity, err := entities.NewProductEntity("商品", "1000")
 	assert.NoError(t, err)
 	savedId, err := r.Save(productEntity, db)
 	assert.NoError(t, err)
@@ -78,7 +78,7 @@ func TestProductRepository_GetByName(t *testing.T) {
 	r := NewProductRepository()
 
 	// 検証用データ登録
-	productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "1000")
+	productEntity, err := entities.NewProductEntity("商品", "1000")
 	assert.NoError(t, err)
 	savedId, err := r.Save(productEntity, db)
 	assert.NoError(t, err)
@@ -120,7 +120,7 @@ func TestProductRepository_GetByRightToUseId(t *testing.T) {
 		savedUserId, err := userRep.SaveUserIndividual(userEntity, db)
 
 		// 事前に31000円の商品を登録
-		productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "3100")
+		productEntity, err := entities.NewProductEntity("商品", "3100")
 		assert.NoError(t, err)
 		productRep := NewProductRepository()
 		savedProductId, err := productRep.Save(productEntity, db)

@@ -22,7 +22,7 @@ func TestContractRepository_Create(t *testing.T) {
 
 	// 商品を登録
 	productRepository := NewProductRepository()
-	productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "1000")
+	productEntity, err := entities.NewProductEntity("商品", "1000")
 	assert.NoError(t, err)
 	savedProductId, err := productRepository.Save(productEntity, db)
 	assert.NoError(t, err)
@@ -79,7 +79,7 @@ func TestContractRepository_GetById(t *testing.T) {
 
 	// 商品を登録
 	productRepository := NewProductRepository()
-	productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "1000")
+	productEntity, err := entities.NewProductEntity("商品", "1000")
 	assert.NoError(t, err)
 	savedProductId, err := productRepository.Save(productEntity, db)
 	assert.NoError(t, err)

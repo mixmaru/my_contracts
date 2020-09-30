@@ -16,14 +16,9 @@ import (
 )
 
 func TestMain_saveContract(t *testing.T) {
-	// 重複しない商品名でテストを行う
-	unixNano := time.Now().UnixNano()
-	suffix := strconv.FormatInt(unixNano, 10)
-	name := "商品" + suffix
-
 	// 商品登録
 	productApp := application_service.NewProductApplicationService()
-	productDto, validErrs, err := productApp.Register(name, "200")
+	productDto, validErrs, err := productApp.Register("商品", "200")
 	assert.NoError(t, err)
 	assert.Len(t, validErrs, 0)
 	// ユーザー登録
@@ -150,14 +145,9 @@ func TestMain_saveContract(t *testing.T) {
 }
 
 func TestMain_getContract(t *testing.T) {
-	// 重複しない商品名でテストを行う
-	unixNano := time.Now().UnixNano()
-	suffix := strconv.FormatInt(unixNano, 10)
-	name := "商品" + suffix
-
 	// 検証用データ(商品)登録
 	productAppService := application_service.NewProductApplicationService()
-	product, validErrs, err := productAppService.Register(name, "100")
+	product, validErrs, err := productAppService.Register("商品", "100")
 	assert.NoError(t, err)
 	assert.Len(t, validErrs, 0)
 
@@ -203,7 +193,7 @@ func TestMain_getContract(t *testing.T) {
 		assert.NotZero(t, gotContractData.User.UpdatedAt)
 
 		assert.Equal(t, product.Id, gotContractData.Product.Id)
-		assert.Equal(t, name, gotContractData.Product.Name)
+		assert.Equal(t, "商品", gotContractData.Product.Name)
 		assert.Equal(t, "100", gotContractData.Product.Price)
 		assert.NotZero(t, gotContractData.Product.CreatedAt)
 		assert.NotZero(t, gotContractData.Product.UpdatedAt)

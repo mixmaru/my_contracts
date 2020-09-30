@@ -301,7 +301,7 @@ func createUser(executor gorp.SqlExecutor) int {
 }
 
 func createProduct(executor gorp.SqlExecutor) int {
-	productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "1000")
+	productEntity, err := entities.NewProductEntity("商品", "1000")
 	if err != nil {
 		panic("productEntity作成失敗")
 	}
