@@ -5,9 +5,11 @@ create table right_to_use_active
 		constraint right_to_use_active_pk
 			primary key
 		constraint right_to_use_active_right_to_use_id_fk
-			references right_to_use (id)
+			references right_to_use (id),
+	created_at timestamptz not null,
+	updated_at timestamptz not null
 );
-INSERT INTO right_to_use_active (right_to_use_id) SELECT id FROM right_to_use;
+INSERT INTO right_to_use_active (right_to_use_id, created_at, updated_at) SELECT id, created_at, updated_at FROM right_to_use;
 
 create table right_to_use_history
 (
@@ -15,7 +17,9 @@ create table right_to_use_history
 		constraint right_to_use_history_pk
 			primary key
 		constraint right_to_use_history_right_to_use_id_fk
-			references right_to_use (id)
+			references right_to_use (id),
+	created_at timestamptz not null,
+	updated_at timestamptz not null
 );
 
 -- +migrate Down
