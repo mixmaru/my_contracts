@@ -28,16 +28,42 @@ func TestContractRepository_Create(t *testing.T) {
 	assert.NoError(t, err)
 
 	t.Run("UserIdとProductIdと契約日と課金開始日を渡すと契約が新規作成される", func(t *testing.T) {
-		// 契約作成テスト
-		contractRepository := NewContractRepository()
+		////// 準備
+		// 使用権データ作成
+		rightToUses := make([]*entities.RightToUseEntity, 0, 2)
+		rightToUse1 := entities.NewRightToUseEntity(
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+		)
+		rightToUse2 := entities.NewRightToUseEntity(
+			utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0),
+		)
+		rightToUses = append(rightToUses, rightToUse1, rightToUse2)
+		// 契約データ作成
 		contractDate := utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0)
 		billingStartDate := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
-		contractEntity := entities.NewContractEntity(savedUserId, savedProductId, contractDate, billingStartDate)
+		contractEntity := entities.NewContractEntity(savedUserId, savedProductId, contractDate, billingStartDate, rightToUses)
 
+		////// 実行
+		contractRepository := NewContractRepository()
 		savedContractId, err := contractRepository.Create(contractEntity, db)
 
+		////// 検証
 		assert.NoError(t, err)
 		assert.NotZero(t, savedContractId)
+		// 使用権が作られているかチェック
+		count, err := db.SelectInt(`
+SELECT COUNT(1)
+FROM right_to_use_active rtua
+    INNER JOIN right_to_use rtu ON rtua.right_to_use_id = rtu.id
+    INNER JOIN contracts c ON c.id = rtu.contract_id
+WHERE c.id = $1
+GROUP BY contract_id
+;`, savedContractId)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, count)
+
 	})
 
 	t.Run("存在しないuserIdで作成されようとしたとき_エラーが出る", func(t *testing.T) {
