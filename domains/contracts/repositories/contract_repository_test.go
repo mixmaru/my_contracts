@@ -70,7 +70,7 @@ GROUP BY contract_id
 		contractRepository := NewContractRepository()
 		contractDate := utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0)
 		billingStartDate := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
-		contractEntity := entities.NewContractEntity(-100, savedProductId, contractDate, billingStartDate)
+		contractEntity := entities.NewContractEntity(-100, savedProductId, contractDate, billingStartDate, []*entities.RightToUseEntity{})
 
 		savedContractId, err := contractRepository.Create(contractEntity, db)
 
@@ -82,7 +82,7 @@ GROUP BY contract_id
 		contractRepository := NewContractRepository()
 		contractDate := utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0)
 		billingStartDate := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
-		contractEntity := entities.NewContractEntity(savedUserId, -100, contractDate, billingStartDate)
+		contractEntity := entities.NewContractEntity(savedUserId, -100, contractDate, billingStartDate, []*entities.RightToUseEntity{})
 
 		savedContractId, err := contractRepository.Create(contractEntity, db)
 
@@ -118,6 +118,7 @@ func TestContractRepository_GetById(t *testing.T) {
 			savedProductId,
 			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 			utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{},
 		)
 		savedId, err := r.Create(contractEntity, db)
 		assert.NoError(t, err)
