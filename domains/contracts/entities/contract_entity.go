@@ -23,9 +23,9 @@ func NewContractEntity(userId int, productId int, contractDate, billingStartDate
 	}
 }
 
-func NewContractEntityWithData(id, userId, productId int, contractDate, billingStartDate, createdAt, updatedAt time.Time) (*ContractEntity, error) {
+func NewContractEntityWithData(id, userId, productId int, contractDate, billingStartDate, createdAt, updatedAt time.Time, rightToUses []*RightToUseEntity) (*ContractEntity, error) {
 	entity := ContractEntity{}
-	err := entity.LoadData(id, userId, productId, contractDate, billingStartDate, createdAt, updatedAt)
+	err := entity.LoadData(id, userId, productId, contractDate, billingStartDate, createdAt, updatedAt, rightToUses)
 	if err != nil {
 		return nil, err
 	}
@@ -75,12 +75,13 @@ func (c *ContractEntity) LastBillingStartDate(targetDate time.Time) time.Time {
 }
 
 //// 保持データをセットし直す
-func (c *ContractEntity) LoadData(id, userId, productId int, contractDate, billingStartDate, createdAt, updatedAt time.Time) error {
+func (c *ContractEntity) LoadData(id, userId, productId int, contractDate, billingStartDate, createdAt, updatedAt time.Time, rightToUses []*RightToUseEntity) error {
 	c.id = id
 	c.userId = userId
 	c.productId = productId
 	c.contractDate = contractDate
 	c.billingStartDate = billingStartDate
+	c.rightToUseEntities = rightToUses
 
 	c.createdAt = createdAt
 	c.updatedAt = updatedAt

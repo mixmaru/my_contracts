@@ -48,7 +48,7 @@ func TestContractEntity_NewContractEntityWithData(t *testing.T) {
 	billingStartDate := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	createdAt := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	updatedAt := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
-	entity, err := NewContractEntityWithData(1, 2, 3, contractDate, billingStartDate, createdAt, updatedAt)
+	entity, err := NewContractEntityWithData(1, 2, 3, contractDate, billingStartDate, createdAt, updatedAt, []*RightToUseEntity{})
 	assert.NoError(t, err)
 
 	assert.Equal(t, 1, entity.Id())
@@ -56,6 +56,7 @@ func TestContractEntity_NewContractEntityWithData(t *testing.T) {
 	assert.Equal(t, 3, entity.ProductId())
 	assert.True(t, contractDate.Equal(entity.ContractDate()))
 	assert.True(t, billingStartDate.Equal(entity.BillingStartDate()))
+	assert.Len(t, entity.RightToUses(), 0)
 	assert.True(t, createdAt.Equal(entity.CreatedAt()))
 	assert.True(t, updatedAt.Equal(entity.UpdatedAt()))
 }
@@ -76,6 +77,7 @@ func TestContractEntity_LoadData(t *testing.T) {
 			billingStartDate,
 			createdAt,
 			updateAt,
+			[]*RightToUseEntity{},
 		)
 		assert.NoError(t, err)
 
@@ -84,6 +86,7 @@ func TestContractEntity_LoadData(t *testing.T) {
 		assert.Equal(t, 3, contractEntity.ProductId())
 		assert.EqualValues(t, contractDate, contractEntity.ContractDate())
 		assert.EqualValues(t, billingStartDate, contractEntity.BillingStartDate())
+		assert.Len(t, contractEntity.RightToUses(), 0)
 		assert.EqualValues(t, createdAt, contractEntity.CreatedAt())
 		assert.EqualValues(t, updateAt, contractEntity.UpdatedAt())
 	})
@@ -98,6 +101,7 @@ func TestContractEntity_LastBillingStartDate(t *testing.T) {
 		utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0),
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		[]*RightToUseEntity{},
 	)
 	assert.NoError(t, err)
 
