@@ -6,10 +6,11 @@ import (
 
 type ContractEntity struct {
 	BaseEntity
-	userId           int
-	productId        int
-	contractDate     time.Time
-	billingStartDate time.Time
+	userId             int
+	productId          int
+	contractDate       time.Time
+	billingStartDate   time.Time
+	rightToUseEntities []*RightToUseEntity // アクティブな使用権
 }
 
 func NewContractEntity(userId int, productId int, contractDate, billingStartDate time.Time) *ContractEntity {
