@@ -71,38 +71,58 @@ func TestProductRepository_GetById(t *testing.T) {
 func TestProductRepository_GetByName(t *testing.T) {
 	db, err := db_connection.GetConnection()
 	assert.NoError(t, err)
-	//defer db.Db.Close()
-	//_, err = db.Exec("truncate table products cascade")
-	//assert.NoError(t, err)
+	defer db.Db.Close()
+	_, err = db.Exec(`DELETE FROM product_price_monthlies ppm
+WHERE ppm.product_id IN (
+      SELECT id FROM products WHERE name = 'GetByNameテスト用商品'
+)`)
+	assert.NoError(t, err)
+	_, err = db.Exec("DELETE FROM products WHERE name = 'GetByNameテスト用商品'")
+	assert.NoError(t, err)
 
 	r := NewProductRepository()
 
 	// 検証用データ登録
-	productEntity, err := entities.NewProductEntity("商品", "1000")
+	productEntity1, err := entities.NewProductEntity("GetByNameテスト用商品", "1000")
 	assert.NoError(t, err)
-	savedId, err := r.Save(productEntity, db)
+	savedId1, err := r.Save(productEntity1, db)
+	assert.NoError(t, err)
+	// 検証用データ登録
+	productEntity2, err := entities.NewProductEntity("GetByNameテスト用商品", "2000")
+	assert.NoError(t, err)
+	savedId2, err := r.Save(productEntity2, db)
 	assert.NoError(t, err)
 
 	t.Run("データがある時は商品名でデータを取得できる", func(t *testing.T) {
 		// データ取得
-		loadedEntity, err := r.GetByName(productEntity.Name(), db)
+		loadedEntities, err := r.GetByName("GetByNameテスト用商品", db)
 		assert.NoError(t, err)
 
 		// 検証
-		assert.Equal(t, savedId, loadedEntity.Id())
-		assert.Equal(t, productEntity.Name(), loadedEntity.Name())
-		price, exist := loadedEntity.MonthlyPrice()
+		assert.Len(t, loadedEntities, 2)
+		// 1つめ
+		assert.Equal(t, savedId1, loadedEntities[0].Id())
+		assert.Equal(t, productEntity1.Name(), loadedEntities[0].Name())
+		price, exist := loadedEntities[0].MonthlyPrice()
 		assert.True(t, exist)
 		assert.True(t, price.Equal(decimal.NewFromFloat(1000)))
-		assert.NotZero(t, loadedEntity.CreatedAt())
-		assert.NotZero(t, loadedEntity.UpdatedAt())
+		assert.NotZero(t, loadedEntities[0].CreatedAt())
+		assert.NotZero(t, loadedEntities[0].UpdatedAt())
+		// 2つめ
+		assert.Equal(t, savedId2, loadedEntities[1].Id())
+		assert.Equal(t, productEntity2.Name(), loadedEntities[1].Name())
+		price, exist = loadedEntities[1].MonthlyPrice()
+		assert.True(t, exist)
+		assert.True(t, price.Equal(decimal.NewFromFloat(2000)))
+		assert.NotZero(t, loadedEntities[1].CreatedAt())
+		assert.NotZero(t, loadedEntities[1].UpdatedAt())
 	})
 
-	t.Run("データがない時はnilが返る", func(t *testing.T) {
+	t.Run("データがない時は空スライスが返る", func(t *testing.T) {
 		// データ取得
 		loadedEntity, err := r.GetByName("", db) //空文字商品は登録できないようになってるので、カラ文字で検証する
 		assert.NoError(t, err)
-		assert.Nil(t, loadedEntity)
+		assert.Len(t, loadedEntity, 0)
 	})
 }
 func TestProductRepository_GetByRightToUseId(t *testing.T) {

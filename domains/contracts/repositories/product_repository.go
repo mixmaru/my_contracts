@@ -77,10 +77,9 @@ WHERE p.id = $1
 	return &productEntity, nil
 }
 
-func (r *ProductRepository) GetByName(name string, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
+func (r *ProductRepository) GetByName(name string, executor gorp.SqlExecutor) ([]*entities.ProductEntity, error) {
 	// データ取得
-	var productRecord productGetMapper
-	var productEntity entities.ProductEntity
+	var productRecords []*productGetMapper
 	query := `
 SELECT
        id,
@@ -95,15 +94,21 @@ SELECT
 FROM products p
 LEFT OUTER JOIN product_price_monthlies ppm on p.id = ppm.product_id
 WHERE p.name = $1
+ORDER BY id
 `
-	noRow, err := r.selectOne(executor, &productRecord, &productEntity, query, name)
+	_, err := executor.Select(&productRecords, query, name)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "商品データの取得失敗。query: %v", query)
 	}
-	if noRow {
-		return nil, nil
+	retEntities := make([]*entities.ProductEntity, 0, len(productRecords))
+	for _, record := range productRecords {
+		entity, err := entities.NewProductEntityWithData(record.Id, record.Name, record.PriceMonthly.Decimal.String(), record.CreatedAt, record.UpdatedAt)
+		if err != nil {
+			return nil, errors.Wrapf(err, "商品データEntityの組み立て失敗。record: %+v", record)
+		}
+		retEntities = append(retEntities, entity)
 	}
-	return &productEntity, nil
+	return retEntities, nil
 }
 
 func (r *ProductRepository) GetByRightToUseId(rightToUseId int, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
