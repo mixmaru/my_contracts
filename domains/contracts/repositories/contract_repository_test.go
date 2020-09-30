@@ -62,7 +62,7 @@ WHERE c.id = $1
 GROUP BY contract_id
 ;`, savedContractId)
 		assert.NoError(t, err)
-		assert.Equal(t, 2, count)
+		assert.Equal(t, 2, int(count))
 
 	})
 

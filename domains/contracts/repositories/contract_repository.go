@@ -20,6 +20,7 @@ func NewContractRepository() *ContractRepository {
 
 // 契約エンティティを新規保存する
 func (r *ContractRepository) Create(contractEntity *entities.ContractEntity, executor gorp.SqlExecutor) (savedId int, err error) {
+	////// contractの保存
 	// data_mapperオブジェクトに詰め替え
 	contractMapper := data_mappers.ContractMapper{
 		UserId:                   contractEntity.UserId(),
@@ -28,11 +29,31 @@ func (r *ContractRepository) Create(contractEntity *entities.ContractEntity, exe
 		BillingStartDate:         contractEntity.BillingStartDate(),
 		CreatedAtUpdatedAtMapper: data_mappers.CreatedAtUpdatedAtMapper{},
 	}
-
 	// 新規保存実行
 	err = executor.Insert(&contractMapper)
 	if err != nil {
 		return 0, errors.Wrapf(err, "contractsテーブルへの保存に失敗しました。%v", contractEntity)
+	}
+
+	// 使用権の保存
+	rightToUses := contractEntity.RightToUses()
+	for _, rightToUseEntity := range rightToUses {
+		////// rightToUseの保存
+		rightToUseMapper := data_mappers.RightToUseMapper{}
+		rightToUseMapper.ContractId = contractMapper.Id
+		rightToUseMapper.ValidFrom = rightToUseEntity.ValidFrom()
+		rightToUseMapper.ValidTo = rightToUseEntity.ValidTo()
+		err := executor.Insert(&rightToUseMapper)
+		if err != nil {
+			return 0, errors.Wrapf(err, "right_to_useテーブルへの保存に失敗しました。rightToUseMapper: %+v", rightToUseMapper)
+		}
+		////// rightToUseActiveの保存
+		activeMapper := data_mappers.RightToUseActiveMapper{}
+		activeMapper.RightToUseId = rightToUseMapper.Id
+		err = executor.Insert(&activeMapper)
+		if err != nil {
+			return 0, errors.Wrapf(err, "right_to_use_rightテーブルへの保存に失敗しました。activeMapper: %+v", activeMapper)
+		}
 	}
 
 	return contractMapper.Id, nil
