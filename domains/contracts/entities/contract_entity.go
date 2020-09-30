@@ -13,12 +13,13 @@ type ContractEntity struct {
 	rightToUseEntities []*RightToUseEntity // アクティブな使用権
 }
 
-func NewContractEntity(userId int, productId int, contractDate, billingStartDate time.Time) *ContractEntity {
+func NewContractEntity(userId int, productId int, contractDate, billingStartDate time.Time, rightToUses []*RightToUseEntity) *ContractEntity {
 	return &ContractEntity{
-		userId:           userId,
-		productId:        productId,
-		contractDate:     contractDate,
-		billingStartDate: billingStartDate,
+		userId:             userId,
+		productId:          productId,
+		contractDate:       contractDate,
+		billingStartDate:   billingStartDate,
+		rightToUseEntities: rightToUses,
 	}
 }
 
@@ -45,6 +46,16 @@ func (c *ContractEntity) ContractDate() time.Time {
 
 func (c *ContractEntity) BillingStartDate() time.Time {
 	return c.billingStartDate
+}
+
+// 外部からいじられないようにデータコピーして渡す
+func (c *ContractEntity) RightToUses() []*RightToUseEntity {
+	retEntities := make([]*RightToUseEntity, 0, len(c.rightToUseEntities))
+	for _, rightToUse := range c.rightToUseEntities {
+		entity := *rightToUse
+		retEntities = append(retEntities, &entity)
+	}
+	return retEntities
 }
 
 /*

@@ -10,11 +10,21 @@ import (
 // UserIndividualのインスタンス化をテスト
 func TestContractEntity_NewContractEntity(t *testing.T) {
 	// インスタンス化
+	rightToUses := make([]*RightToUseEntity, 0, 2)
+	rightToUses = append(rightToUses, NewRightToUseEntity(
+		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
+	))
+	rightToUses = append(rightToUses, NewRightToUseEntity(
+		time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2020, 3, 1, 0, 0, 0, 0, time.UTC),
+	))
 	entity := NewContractEntity(
 		1,
 		2,
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+		rightToUses,
 	)
 
 	// テスト
@@ -22,6 +32,14 @@ func TestContractEntity_NewContractEntity(t *testing.T) {
 	assert.Equal(t, 2, entity.ProductId())
 	assert.EqualValues(t, time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), entity.ContractDate())
 	assert.EqualValues(t, time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC), entity.BillingStartDate())
+	// 使用権
+	actualRightToUses := entity.RightToUses()
+	assert.Len(t, actualRightToUses, 2)
+	assert.True(t, actualRightToUses[0].validFrom.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
+	assert.True(t, actualRightToUses[0].validTo.Equal(time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)))
+	assert.True(t, actualRightToUses[1].validFrom.Equal(time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)))
+	assert.True(t, actualRightToUses[1].validTo.Equal(time.Date(2020, 3, 1, 0, 0, 0, 0, time.UTC)))
+	actualRightToUses[0].validFrom = time.Time{}
 }
 
 func TestContractEntity_NewContractEntityWithData(t *testing.T) {
