@@ -142,7 +142,7 @@ func createPrepareData(db gorp.SqlExecutor, t *testing.T) (userId, productId int
 
 	// 事前準備。productを登録しとく
 	// 重複しない商品名でテストを行う
-	productEntity, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "200")
+	productEntity, err := entities.NewProductEntity("商品", "200")
 	assert.NoError(t, err)
 	productRepository := repositories.NewProductRepository()
 	productId, err = productRepository.Save(productEntity, db)

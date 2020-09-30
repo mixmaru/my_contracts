@@ -22,7 +22,7 @@ func TestBillApplicationService_ExecuteBilling(t *testing.T) {
 		_, err = db.Exec("DELETE FROM right_to_use")
 		assert.NoError(t, err)
 		// 商品作成
-		product, validErrors, err := productApp.Register(utils.CreateUniqProductNameForTest(), "1234")
+		product, validErrors, err := productApp.Register("商品", "1234")
 		assert.NoError(t, err)
 		assert.Len(t, validErrors, 0)
 		// user作成

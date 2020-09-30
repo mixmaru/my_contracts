@@ -239,11 +239,11 @@ func createRightToUseDataForTest() (rightToUse1Id, rightToUse2Id, userId int) {
 	}
 
 	// 商品データ作成
-	productEntity1, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "100")
+	productEntity1, err := entities.NewProductEntity("商品", "100")
 	if err != nil {
 		panic("商品データ作成失敗")
 	}
-	productEntity2, err := entities.NewProductEntity(utils.CreateUniqProductNameForTest(), "1000")
+	productEntity2, err := entities.NewProductEntity("商品", "1000")
 	if err != nil {
 		panic("商品データ作成失敗")
 	}

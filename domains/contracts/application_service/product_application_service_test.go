@@ -2,27 +2,19 @@ package application_service
 
 import (
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
-	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
-	"strconv"
 	"testing"
-	"time"
 )
 
 func TestProductApplicationService_Register(t *testing.T) {
 	productApp := NewProductApplicationService()
 
 	t.Run("商品名と金額を渡すと商品データが作成される", func(t *testing.T) {
-		// 重複しない商品名でテストを行う
-		unixNano := time.Now().UnixNano()
-		suffix := strconv.FormatInt(unixNano, 10)
-		name := "商品" + suffix
-
-		dto, _, err := productApp.Register(name, "1000")
+		dto, _, err := productApp.Register("商品", "1000")
 		assert.NoError(t, err)
 
 		assert.NotZero(t, dto.Id)
-		assert.Equal(t, name, dto.Name)
+		assert.Equal(t, "商品", dto.Name)
 		assert.Equal(t, "1000", dto.Price)
 		assert.NotZero(t, dto.CreatedAt)
 		assert.NotZero(t, dto.UpdatedAt)
@@ -53,15 +45,13 @@ func TestProductApplicationService_Get(t *testing.T) {
 }
 
 func TestProductApplicationService_registerValidation(t *testing.T) {
-	savedProduct := createProduct()
-
 	conn, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 
 	productAppService := NewProductApplicationService()
 
 	t.Run("バリデーションエラーにならない場合はvalidationErrorsは空スライスが返ってくる", func(t *testing.T) {
-		validationErrors, err := productAppService.registerValidation(utils.CreateUniqProductNameForTest(), "1000.01", conn)
+		validationErrors, err := productAppService.registerValidation("商品", "1000.01", conn)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string][]string{}, validationErrors)
 	})
@@ -75,17 +65,6 @@ func TestProductApplicationService_registerValidation(t *testing.T) {
 			},
 			"price": []string{
 				"数値ではありません",
-			},
-		}
-		assert.Equal(t, expect, validationErrors)
-	})
-
-	t.Run("nameがすでに存在する商品名だった場合_バリデーションエラーメッセージが返ってくる", func(t *testing.T) {
-		validationErrors, err := productAppService.registerValidation(savedProduct.Name, "1000", conn)
-		assert.NoError(t, err)
-		expect := map[string][]string{
-			"name": []string{
-				"すでに存在します",
 			},
 		}
 		assert.Equal(t, expect, validationErrors)
