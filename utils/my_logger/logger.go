@@ -24,8 +24,7 @@ func GetLogger() (*zap.Logger, error) {
 	switch mode {
 	case utils.Production:
 		logger, err = zap.NewProduction()
-	case utils.Development:
-	case utils.Test:
+	case utils.Development, utils.Test:
 		logger, err = zap.NewDevelopment()
 	default:
 		return nil, errors.New(fmt.Sprintf("動作モードが考慮外。mode: %v", mode))
