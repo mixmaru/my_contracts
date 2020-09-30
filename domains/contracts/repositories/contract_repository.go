@@ -62,10 +62,10 @@ func (r *ContractRepository) Create(contractEntity *entities.ContractEntity, exe
 func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contract *entities.ContractEntity, product *entities.ProductEntity, user interface{}, err error) {
 	// データ取得
 	// データマッパー用意
-	var mapper data_mappers.ContractView
+	var mappers []*data_mappers.ContractView
 	// sql作成
-	query :=
-		`select
+	query := `
+select
        c.id as id,
        c.contract_date as contract_date,
        c.billing_start_date as billing_start_date,
@@ -88,16 +88,24 @@ func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contrac
        uc.contact_person_name as user_corporation_contact_person_name,
        uc.president_name as user_corporation_president_name,
        u.created_at as user_corporation_created_at,
-       u.updated_at as user_corporation_updated_at
+       u.updated_at as user_corporation_updated_at,
+       rtu.id as right_to_use_id,
+       rtu.valid_from as right_to_use_valid_from,
+       rtu.valid_to as right_to_use_valid_to,
+       rtua.created_at as right_to_use_active_created_at,
+       rtua.updated_at as right_to_use_active_updated_at
 from contracts c
 inner join products p on c.product_id = p.id
 inner join product_price_monthlies ppm on ppm.product_id = p.id
 inner join users u on c.user_id = u.id
+inner join right_to_use rtu on rtu.contract_id = c.id
+inner join right_to_use_active rtua on rtua.right_to_use_id = rtu.id
 left outer join users_individual ui on u.id = ui.user_id
 left outer join users_corporation uc on u.id = uc.user_id
-where c.id = $1`
+where c.id = $1
+order by right_to_use_id`
 	// sqlとデータマッパーでクエリ実行
-	err = executor.SelectOne(&mapper, query, id)
+	_, err = executor.Select(&mappers, query, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil, nil, nil
@@ -105,30 +113,39 @@ where c.id = $1`
 			return nil, nil, nil, errors.Wrapf(err, "契約情報取得失敗。id: %v", id)
 		}
 	}
+
+	// 使用権データ作成
+	rightToUseEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
+	for _, mapper := range mappers {
+		// 使用権エンティティにデータを詰める
+		entity := entities.NewRightToUseEntityWithData(mapper.RightToUseId, mapper.RightToUseValidFrom, mapper.RightToUseValidTo, mapper.RightToUseCreatedAt, mapper.RightToUseUpdatedAt)
+		rightToUseEntities = append(rightToUseEntities, entity)
+	}
+
 	// productエンティティにデータを詰める
-	product, err = entities.NewProductEntityWithData(mapper.ProductId, mapper.ProductName, mapper.ProductPrice.String(), mapper.ProductCreatedAt, mapper.ProductUpdatedAt)
+	product, err = entities.NewProductEntityWithData(mappers[0].ProductId, mappers[0].ProductName, mappers[0].ProductPrice.String(), mappers[0].ProductCreatedAt, mappers[0].ProductUpdatedAt)
 	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "productEntity作成失敗。mapper: %v", mapper)
+		return nil, nil, nil, errors.Wrapf(err, "productEntity作成失敗。mappers[0]: %v", mappers[0])
 	}
 	// contractエンティティにデータを詰める
-	contract, err = entities.NewContractEntityWithData(mapper.Id, mapper.UserId, mapper.ProductId, mapper.ContractDate, mapper.BillingStartDate, mapper.CreatedAt, mapper.UpdatedAt)
+	contract, err = entities.NewContractEntityWithData(mappers[0].Id, mappers[0].UserId, mappers[0].ProductId, mappers[0].ContractDate, mappers[0].BillingStartDate, mappers[0].CreatedAt, mappers[0].UpdatedAt, rightToUseEntities)
 	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "contractEntity作成失敗。mapper: %v", mapper)
+		return nil, nil, nil, errors.Wrapf(err, "contractEntity作成失敗。mappers[0]: %v", mappers[0])
 	}
 	// userエンティティにデータを詰める
-	switch mapper.UserType {
+	switch mappers[0].UserType {
 	case "individual":
-		user, err = entities.NewUserIndividualEntityWithData(mapper.UserId, mapper.UserIndividualName.String, mapper.UserIndividualCreatedAt.Time, mapper.UserIndividualUpdatedAt.Time)
+		user, err = entities.NewUserIndividualEntityWithData(mappers[0].UserId, mappers[0].UserIndividualName.String, mappers[0].UserIndividualCreatedAt.Time, mappers[0].UserIndividualUpdatedAt.Time)
 		if err != nil {
-			return nil, nil, nil, errors.Wrapf(err, "userIndividualEntity作成失敗。mapper: %v", mapper)
+			return nil, nil, nil, errors.Wrapf(err, "userIndividualEntity作成失敗。mappers[0]: %v", mappers[0])
 		}
 	case "corporation":
-		user, err = entities.NewUserCorporationEntityWithData(mapper.UserId, mapper.UserCorporationCorporationName.String, mapper.UserCorporationContractPersonName.String, mapper.UserCorporationPresidentName.String, mapper.UserCorporationCreatedAt.Time, mapper.UserCorporationUpdatedAt.Time)
+		user, err = entities.NewUserCorporationEntityWithData(mappers[0].UserId, mappers[0].UserCorporationCorporationName.String, mappers[0].UserCorporationContractPersonName.String, mappers[0].UserCorporationPresidentName.String, mappers[0].UserCorporationCreatedAt.Time, mappers[0].UserCorporationUpdatedAt.Time)
 		if err != nil {
-			return nil, nil, nil, errors.Wrapf(err, "userCorporationEntity作成失敗。mapper: %v", mapper)
+			return nil, nil, nil, errors.Wrapf(err, "userCorporationEntity作成失敗。mappers[0]: %v", mappers[0])
 		}
 	default:
-		return nil, nil, nil, errors.Errorf("考慮外のUserTypeが来た。mapper.UserType: %v, mappet: %v", mapper.UserType, mapper)
+		return nil, nil, nil, errors.Errorf("考慮外のUserTypeが来た。mappers[0].UserType: %v, mappet: %v", mappers[0].UserType, mappers[0])
 	}
 
 	return contract, product, user, nil

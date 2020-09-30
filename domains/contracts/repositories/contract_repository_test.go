@@ -118,7 +118,16 @@ func TestContractRepository_GetById(t *testing.T) {
 			savedProductId,
 			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 			utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0),
-			[]*entities.RightToUseEntity{},
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+				),
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0),
+				),
+			},
 		)
 		savedId, err := r.Create(contractEntity, db)
 		assert.NoError(t, err)
@@ -133,6 +142,13 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.Equal(t, savedProductId, loadedContract.ProductId())
 		assert.NotZero(t, loadedContract.CreatedAt())
 		assert.NotZero(t, loadedContract.UpdatedAt())
+		// rightToUse
+		rightToUses := loadedContract.RightToUses()
+		assert.Len(t, rightToUses, 2)
+		assert.True(t, rightToUses[0].ValidFrom().Equal(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0)))
+		assert.True(t, rightToUses[0].ValidTo().Equal(utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0)))
+		assert.True(t, rightToUses[1].ValidFrom().Equal(utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0)))
+		assert.True(t, rightToUses[1].ValidTo().Equal(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0)))
 		// productテスト
 		assert.Equal(t, savedProductId, loadedProduct.Id())
 		assert.Equal(t, productEntity.Name(), loadedProduct.Name())
