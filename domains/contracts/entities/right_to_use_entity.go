@@ -30,6 +30,15 @@ func (r *RightToUseEntity) BillDetailId() int {
 	return r.billDetailId
 }
 
+// 請求済かどうかを返す
+func (r *RightToUseEntity) WasBilling() bool {
+	if r.billDetailId == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
 func NewRightToUseEntityWithData(id int, validFrom, validTo time.Time, billDetailId int, createdAt, updatedAt time.Time) *RightToUseEntity {
 	entity := &RightToUseEntity{}
 	entity.LoadData(id, validFrom, validTo, billDetailId, createdAt, updatedAt)

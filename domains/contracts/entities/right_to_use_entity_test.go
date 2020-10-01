@@ -68,3 +68,35 @@ func TestRightToUseEntity_LoadData(t *testing.T) {
 		assert.True(t, entity.UpdatedAt().Equal(time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC)))
 	})
 }
+
+func TestRightToUseEntity_WasBilling(t *testing.T) {
+	t.Run("請求済ならtrueが返る", func(t *testing.T) {
+		////// 準備
+		entity := NewRightToUseEntityWithData(
+			1,
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+			10,
+			time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC),
+		)
+
+		////// 実行検証
+		assert.True(t, entity.WasBilling())
+	})
+
+	t.Run("未請求ならfalseが返る", func(t *testing.T) {
+		////// 準備
+		entity := NewRightToUseEntityWithData(
+			1,
+			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+			0,
+			time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
+			time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC),
+		)
+
+		////// 実行検証
+		assert.False(t, entity.WasBilling())
+	})
+}
