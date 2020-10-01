@@ -24,5 +24,7 @@ type ContractView struct {
 	RightToUseCreatedAt time.Time `db:"right_to_use_active_created_at"`
 	RightToUseUpdatedAt time.Time `db:"right_to_use_active_updated_at"`
 
+	BillDetailId int `db:"bill_detail_id"`
+
 	UserView
 }

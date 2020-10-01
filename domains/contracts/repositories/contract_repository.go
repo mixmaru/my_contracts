@@ -93,7 +93,8 @@ select
        rtu.valid_from as right_to_use_valid_from,
        rtu.valid_to as right_to_use_valid_to,
        rtua.created_at as right_to_use_active_created_at,
-       rtua.updated_at as right_to_use_active_updated_at
+       rtua.updated_at as right_to_use_active_updated_at,
+       COALESCE(bd.id, 0) as bill_detail_id
 from contracts c
 inner join products p on c.product_id = p.id
 inner join product_price_monthlies ppm on ppm.product_id = p.id
@@ -102,6 +103,7 @@ inner join right_to_use rtu on rtu.contract_id = c.id
 inner join right_to_use_active rtua on rtua.right_to_use_id = rtu.id
 left outer join users_individual ui on u.id = ui.user_id
 left outer join users_corporation uc on u.id = uc.user_id
+left outer join bill_details bd on bd.right_to_use_id = rtu.id
 where c.id = $1
 order by right_to_use_id`
 	// sqlとデータマッパーでクエリ実行
@@ -123,7 +125,14 @@ order by right_to_use_id`
 	rightToUseEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
 	for _, mapper := range mappers {
 		// 使用権エンティティにデータを詰める
-		entity := entities.NewRightToUseEntityWithData(mapper.RightToUseId, mapper.RightToUseValidFrom, mapper.RightToUseValidTo, mapper.RightToUseCreatedAt, mapper.RightToUseUpdatedAt)
+		entity := entities.NewRightToUseEntityWithData(
+			mapper.RightToUseId,
+			mapper.RightToUseValidFrom,
+			mapper.RightToUseValidTo,
+			mapper.BillDetailId,
+			mapper.RightToUseCreatedAt,
+			mapper.RightToUseUpdatedAt,
+		)
 		rightToUseEntities = append(rightToUseEntities, entity)
 	}
 

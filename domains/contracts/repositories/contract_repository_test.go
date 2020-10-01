@@ -3,6 +3,7 @@ package repositories
 import (
 	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
+	"github.com/mixmaru/my_contracts/lib/decimal"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -132,7 +133,17 @@ func TestContractRepository_GetById(t *testing.T) {
 		savedId, err := r.Create(contractEntity, db)
 		assert.NoError(t, err)
 
-		// データ取得
+		// データ取得（使用権idを取得するため）
+		loadedContract, _, _, err := r.GetById(savedId, db)
+		assert.NoError(t, err)
+		// 1つめの使用権は請求済にしておく
+		bill := entities.NewBillingAggregation(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0), savedUserId)
+		err = bill.AddBillDetail(entities.NewBillingDetailEntity(loadedContract.RightToUses()[0].Id(), decimal.NewFromInt(10000)))
+		assert.NoError(t, err)
+		billRep := NewBillRepository()
+		_, err = billRep.Create(bill, db)
+		assert.NoError(t, err)
+		// データ取得（請求済データを反映するため）
 		loadedContract, loadedProduct, loadedUser, err := r.GetById(savedId, db)
 		assert.NoError(t, err)
 
@@ -147,8 +158,10 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.Len(t, rightToUses, 2)
 		assert.True(t, rightToUses[0].ValidFrom().Equal(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0)))
 		assert.True(t, rightToUses[0].ValidTo().Equal(utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0)))
+		assert.NotZero(t, rightToUses[0].BillDetailId())
 		assert.True(t, rightToUses[1].ValidFrom().Equal(utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0)))
 		assert.True(t, rightToUses[1].ValidTo().Equal(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0)))
+		assert.Zero(t, rightToUses[1].BillDetailId())
 		// productテスト
 		assert.Equal(t, savedProductId, loadedProduct.Id())
 		assert.Equal(t, productEntity.Name(), loadedProduct.Name())
