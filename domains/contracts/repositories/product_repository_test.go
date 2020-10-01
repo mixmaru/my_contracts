@@ -146,29 +146,29 @@ func TestProductRepository_GetByRightToUseId(t *testing.T) {
 		savedProductId, err := productRep.Save(productEntity, db)
 		assert.NoError(t, err)
 
+		// 使用権を作成
+		rightToUse := entities.NewRightToUseEntity(
+			utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
+			utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+		)
 		// 契約を作成
 		contractEntity := entities.NewContractEntity(
 			savedUserId,
 			savedProductId,
 			utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
 			utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
+			[]*entities.RightToUseEntity{
+				rightToUse,
+			},
 		)
 		contractRep := NewContractRepository()
 		savedContractId, err := contractRep.Create(contractEntity, db)
 		assert.NoError(t, err)
-
-		// 使用権を作成
-		rightToUse := entities.NewRightToUseEntity(
-			savedContractId,
-			utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
-			utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
-		)
-		rightToUseRep := NewRightToUseRepository()
-		savedRightToUseId, err := rightToUseRep.Create(rightToUse, db)
-		assert.NoError(t, err)
+		// 登録した契約データを再読込
+		loadedContract, _, _, err := contractRep.GetById(savedContractId, db)
 
 		////// 実行
-		actual, err := r.GetByRightToUseId(savedRightToUseId, db)
+		actual, err := r.GetByRightToUseId(loadedContract.RightToUses()[0].Id(), db)
 		assert.NoError(t, err)
 
 		// 検証

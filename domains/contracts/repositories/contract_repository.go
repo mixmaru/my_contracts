@@ -114,6 +114,11 @@ order by right_to_use_id`
 		}
 	}
 
+	if len(mappers) == 0 {
+		// データが無い時
+		return nil, nil, nil, nil
+	}
+
 	// 使用権データ作成
 	rightToUseEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
 	for _, mapper := range mappers {

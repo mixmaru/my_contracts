@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"database/sql"
 	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/data_mappers"
 	"github.com/pkg/errors"
@@ -19,49 +18,49 @@ func NewRightToUseRepository() *RightToUseRepository {
 	}
 }
 
-func (r *RightToUseRepository) Create(rightToUseEntity *entities.RightToUseEntity, executor gorp.SqlExecutor) (savedId int, err error) {
-	// データマッパーを用意する
-	mapper := data_mappers.NewRightToUseMapperFromEntity(rightToUseEntity)
+//func (r *RightToUseRepository) Create(rightToUseEntity *entities.RightToUseEntity, executor gorp.SqlExecutor) (savedId int, err error) {
+//	// データマッパーを用意する
+//	mapper := data_mappers.NewRightToUseMapperFromEntity(rightToUseEntity)
+//
+//	// データ登録実行する
+//	err = executor.Insert(&mapper)
+//	if err != nil {
+//		return 0, errors.Wrapf(err, "データ登録失敗。mapper: %+v", mapper)
+//	}
+//
+//	return mapper.Id, nil
+//}
 
-	// データ登録実行する
-	err = executor.Insert(&mapper)
-	if err != nil {
-		return 0, errors.Wrapf(err, "データ登録失敗。mapper: %+v", mapper)
-	}
-
-	return mapper.Id, nil
-}
-
-func (r *RightToUseRepository) GetById(id int, executor gorp.SqlExecutor) (*entities.RightToUseEntity, error) {
-	// データマッパー用意
-	mapper := &data_mappers.RightToUseMapper{}
-	// query用意
-	query := `
-SELECT 
-	id,
-	contract_id,
-	valid_from,
-	valid_to,
-	created_at,
-	updated_at
-FROM right_to_use
-WHERE id = $1;
-`
-	// 取得実行
-	err := executor.SelectOne(mapper, query, id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		} else {
-			return nil, errors.Wrapf(err, "使用権データの取得失敗。id: %v, query: %v", id, query)
-		}
-	}
-
-	// entityに詰める
-	entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ContractId, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
-	// 返却
-	return entity, nil
-}
+//func (r *RightToUseRepository) GetById(id int, executor gorp.SqlExecutor) (*entities.RightToUseEntity, error) {
+//	// データマッパー用意
+//	mapper := &data_mappers.RightToUseMapper{}
+//	// query用意
+//	query := `
+//SELECT
+//	id,
+//	contract_id,
+//	valid_from,
+//	valid_to,
+//	created_at,
+//	updated_at
+//FROM right_to_use
+//WHERE id = $1;
+//`
+//	// 取得実行
+//	err := executor.SelectOne(mapper, query, id)
+//	if err != nil {
+//		if err == sql.ErrNoRows {
+//			return nil, nil
+//		} else {
+//			return nil, errors.Wrapf(err, "使用権データの取得失敗。id: %v, query: %v", id, query)
+//		}
+//	}
+//
+//	// entityに詰める
+//	entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
+//	// 返却
+//	return entity, nil
+//}
 
 /*
 渡した日（請求実行日）以前の請求すべき請求（まだ請求実行されていない）がある使用権データをすべて返す
@@ -98,7 +97,7 @@ ORDER BY c.user_id, rtu.id
 	// mapperからentityを作る
 	retEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
 	for _, mapper := range mappers {
-		entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ContractId, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
+		entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
 		retEntities = append(retEntities, entity)
 	}
 
@@ -145,7 +144,7 @@ ORDER BY id
 	// mapperからentityを作る
 	retEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
 	for _, mapper := range mappers {
-		entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ContractId, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
+		entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
 		retEntities = append(retEntities, entity)
 	}
 

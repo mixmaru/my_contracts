@@ -166,7 +166,7 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.NotZero(t, user.UpdatedAt())
 	})
 
-	t.Run("データがない時", func(t *testing.T) {
+	t.Run("データがない時はnilが返る", func(t *testing.T) {
 		r := NewContractRepository()
 		// データ取得
 		loadedContract, loadedProduct, loadedUser, err := r.GetById(-100, db)

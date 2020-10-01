@@ -18,5 +18,11 @@ type ContractView struct {
 	ProductCreatedAt time.Time       `db:"product_created_at"`
 	ProductUpdatedAt time.Time       `db:"product_updated_at"`
 
+	RightToUseId        int       `db:"right_to_use_id"`
+	RightToUseValidFrom time.Time `db:"right_to_use_valid_from"`
+	RightToUseValidTo   time.Time `db:"right_to_use_valid_to"`
+	RightToUseCreatedAt time.Time `db:"right_to_use_active_created_at"`
+	RightToUseUpdatedAt time.Time `db:"right_to_use_active_updated_at"`
+
 	UserView
 }

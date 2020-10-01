@@ -28,6 +28,7 @@ func (c *ContractMapper) SetDataToEntity(entity interface{}) error {
 		c.BillingStartDate,
 		c.CreatedAt,
 		c.UpdatedAt,
+		[]*entities.RightToUseEntity{},
 	)
 	if err != nil {
 		return err
