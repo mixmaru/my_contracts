@@ -16,6 +16,7 @@ func TestRightToUseEntity_NewRightToUseEntity(t *testing.T) {
 		assert.Zero(t, rightToUseEntity.Id())
 		assert.True(t, rightToUseEntity.ValidFrom().Equal(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0)))
 		assert.True(t, rightToUseEntity.ValidTo().Equal(utils.CreateJstTime(2020, 2, 2, 0, 0, 0, 0)))
+		assert.Zero(t, rightToUseEntity.BillDetailId())
 		assert.Zero(t, rightToUseEntity.CreatedAt())
 		assert.Zero(t, rightToUseEntity.UpdatedAt())
 	})
@@ -28,6 +29,7 @@ func TestRightToUseEntity_NewRightToUseEntityWithData(t *testing.T) {
 			1,
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+			10,
 			time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC),
 		)
@@ -36,6 +38,7 @@ func TestRightToUseEntity_NewRightToUseEntityWithData(t *testing.T) {
 		assert.Equal(t, 1, entity.Id())
 		assert.True(t, entity.ValidFrom().Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
 		assert.True(t, entity.ValidTo().Equal(time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)))
+		assert.Equal(t, 10, entity.BillDetailId())
 		assert.True(t, entity.CreatedAt().Equal(time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC)))
 		assert.True(t, entity.UpdatedAt().Equal(time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC)))
 	})
@@ -51,6 +54,7 @@ func TestRightToUseEntity_LoadData(t *testing.T) {
 			1,
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+			100,
 			time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC),
 		)
@@ -59,6 +63,7 @@ func TestRightToUseEntity_LoadData(t *testing.T) {
 		assert.Equal(t, 1, entity.Id())
 		assert.True(t, entity.ValidFrom().Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
 		assert.True(t, entity.ValidTo().Equal(time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)))
+		assert.Equal(t, 100, entity.BillDetailId())
 		assert.True(t, entity.CreatedAt().Equal(time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC)))
 		assert.True(t, entity.UpdatedAt().Equal(time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC)))
 	})

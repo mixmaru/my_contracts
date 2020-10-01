@@ -6,8 +6,9 @@ import (
 
 type RightToUseEntity struct {
 	BaseEntity
-	validFrom time.Time
-	validTo   time.Time
+	validFrom    time.Time
+	validTo      time.Time
+	billDetailId int // 請求詳細への関連。0だったら未請求
 }
 
 func NewRightToUseEntity(validFrom, validTo time.Time) *RightToUseEntity {
@@ -25,16 +26,21 @@ func (r *RightToUseEntity) ValidTo() time.Time {
 	return r.validTo
 }
 
-func NewRightToUseEntityWithData(id int, validFrom, validTo, createdAt, updatedAt time.Time) *RightToUseEntity {
+func (r *RightToUseEntity) BillDetailId() int {
+	return r.billDetailId
+}
+
+func NewRightToUseEntityWithData(id int, validFrom, validTo time.Time, billDetailId int, createdAt, updatedAt time.Time) *RightToUseEntity {
 	entity := &RightToUseEntity{}
-	entity.LoadData(id, validFrom, validTo, createdAt, updatedAt)
+	entity.LoadData(id, validFrom, validTo, billDetailId, createdAt, updatedAt)
 	return entity
 }
 
-func (r *RightToUseEntity) LoadData(id int, validFrom, validTo, createdAt, updatedAt time.Time) {
+func (r *RightToUseEntity) LoadData(id int, validFrom, validTo time.Time, billDetailId int, createdAt, updatedAt time.Time) {
 	r.id = id
 	r.validFrom = validFrom
 	r.validTo = validTo
+	r.billDetailId = billDetailId
 	r.createdAt = createdAt
 	r.updatedAt = updatedAt
 }
