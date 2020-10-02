@@ -281,10 +281,14 @@ WHERE bd.id IS NULL
 		return nil, errors.Wrapf(err, "請求対象契約のidの取得に失敗しました。query: %v, billingDate: %+v", query, billingDate)
 	}
 
-	// マッパーを用意する
-
-	// データ取得実行する
-
-	// 返却エンティティにつめる
-	return nil, nil
+	if len(targetIds) == 0 {
+		// データがなかった時
+		return []*entities.ContractEntity{}, nil
+	} else {
+		contracts, _, _, err := r.GetByIds(targetIds, executor)
+		if err != nil {
+			return nil, err
+		}
+		return contracts, nil
+	}
 }
