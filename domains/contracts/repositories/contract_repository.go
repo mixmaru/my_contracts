@@ -2,10 +2,13 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/data_mappers"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -59,11 +62,17 @@ func (r *ContractRepository) Create(contractEntity *entities.ContractEntity, exe
 
 	return contractMapper.Id, nil
 }
-
-func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contract *entities.ContractEntity, product *entities.ProductEntity, user interface{}, err error) {
+func (r *ContractRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (contracts []*entities.ContractEntity, products []*entities.ProductEntity, users []interface{}, err error) {
 	// データ取得
 	// データマッパー用意
 	var mappers []*data_mappers.ContractView
+	// idsをインターフェース型に変更
+	idsInterfaceType := make([]interface{}, 0, len(ids))
+	preparedStatement := make([]string, 0, len(ids))
+	for i, id := range ids {
+		idsInterfaceType = append(idsInterfaceType, id)
+		preparedStatement = append(preparedStatement, "$"+strconv.Itoa(int(i)+1))
+	}
 	// sql作成
 	query := `
 select
@@ -105,15 +114,16 @@ inner join right_to_use_active rtua on rtua.right_to_use_id = rtu.id
 left outer join users_individual ui on u.id = ui.user_id
 left outer join users_corporation uc on u.id = uc.user_id
 left outer join bill_details bd on bd.right_to_use_id = rtu.id
-where c.id = $1
-order by right_to_use_id`
+where c.id IN (%v)
+order by c.id, right_to_use_id`
+	query = fmt.Sprintf(query, strings.Join(preparedStatement, ", "))
 	// sqlとデータマッパーでクエリ実行
-	_, err = executor.Select(&mappers, query, id)
+	_, err = executor.Select(&mappers, query, idsInterfaceType...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil, nil, nil
 		} else {
-			return nil, nil, nil, errors.Wrapf(err, "契約情報取得失敗。id: %v", id)
+			return nil, nil, nil, errors.Wrapf(err, "契約情報取得失敗。query: %v, ids: %v", query, ids)
 		}
 	}
 
@@ -122,11 +132,48 @@ order by right_to_use_id`
 		return nil, nil, nil, nil
 	}
 
-	contract, product, user, err = createEntitiesFromMapper(mappers)
+	// contract単位でmapperを分割する
+	mappersByContract := separateMapper(mappers)
+	// contract毎にentityを組み立てる
+	for _, mappers := range mappersByContract {
+		contract, product, user, err := createEntitiesFromMapper(mappers)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		contracts = append(contracts, contract)
+		products = append(products, product)
+		users = append(users, user)
+	}
+	return contracts, products, users, nil
+}
+
+// dbから取得したレコードをcontract単位で分割する
+func separateMapper(mappers []*data_mappers.ContractView) [][]*data_mappers.ContractView {
+	retMapper := [][]*data_mappers.ContractView{}
+	index := -1
+	prevContractId := 0
+	for _, mapper := range mappers {
+		if prevContractId != mapper.Id {
+			prevContractId = mapper.Id
+			index += 1
+			retMapper = append(retMapper, []*data_mappers.ContractView{})
+		}
+		retMapper[index] = append(retMapper[index], mapper)
+	}
+	return retMapper
+}
+
+func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contract *entities.ContractEntity, product *entities.ProductEntity, user interface{}, err error) {
+	contracts, products, users, err := r.GetByIds([]int{id}, executor)
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	return contract, product, user, nil
+	if contracts == nil {
+		// データが無い時
+		return nil, nil, nil, nil
+	} else {
+		return contracts[0], products[0], users[0], nil
+	}
 }
 
 // dbから取得したレコード情報からエンティティを組み上げる
@@ -214,4 +261,30 @@ func createUserEntityFromMapper(mapper *data_mappers.ContractView) (user interfa
 	return user, nil
 }
 
+func (r *ContractRepository) GetBillingTargetByBillingDate(billingDate time.Time, executor gorp.SqlExecutor) ([]*entities.ContractEntity, error) {
+	// 対象contractId取得クエリを用意する
+	query := `
+SELECT
+       c.id
+FROM contracts c
+    INNER JOIN right_to_use rtu on c.id = rtu.contract_id
+    INNER JOIN right_to_use_active rtua on rtu.id = rtua.right_to_use_id
+    LEFT OUTER JOIN bill_details bd on rtu.id = bd.right_to_use_id
+WHERE bd.id IS NULL
+  AND rtu.valid_from <= $1
+  AND c.billing_start_date <= $1
+`
+	// データ取得実行する
+	var targetIds []int
+	_, err := executor.Select(&targetIds, query, billingDate)
+	if err != nil {
+		return nil, errors.Wrapf(err, "請求対象契約のidの取得に失敗しました。query: %v, billingDate: %+v", query, billingDate)
+	}
+
+	// マッパーを用意する
+
+	// データ取得実行する
+
+	// 返却エンティティにつめる
+	return nil, nil
 }
