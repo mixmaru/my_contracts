@@ -70,39 +70,39 @@ func NewRightToUseRepository() *RightToUseRepository {
 契約の課金開始日が6/2の使用権（期間：6/1 ~ 6/30）=> 請求すべきでない。
 契約の課金開始日が6/2の使用権（期間：7/1 ~ 7/31）=> 請求すべきでない。
 */
-func (r *RightToUseRepository) GetBillingTargetByBillingDate(billingDate time.Time, executor gorp.SqlExecutor) ([]*entities.RightToUseEntity, error) {
-	query := `
-SELECT 
-	rtu.id,
-	rtu.contract_id,
-	rtu.valid_from,
-	rtu.valid_to,
-	rtu.created_at,
-	rtu.updated_at
-FROM right_to_use rtu
-LEFT OUTER JOIN bill_details bd ON rtu.id = bd.right_to_use_id
-INNER JOIN contracts c ON c.id = rtu.contract_id
-WHERE bd.id IS NULL
-AND valid_from <= $1
-AND c.billing_start_date <= $1
-ORDER BY c.user_id, rtu.id
-;
-`
-	var mappers []*data_mappers.RightToUseMapper
-	var _, err = executor.Select(&mappers, query, billingDate)
-	if err != nil {
-		return nil, errors.Wrapf(err, "請求対象使用権の取得に失敗しました。query: %v, billingDate: %v", query, billingDate)
-	}
-
-	// mapperからentityを作る
-	retEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
-	for _, mapper := range mappers {
-		entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
-		retEntities = append(retEntities, entity)
-	}
-
-	return retEntities, nil
-}
+//func (r *RightToUseRepository) GetBillingTargetByBillingDate(billingDate time.Time, executor gorp.SqlExecutor) ([]*entities.RightToUseEntity, error) {
+//	query := `
+//SELECT
+//	rtu.id,
+//	rtu.contract_id,
+//	rtu.valid_from,
+//	rtu.valid_to,
+//	rtu.created_at,
+//	rtu.updated_at
+//FROM right_to_use rtu
+//LEFT OUTER JOIN bill_details bd ON rtu.id = bd.right_to_use_id
+//INNER JOIN contracts c ON c.id = rtu.contract_id
+//WHERE bd.id IS NULL
+//AND valid_from <= $1
+//AND c.billing_start_date <= $1
+//ORDER BY c.user_id, rtu.id
+//;
+//`
+//	var mappers []*data_mappers.RightToUseMapper
+//	var _, err = executor.Select(&mappers, query, billingDate)
+//	if err != nil {
+//		return nil, errors.Wrapf(err, "請求対象使用権の取得に失敗しました。query: %v, billingDate: %v", query, billingDate)
+//	}
+//
+//	// mapperからentityを作る
+//	retEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
+//	for _, mapper := range mappers {
+//		entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ValidFrom, mapper.ValidTo, 0, mapper.CreatedAt, mapper.UpdatedAt)
+//		retEntities = append(retEntities, entity)
+//	}
+//
+//	return retEntities, nil
+//}
 
 /*
 渡した日（実行日）から5日以内に終了し、かつ、まだ次の期間の使用権データが存在しない使用権を全て返す
@@ -144,7 +144,7 @@ ORDER BY id
 	// mapperからentityを作る
 	retEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
 	for _, mapper := range mappers {
-		entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ValidFrom, mapper.ValidTo, mapper.CreatedAt, mapper.UpdatedAt)
+		entity := entities.NewRightToUseEntityWithData(mapper.Id, mapper.ValidFrom, mapper.ValidTo, 0, mapper.CreatedAt, mapper.UpdatedAt)
 		retEntities = append(retEntities, entity)
 	}
 
