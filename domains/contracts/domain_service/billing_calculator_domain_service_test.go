@@ -65,23 +65,23 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 				savedProductId,
 				utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
 				utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
+				[]*entities.RightToUseEntity{
+					entities.NewRightToUseEntity(
+						utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
+						utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+					),
+				},
 			)
 			contractRep := repositories.NewContractRepository()
 			savedContractId, err := contractRep.Create(contractEntity, db)
 			assert.NoError(t, err)
 
-			// 使用権を作成
-			rightToUse := entities.NewRightToUseEntity(
-				savedContractId,
-				utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
-				utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
-			)
-			rightToUseRep := repositories.NewRightToUseRepository()
-			savedRightToUseId, err := rightToUseRep.Create(rightToUse, db)
+			// リロード
+			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
 			assert.NoError(t, err)
 
 			// 実行
-			billingAmount, err := billingDS.BillingAmount(savedRightToUseId, db)
+			billingAmount, err := billingDS.BillingAmount(savedContract.RightToUses()[0], savedContract.BillingStartDate(), db)
 			assert.NoError(t, err)
 
 			// 検証
@@ -96,24 +96,22 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 				savedProductId,
 				utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
 				utils.CreateJstTime(2020, 1, 6, 0, 0, 0, 0),
+				[]*entities.RightToUseEntity{
+					entities.NewRightToUseEntity(
+						utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
+						utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+					),
+				},
 			)
 			contractRep := repositories.NewContractRepository()
 			savedContractId, err := contractRep.Create(contractEntity, db)
 			assert.NoError(t, err)
-
-			// 使用権を作成
-			rightToUse := entities.NewRightToUseEntity(
-				savedContractId,
-				utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
-				utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
-			)
-			rightToUseRep := repositories.NewRightToUseRepository()
-
-			savedRightToUseId, err := rightToUseRep.Create(rightToUse, db)
+			// リロード
+			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
 			assert.NoError(t, err)
 
 			// 実行
-			billingAmount, err := billingDS.BillingAmount(savedRightToUseId, db)
+			billingAmount, err := billingDS.BillingAmount(savedContract.RightToUses()[0], savedContract.BillingStartDate(), db)
 			assert.NoError(t, err)
 
 			// 検証
@@ -130,23 +128,21 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 				savedProductId,
 				utils.CreateJstTime(2020, 4, 1, 15, 11, 36, 123456),
 				utils.CreateJstTime(2020, 4, 1, 15, 11, 36, 123456),
+				[]*entities.RightToUseEntity{
+					entities.NewRightToUseEntity(
+						utils.CreateJstTime(2020, 4, 1, 15, 11, 36, 123456),
+						utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+					),
+				},
 			)
 			contractRep := repositories.NewContractRepository()
 			savedContractId, err := contractRep.Create(contractEntity, db)
 			assert.NoError(t, err)
-
-			// 使用権を作成
-			rightToUse := entities.NewRightToUseEntity(
-				savedContractId,
-				utils.CreateJstTime(2020, 4, 1, 15, 11, 36, 123456),
-				utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
-			)
-			rightToUseRep := repositories.NewRightToUseRepository()
-			savedRightToUseId, err := rightToUseRep.Create(rightToUse, db)
-			assert.NoError(t, err)
+			// リロード
+			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
 
 			// 実行
-			billingAmount, err := billingDS.BillingAmount(savedRightToUseId, db)
+			billingAmount, err := billingDS.BillingAmount(savedContract.RightToUses()[0], savedContract.BillingStartDate(), db)
 			assert.NoError(t, err)
 
 			// 検証
@@ -161,24 +157,21 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 				savedProductId,
 				utils.CreateJstTime(2020, 4, 1, 15, 11, 36, 123456),
 				utils.CreateJstTime(2020, 4, 6, 0, 0, 0, 0),
+				[]*entities.RightToUseEntity{
+					entities.NewRightToUseEntity(
+						utils.CreateJstTime(2020, 4, 1, 15, 11, 36, 123456),
+						utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+					),
+				},
 			)
 			contractRep := repositories.NewContractRepository()
 			savedContractId, err := contractRep.Create(contractEntity, db)
 			assert.NoError(t, err)
-
-			// 使用権を作成
-			rightToUse := entities.NewRightToUseEntity(
-				savedContractId,
-				utils.CreateJstTime(2020, 4, 1, 15, 11, 36, 123456),
-				utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
-			)
-			rightToUseRep := repositories.NewRightToUseRepository()
-
-			savedRightToUseId, err := rightToUseRep.Create(rightToUse, db)
-			assert.NoError(t, err)
+			// リロード
+			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
 
 			// 実行
-			billingAmount, err := billingDS.BillingAmount(savedRightToUseId, db)
+			billingAmount, err := billingDS.BillingAmount(savedContract.RightToUses()[0], savedContract.BillingStartDate(), db)
 			assert.NoError(t, err)
 
 			// 検証（日割り金額になる 31000 / 30 * 25）で端数切り捨て
@@ -195,23 +188,21 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 				savedProductId,
 				utils.CreateJstTime(2020, 2, 1, 15, 11, 36, 123456),
 				utils.CreateJstTime(2020, 2, 1, 15, 11, 36, 123456),
+				[]*entities.RightToUseEntity{
+					entities.NewRightToUseEntity(
+						utils.CreateJstTime(2020, 2, 1, 15, 11, 36, 123456),
+						utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0),
+					),
+				},
 			)
 			contractRep := repositories.NewContractRepository()
 			savedContractId, err := contractRep.Create(contractEntity, db)
 			assert.NoError(t, err)
-
-			// 使用権を作成
-			rightToUse := entities.NewRightToUseEntity(
-				savedContractId,
-				utils.CreateJstTime(2020, 2, 1, 15, 11, 36, 123456),
-				utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0),
-			)
-			rightToUseRep := repositories.NewRightToUseRepository()
-			savedRightToUseId, err := rightToUseRep.Create(rightToUse, db)
-			assert.NoError(t, err)
+			// リロード
+			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
 
 			// 実行
-			billingAmount, err := billingDS.BillingAmount(savedRightToUseId, db)
+			billingAmount, err := billingDS.BillingAmount(savedContract.RightToUses()[0], savedContract.BillingStartDate(), db)
 			assert.NoError(t, err)
 
 			// 検証
@@ -226,24 +217,21 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 				savedProductId,
 				utils.CreateJstTime(2020, 2, 1, 15, 11, 36, 123456),
 				utils.CreateJstTime(2020, 2, 6, 0, 0, 0, 0),
+				[]*entities.RightToUseEntity{
+					entities.NewRightToUseEntity(
+						utils.CreateJstTime(2020, 2, 1, 15, 11, 36, 123456),
+						utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0),
+					),
+				},
 			)
 			contractRep := repositories.NewContractRepository()
 			savedContractId, err := contractRep.Create(contractEntity, db)
 			assert.NoError(t, err)
-
-			// 使用権を作成
-			rightToUse := entities.NewRightToUseEntity(
-				savedContractId,
-				utils.CreateJstTime(2020, 2, 1, 15, 11, 36, 123456),
-				utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0),
-			)
-			rightToUseRep := repositories.NewRightToUseRepository()
-
-			savedRightToUseId, err := rightToUseRep.Create(rightToUse, db)
-			assert.NoError(t, err)
+			// リロード
+			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
 
 			// 実行
-			billingAmount, err := billingDS.BillingAmount(savedRightToUseId, db)
+			billingAmount, err := billingDS.BillingAmount(savedContract.RightToUses()[0], savedContract.BillingStartDate(), db)
 			assert.NoError(t, err)
 
 			// 検証（日割り金額になる 31000 / 29 * 24）で端数切り捨て
@@ -254,7 +242,6 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 
 func createTestData(executor gorp.SqlExecutor, t *testing.T) (userId, rightToUse1Id, rightToUse2Id, rightToUse3Id int) {
 	contractRep := repositories.NewContractRepository()
-	rightToUseRep := repositories.NewRightToUseRepository()
 	userRep := repositories.NewUserRepository()
 
 	////// 準備（1ユーザーに対して、6/1~6/30, 7/1~7/31, 8/1~8/31の未請求使用権データを作成する）
@@ -271,58 +258,28 @@ func createTestData(executor gorp.SqlExecutor, t *testing.T) (userId, rightToUse
 		product.Id(),
 		utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0),
 		utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0),
+		[]*entities.RightToUseEntity{
+			entities.NewRightToUseEntity(
+				utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0),
+				utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
+			),
+			entities.NewRightToUseEntity(
+				utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
+				utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0),
+			),
+			entities.NewRightToUseEntity(
+				utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0),
+				utils.CreateJstTime(2020, 9, 1, 0, 0, 0, 0),
+			),
+		},
 	)
 	contract1Id, err := contractRep.Create(contract1, executor)
 	assert.NoError(t, err)
-	// 使用権作成
-	rightToUse1A := entities.NewRightToUseEntity(
-		contract1Id,
-		utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0),
-		utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
-	)
-	rightToUse1AId, err := rightToUseRep.Create(rightToUse1A, executor)
-	assert.NoError(t, err)
-	// 使用権作成
-	rightToUse1B := entities.NewRightToUseEntity(
-		contract1Id,
-		utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0),
-		utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0),
-	)
-	rightToUse1BId, err := rightToUseRep.Create(rightToUse1B, executor)
-	assert.NoError(t, err)
-	// 使用権作成
-	rightToUse1C := entities.NewRightToUseEntity(
-		contract1Id,
-		utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0),
-		utils.CreateJstTime(2020, 9, 1, 0, 0, 0, 0),
-	)
-	rightToUse1CId, err := rightToUseRep.Create(rightToUse1C, executor)
-	assert.NoError(t, err)
+	// リロード
+	savedContract, _, _, err := contractRep.GetById(contract1Id, executor)
+	rightToUses := savedContract.RightToUses()
 
-	return user1Id, rightToUse1AId, rightToUse1BId, rightToUse1CId
-}
-
-func assertBill(t *testing.T, actual, expect *entities.BillAggregation) {
-	assert.NotZero(t, actual.Id())
-	assert.True(t, utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0).Equal(actual.BillingDate()))
-	assert.Equal(t, expect.UserId(), actual.UserId())
-	_, isNil, err := actual.PaymentConfirmedAt()
-	assert.NoError(t, err)
-	assert.True(t, isNil)
-	actualTotal := actual.TotalAmountExcludingTax()
-	expectTotal := expect.TotalAmountExcludingTax()
-	assert.Equal(t, expectTotal.String(), actualTotal.String())
-
-	actualDetails := actual.BillDetails()
-	expectDetails := expect.BillDetails()
-	assert.Equal(t, len(expectDetails), len(actualDetails))
-	for i := range actualDetails {
-		assert.NotZero(t, actualDetails[i].Id())
-		assert.Equal(t, expectDetails[i].RightToUseId(), actualDetails[i].RightToUseId())
-		actualBillingAmount := actualDetails[i].BillingAmount()
-		expectBillingAmount := expectDetails[i].BillingAmount()
-		assert.Equal(t, expectBillingAmount.String(), actualBillingAmount.String())
-	}
+	return user1Id, rightToUses[0].Id(), rightToUses[1].Id(), rightToUses[2].Id()
 }
 
 func TestBillingCalculatorDomainService_ExecuteBilling(t *testing.T) {

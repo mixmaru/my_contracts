@@ -35,13 +35,13 @@ func NewBillingCalculatorDomainService(productRepository interfaces.IProductRepo
 func (b *BillingCalculatorDomainService) ExecuteBilling(executeDate time.Time, executor gorp.SqlExecutor) ([]data_transfer_objects.BillDto, error) {
 	retBillDtos := []data_transfer_objects.BillDto{}
 
-	// 対象使用権を取得する
-	rightToUses, err := b.rightToUseRepository.GetBillingTargetByBillingDate(executeDate, executor)
+	// 請求対象使用権をもつ契約を取得する
+	contracts, err := b.contractRepository.GetBillingTargetByBillingDate(executeDate, executor)
 	if err != nil {
 		return nil, err
 	}
 
-	billAggs, err := b.createBillAggligationsFromRightToUseEntities(executeDate, rightToUses, executor)
+	billAggs, err := b.createBillAggligationsFromRightToUseEntities(executeDate, contracts, executor)
 
 	for _, billAgg := range billAggs {
 		// billAggを保存
@@ -60,49 +60,55 @@ func (b *BillingCalculatorDomainService) ExecuteBilling(executeDate time.Time, e
 	return retBillDtos, nil
 }
 
-func (b *BillingCalculatorDomainService) createBillAggligationsFromRightToUseEntities(executeDate time.Time, rightToUses []*entities.RightToUseEntity, executor gorp.SqlExecutor) ([]*entities.BillAggregation, error) {
+// contractsのから未請求かつ、validFromが実行日以前の使用権について請求データを作成する（請求実行する）
+func (b *BillingCalculatorDomainService) createBillAggligationsFromRightToUseEntities(executeDate time.Time, contracts []*entities.ContractEntity, executor gorp.SqlExecutor) ([]*entities.BillAggregation, error) {
 	var retBillAggs []*entities.BillAggregation
 
-	prevUserId := 0
-	var billAgg *entities.BillAggregation
-	for _, rightToUse := range rightToUses {
-
-		// userIdを取得
-		contract, _, _, err := b.contractRepository.GetById(rightToUse.ContractId(), executor)
-		if err != nil {
-			return nil, err
+	for _, contract := range contracts {
+		billAgg := entities.NewBillingAggregation(executeDate, contract.UserId())
+		for _, rightToUse := range contract.RightToUses() {
+			// 未請求かつ、validFromと課金開始日がexecuteDate以前の物を請求実行
+			if isBillingTarget(executeDate, contract.BillingStartDate(), rightToUse) {
+				amount, err := b.BillingAmount(rightToUse, contract.BillingStartDate(), executor)
+				if err != nil {
+					return nil, err
+				}
+				err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(rightToUse.Id(), amount))
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
-		userId := contract.UserId()
-
-		// userId毎にbillAggを作成する
-		if userId != prevUserId {
-			prevUserId = userId
-			billAgg = entities.NewBillingAggregation(executeDate, userId)
-			retBillAggs = append(retBillAggs, billAgg)
-		}
-		amount, err := b.BillingAmount(rightToUse.Id(), executor)
-		if err != nil {
-			return nil, err
-		}
-		err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(rightToUse.Id(), amount))
-		if err != nil {
-			return nil, err
-		}
+		retBillAggs = append(retBillAggs, billAgg)
 	}
 
 	return retBillAggs, nil
 }
 
-func (b *BillingCalculatorDomainService) BillingAmount(rightToUseId int, executor gorp.SqlExecutor) (decimal.Decimal, error) {
+// 未請求かつ、validFromと課金開始日がexecuteDate以前の物が請求対象となる。
+func isBillingTarget(executeDate time.Time, billingStartDate time.Time, rightToUse *entities.RightToUseEntity) bool {
+	if (rightToUse.ValidFrom().Equal(executeDate) || rightToUse.ValidFrom().Before(executeDate)) &&
+		(billingStartDate.Equal(executeDate) || billingStartDate.Before(executeDate)) {
+		if !rightToUse.WasBilling() {
+			return true
+		} else {
+			return false
+		}
+	} else {
+		return false
+	}
+}
+
+func (b *BillingCalculatorDomainService) BillingAmount(rightToUse *entities.RightToUseEntity, billingStartDate time.Time, executor gorp.SqlExecutor) (decimal.Decimal, error) {
 	////// 満額請求金額を取得する
 	// 必要データ取得
-	rightToUse, contract, product, _, err := b.getEntitiesByRightToUseId(rightToUseId, executor)
+	product, err := b.getEntitiesByRightToUseId(rightToUse.Id(), executor)
 	if err != nil {
 		return decimal.Decimal{}, err
 	}
 
 	////// 満額期間日数と理療機関を取得計算する（今は月払い固定）
-	usageDateNum, fullBillingDateNum := b.getUsageDate(rightToUse.ValidFrom(), rightToUse.ValidTo(), contract.BillingStartDate())
+	usageDateNum, fullBillingDateNum := b.getUsageDate(rightToUse.ValidFrom(), rightToUse.ValidTo(), billingStartDate)
 
 	// 定価取得
 	price, ok := product.MonthlyPrice()
@@ -122,26 +128,15 @@ func (b *BillingCalculatorDomainService) BillingAmount(rightToUseId int, executo
 
 // 請求金額計算に必要なデータを取得する
 func (b *BillingCalculatorDomainService) getEntitiesByRightToUseId(rightToUseId int, executor gorp.SqlExecutor) (
-	*entities.RightToUseEntity,
-	*entities.ContractEntity,
 	*entities.ProductEntity,
-	interface{},
 	error,
 ) {
-	// 使用権データ取得
-	rightToUse, err := b.rightToUseRepository.GetById(rightToUseId, executor)
+	// 商品データタ取得
+	product, err := b.productRepository.GetByRightToUseId(rightToUseId, executor)
 	if err != nil {
-		return nil, nil, nil, nil, errors.WithMessagef(err, "使用権データの取得失敗。rightToUseId: %v", rightToUseId)
+		return nil, errors.WithMessagef(err, "商品データの取得失敗。rightToUseId: %v", rightToUseId)
 	}
-	if rightToUse == nil {
-		return nil, nil, nil, nil, errors.Errorf("使用権データが存在しない。rightToUseId: %v", rightToUseId)
-	}
-	// 商品データ、契約データ取得
-	contract, product, user, err := b.contractRepository.GetById(rightToUse.ContractId(), executor)
-	if err != nil {
-		return nil, nil, nil, nil, errors.WithMessagef(err, "商品データ、契約データの取得失敗。rightToUse: %v", rightToUse)
-	}
-	return rightToUse, contract, product, user, nil
+	return product, nil
 }
 
 /*

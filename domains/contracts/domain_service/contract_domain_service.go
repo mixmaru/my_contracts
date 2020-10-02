@@ -50,12 +50,6 @@ func (c *ContractDomainService) CreateContract(userId, productId int, executeDat
 		return data_transfer_objects.ContractDto{}, nil, err
 	}
 
-	// 使用権の作成
-	jst := utils.CreateJstLocation()
-	executeDateJst := executeDate.In(jst)
-	validTo := utils.CreateJstTime(executeDateJst.Year(), executeDateJst.Month()+1, executeDateJst.Day(), 0, 0, 0, 0)
-	_, err = c.createNewRightToUse(savedContractId, executeDate, validTo, executor)
-
 	// 再読込
 	savedEntity, _, _, err := c.contractRepository.GetById(savedContractId, executor)
 	if err != nil {
@@ -70,8 +64,14 @@ func (c *ContractDomainService) CreateContract(userId, productId int, executeDat
 }
 
 func (c *ContractDomainService) createNewContract(userId, productId int, executeDate, billingStartDate time.Time, executor gorp.SqlExecutor) (savedContractId int, err error) {
+	// 使用権entityを作成
+	jst := utils.CreateJstLocation()
+	executeDateJst := executeDate.In(jst)
+	validTo := utils.CreateJstTime(executeDateJst.Year(), executeDateJst.Month()+1, executeDateJst.Day(), 0, 0, 0, 0)
+	rightToUseEntity := entities.NewRightToUseEntity(executeDate, validTo)
+
 	// 契約entityを作成
-	entity := entities.NewContractEntity(userId, productId, executeDate, billingStartDate)
+	entity := entities.NewContractEntity(userId, productId, executeDate, billingStartDate, []*entities.RightToUseEntity{rightToUseEntity})
 
 	// リポジトリで保存
 	savedContractId, err = c.contractRepository.Create(entity, executor)
@@ -79,18 +79,6 @@ func (c *ContractDomainService) createNewContract(userId, productId int, execute
 		return 0, err
 	}
 	return savedContractId, nil
-}
-
-func (c *ContractDomainService) createNewRightToUse(contractId int, validFrom, validTo time.Time, executor gorp.SqlExecutor) (savedRightToUseId int, err error) {
-	// 使用権entityを作成
-	rightToUseEntity := entities.NewRightToUseEntity(contractId, validFrom, validTo)
-
-	// リポジトリで保存
-	savedRightToUseId, err = c.rightToUseRepository.Create(rightToUseEntity, executor)
-	if err != nil {
-		return 0, err
-	}
-	return savedRightToUseId, nil
 }
 
 func (c *ContractDomainService) registerValidation(userId int, productId int, executor gorp.SqlExecutor) (validationErrors map[string][]string, err error) {

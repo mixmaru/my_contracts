@@ -98,25 +98,21 @@ func TestNewContractDomainService_CreateNextTermRightToUse(t *testing.T) {
 			productId,
 			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+				),
+			},
 		)
 		contractRep := repositories.NewContractRepository()
 		contractId, err := contractRep.Create(contractEntity, tran)
 		assert.NoError(t, err)
-		// 使用権の作成
-		rightToUseEntity := entities.NewRightToUseEntity(
-			contractId,
-			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
-			utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
-		)
-		rightToUseRep := repositories.NewRightToUseRepository()
-		rightToUseId, err := rightToUseRep.Create(rightToUseEntity, tran)
-		assert.NoError(t, err)
-		// 使用権データの取得
-		currentRightToUseEntity, err := rightToUseRep.GetById(rightToUseId, tran)
-		assert.NoError(t, err)
+		// リロード
+		savedContract, _, _, err := contractRep.GetById(contractId, tran)
 
 		////// 実行
-		nextTermRightToUse, err := contractDomainService.CreateNextTermRightToUse(currentRightToUseEntity, tran)
+		nextTermRightToUse, err := contractDomainService.CreateNextTermRightToUse(savedContract.RightToUses()[0], tran)
 		assert.NoError(t, err)
 		err = tran.Commit()
 		assert.NoError(t, err)
@@ -125,7 +121,6 @@ func TestNewContractDomainService_CreateNextTermRightToUse(t *testing.T) {
 		assert.NotZero(t, nextTermRightToUse.Id())
 		assert.NotZero(t, nextTermRightToUse.CreatedAt())
 		assert.NotZero(t, nextTermRightToUse.UpdatedAt())
-		assert.Equal(t, contractId, nextTermRightToUse.ContractId())
 		assert.True(t, nextTermRightToUse.ValidFrom().Equal(utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0)))
 		assert.True(t, nextTermRightToUse.ValidTo().Equal(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0)))
 	})
