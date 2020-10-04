@@ -58,6 +58,11 @@ func (c *ContractEntity) RightToUses() []*RightToUseEntity {
 	return retEntities
 }
 
+// 次期使用権の追加
+func (c *ContractEntity) AddNextTermRightToUses(rightToUse *RightToUseEntity) {
+	c.rightToUseEntities = append(c.rightToUseEntities, rightToUse)
+}
+
 /*
 対象日以下の最大の課金開始日（直近の課金開始日）を返す
 */
