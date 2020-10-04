@@ -292,3 +292,45 @@ WHERE bd.id IS NULL
 		return contracts, nil
 	}
 }
+
+/*
+渡した日（実行日）から5日以内に終了し、かつ、まだ次の期間の使用権データが存在しない使用権をもつ契約集約を全て返す
+
+例）実行日が6/1の場合
+使用権の終了日が6/1の使用権=> 返る
+使用権の終了日が6/6の使用権=> 返る
+使用権の終了日が6/7の使用権=> 返らない
+使用権の終了日が6/1だが、次（6/2 ~ 7/1の期間）の使用権が存在する=> 返らない
+*/
+func (r *ContractRepository) GetRecurTargets(executeDate time.Time, executor gorp.SqlExecutor) ([]*entities.ContractEntity, error) {
+	from := executeDate
+	to := executeDate.AddDate(0, 0, 5)
+
+	query := `
+	WITH tmp_t AS (
+	   SELECT *, row_number() over (partition by contract_id order by valid_to DESC) AS num FROM right_to_use
+	)
+	SELECT
+		contract_id
+	FROM tmp_t
+	WHERE num = 1
+	AND $1 <= tmp_t.valid_to
+	AND tmp_t.valid_to < $2
+	GROUP BY contract_id
+	ORDER BY contract_id;
+	;`
+
+	var contractIds []int
+	var _, err = executor.Select(&contractIds, query, from, to)
+	if err != nil {
+		return nil, errors.Wrapf(err, "継続処理対象使用権をもつ契約IDの取得に失敗しました。query: %v, from: %v, to: %v", query, from, to)
+	}
+
+	// 契約集約を取得
+	contracts, _, _, err := r.GetByIds(contractIds, executor)
+	if err != nil {
+		return nil, errors.Wrapf(err, "継続処理対象使用権をもつ契約集約の取得に失敗しました。contractIds: %v", contractIds)
+	}
+
+	return contracts, nil
+}
