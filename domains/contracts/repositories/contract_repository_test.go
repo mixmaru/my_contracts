@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/gorp.v2"
 	"testing"
+	"time"
 )
 
 func TestContractRepository_Create(t *testing.T) {
@@ -379,4 +380,168 @@ func createBillTestData(db gorp.SqlExecutor) (rightToUseIds []int, billId int) {
 	}
 
 	return []int{rightToUses[0].Id(), rightToUses[1].Id(), rightToUses[2].Id(), rightToUses[3].Id()}, billId
+}
+
+func TestContractRepository_GetRecurTarget(t *testing.T) {
+	t.Run("2020/6/1を渡すと使用期間終了日が6/1 ~ 6/5でかつ次の期間の使用権がまだない使用権をもつ契約集約が返る", func(t *testing.T) {
+		db, err := db_connection.GetConnection()
+		assert.NoError(t, err)
+		defer db.Db.Close()
+		tran, err := db.Begin()
+		assert.NoError(t, err)
+
+		////// 準備
+		// 事前に影響するデータを削除しておく
+		_, err = tran.Exec(
+			"DELETE FROM bill_details",
+		)
+		assert.NoError(t, err)
+		_, err = tran.Exec(
+			"DELETE FROM right_to_use_active",
+		)
+		assert.NoError(t, err)
+		_, err = tran.Exec(
+			"DELETE FROM right_to_use",
+		)
+		assert.NoError(t, err)
+		// テスト用データの登録
+		_ = createPreparedContractData(
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 5, 31, 0, 0, 0, 0),
+				),
+			},
+			tran,
+		)
+		contractB := createPreparedContractData(
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0),
+				),
+			},
+			tran,
+		)
+		contractC := createPreparedContractData(
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 6, 5, 0, 0, 0, 0),
+				),
+			},
+			tran,
+		)
+		_ = createPreparedContractData(
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 6, 5, 0, 0, 0, 0),
+				),
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 6, 6, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 7, 5, 0, 0, 0, 0),
+				),
+			},
+			tran,
+		)
+		_ = createPreparedContractData(
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 4, 1, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 5, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 6, 6, 0, 0, 0, 0),
+				),
+			},
+			tran,
+		)
+		// 使用権を作成（終了日が5/31, 6/1, 6/5, 6/5（ただし次の使用権データがある） 6/6）
+		contractRep := NewContractRepository()
+
+		////// 実行
+		expects, err := contractRep.GetRecurTargets(utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0), tran)
+		assert.NoError(t, err)
+		err = tran.Commit()
+		assert.NoError(t, err)
+
+		////// 検証
+		assert.Len(t, expects, 2)
+		assert.Equal(t, contractB.Id(), expects[0].Id())
+		assert.Equal(t, contractC.Id(), expects[1].Id())
+	})
+}
+
+// 使用権データを作成するのに事前に必要なデータを準備する
+func createPreparedContractData(contractDate, billingStartDate time.Time, rightToUses []*entities.RightToUseEntity, executor gorp.SqlExecutor) *entities.ContractEntity {
+	// userの作成
+	savedUserId := createUser(executor)
+	// 商品の作成
+	savedProductId := createProduct(executor)
+	// 契約の作成
+	savedContract := createContract(
+		savedUserId,
+		savedProductId,
+		contractDate,
+		billingStartDate,
+		rightToUses,
+		executor,
+	)
+	return savedContract
+}
+
+func createUser(executor gorp.SqlExecutor) int {
+	userEntity, err := entities.NewUserIndividualEntity("個人太郎")
+	if err != nil {
+		panic("userEntity作成失敗")
+	}
+	userRepository := NewUserRepository()
+	savedUserId, err := userRepository.SaveUserIndividual(userEntity, executor)
+	if err != nil {
+		panic(err.Error())
+	}
+	return savedUserId
+}
+
+func createProduct(executor gorp.SqlExecutor) int {
+	productEntity, err := entities.NewProductEntity("商品", "1000")
+	if err != nil {
+		panic("productEntity作成失敗")
+	}
+	productRepository := NewProductRepository()
+	savedProductId, err := productRepository.Save(productEntity, executor)
+	if err != nil {
+		panic("productEntity保存失敗")
+	}
+	return savedProductId
+}
+
+func createContract(userId, productId int, contractDate, billingStartDate time.Time, rightToUses []*entities.RightToUseEntity, executor gorp.SqlExecutor) *entities.ContractEntity {
+	// 契約の作成
+	contractEntity := entities.NewContractEntity(
+		userId,
+		productId,
+		contractDate,
+		billingStartDate,
+		rightToUses,
+	)
+	contractRepository := NewContractRepository()
+	savedContractId, err := contractRepository.Create(contractEntity, executor)
+	if err != nil {
+		panic("contractEntity保存失敗")
+	}
+	// 再読込
+	savedContract, _, _, err := contractRepository.GetById(savedContractId, executor)
+	if err != nil {
+		panic("contractEntity取得失敗")
+	}
+	return savedContract
 }

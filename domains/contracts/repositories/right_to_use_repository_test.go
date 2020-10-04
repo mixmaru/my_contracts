@@ -5,9 +5,7 @@ import (
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/gorp.v2"
 	"testing"
-	"time"
 )
 
 //func TestRightToUseRepository_Create(t *testing.T) {
@@ -177,72 +175,6 @@ import (
 //		assert.Equal(t, rightToUseIds[0], actual[0].Id())
 //	})
 //}
-
-// 使用権データを作成するのに事前に必要なデータを準備する
-func createPreparedContractData(contractDate, billingStartDate time.Time, rightToUses []*entities.RightToUseEntity, executor gorp.SqlExecutor) *entities.ContractEntity {
-	// userの作成
-	savedUserId := createUser(executor)
-	// 商品の作成
-	savedProductId := createProduct(executor)
-	// 契約の作成
-	savedContract := createContract(
-		savedUserId,
-		savedProductId,
-		contractDate,
-		billingStartDate,
-		rightToUses,
-		executor,
-	)
-	return savedContract
-}
-
-func createUser(executor gorp.SqlExecutor) int {
-	userEntity, err := entities.NewUserIndividualEntity("個人太郎")
-	if err != nil {
-		panic("userEntity作成失敗")
-	}
-	userRepository := NewUserRepository()
-	savedUserId, err := userRepository.SaveUserIndividual(userEntity, executor)
-	if err != nil {
-		panic(err.Error())
-	}
-	return savedUserId
-}
-
-func createProduct(executor gorp.SqlExecutor) int {
-	productEntity, err := entities.NewProductEntity("商品", "1000")
-	if err != nil {
-		panic("productEntity作成失敗")
-	}
-	productRepository := NewProductRepository()
-	savedProductId, err := productRepository.Save(productEntity, executor)
-	if err != nil {
-		panic("productEntity保存失敗")
-	}
-	return savedProductId
-}
-
-func createContract(userId, productId int, contractDate, billingStartDate time.Time, rightToUses []*entities.RightToUseEntity, executor gorp.SqlExecutor) *entities.ContractEntity {
-	// 契約の作成
-	contractEntity := entities.NewContractEntity(
-		userId,
-		productId,
-		contractDate,
-		billingStartDate,
-		rightToUses,
-	)
-	contractRepository := NewContractRepository()
-	savedContractId, err := contractRepository.Create(contractEntity, executor)
-	if err != nil {
-		panic("contractEntity保存失敗")
-	}
-	// 再読込
-	savedContract, _, _, err := contractRepository.GetById(savedContractId, executor)
-	if err != nil {
-		panic("contractEntity取得失敗")
-	}
-	return savedContract
-}
 
 func TestRightToUseRepository_GetRecurTargets(t *testing.T) {
 	t.Run("2020/6/1を渡すと使用期間終了日が6/1 ~ 6/5でかつ次の期間の使用権がまだない使用権が返る", func(t *testing.T) {
