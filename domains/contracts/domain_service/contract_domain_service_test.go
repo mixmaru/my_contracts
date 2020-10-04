@@ -64,7 +64,7 @@ func TestContractDomainService_CreateContract(t *testing.T) {
 }
 
 func TestNewContractDomainService_calculateBillingStartDate(t *testing.T) {
-	app := NewContractDomainService(nil, nil, nil, nil)
+	app := NewContractDomainService(nil, nil, nil)
 	t.Run("契約日と無料期間とタイムゾーンを渡すと_課金開始日が返ってくる", func(t *testing.T) {
 		t.Run("JSTで渡すと_JSTで0時0分で返ってくる", func(t *testing.T) {
 			expect := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
@@ -138,6 +138,5 @@ func createContractDomainService() *ContractDomainService {
 		repositories.NewContractRepository(),
 		repositories.NewUserRepository(),
 		repositories.NewProductRepository(),
-		repositories.NewRightToUseRepository(),
 	)
 }

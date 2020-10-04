@@ -52,7 +52,6 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 	billingDS := NewBillingCalculatorDomainService(
 		repositories.NewProductRepository(),
 		repositories.NewContractRepository(),
-		repositories.NewRightToUseRepository(),
 		repositories.NewBillRepository(),
 	)
 
@@ -288,7 +287,6 @@ func TestBillingCalculatorDomainService_ExecuteBilling(t *testing.T) {
 			ds := NewBillingCalculatorDomainService(
 				repositories.NewProductRepository(),
 				repositories.NewContractRepository(),
-				repositories.NewRightToUseRepository(),
 				repositories.NewBillRepository(),
 			)
 
@@ -340,7 +338,6 @@ func TestBillingCalculatorDomainService_ExecuteBilling(t *testing.T) {
 			ds := NewBillingCalculatorDomainService(
 				repositories.NewProductRepository(),
 				repositories.NewContractRepository(),
-				repositories.NewRightToUseRepository(),
 				repositories.NewBillRepository(),
 			)
 
