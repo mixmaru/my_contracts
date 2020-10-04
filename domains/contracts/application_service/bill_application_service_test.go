@@ -19,6 +19,8 @@ func TestBillApplicationService_ExecuteBilling(t *testing.T) {
 		assert.NoError(t, err)
 		_, err = db.Exec("DELETE FROM bill_details")
 		assert.NoError(t, err)
+		_, err = db.Exec("DELETE FROM right_to_use_active")
+		assert.NoError(t, err)
 		_, err = db.Exec("DELETE FROM right_to_use")
 		assert.NoError(t, err)
 		// 商品作成
