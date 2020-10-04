@@ -144,6 +144,8 @@ func TestContractApplicationService_CreateNextRightToUse(t *testing.T) {
 		db, err := db_connection.GetConnection()
 		assert.NoError(t, err)
 		defer db.Db.Close()
+		_, err = db.Exec("DELETE FROM right_to_use_active WHERE right_to_use_id IN (SELECT id FROM right_to_use WHERE '2020-05-25' <= valid_to AND valid_to <= '2020-06-02')")
+		assert.NoError(t, err)
 		_, err = db.Exec("DELETE FROM right_to_use WHERE '2020-05-25' <= valid_to AND valid_to <= '2020-06-02'")
 		assert.NoError(t, err)
 

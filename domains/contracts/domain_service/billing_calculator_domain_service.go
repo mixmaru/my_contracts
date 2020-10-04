@@ -13,18 +13,16 @@ import (
 )
 
 type BillingCalculatorDomainService struct {
-	productRepository    interfaces.IProductRepository
-	contractRepository   interfaces.IContractRepository
-	rightToUseRepository interfaces.IRightToUseRepository
-	billRepository       interfaces.IBillRepository
+	productRepository  interfaces.IProductRepository
+	contractRepository interfaces.IContractRepository
+	billRepository     interfaces.IBillRepository
 }
 
-func NewBillingCalculatorDomainService(productRepository interfaces.IProductRepository, contractRepository interfaces.IContractRepository, rightToUseRepository interfaces.IRightToUseRepository, billRepository interfaces.IBillRepository) *BillingCalculatorDomainService {
+func NewBillingCalculatorDomainService(productRepository interfaces.IProductRepository, contractRepository interfaces.IContractRepository, billRepository interfaces.IBillRepository) *BillingCalculatorDomainService {
 	return &BillingCalculatorDomainService{
-		productRepository:    productRepository,
-		contractRepository:   contractRepository,
-		rightToUseRepository: rightToUseRepository,
-		billRepository:       billRepository,
+		productRepository:  productRepository,
+		contractRepository: contractRepository,
+		billRepository:     billRepository,
 	}
 }
 

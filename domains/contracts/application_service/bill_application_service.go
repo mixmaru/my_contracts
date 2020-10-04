@@ -10,10 +10,9 @@ import (
 )
 
 type BillApplicationService struct {
-	productRepository    interfaces.IProductRepository
-	contractRepository   interfaces.IContractRepository
-	rightToUseRepository interfaces.IRightToUseRepository
-	billRepository       interfaces.IBillRepository
+	productRepository  interfaces.IProductRepository
+	contractRepository interfaces.IContractRepository
+	billRepository     interfaces.IBillRepository
 }
 
 // 渡した指定日を実行日として請求の実行をする
@@ -24,7 +23,7 @@ func (b *BillApplicationService) ExecuteBilling(executeDate time.Time) ([]data_t
 	}
 	defer db.Db.Close()
 	tran, err := db.Begin()
-	billDomain := domain_service.NewBillingCalculatorDomainService(b.productRepository, b.contractRepository, b.rightToUseRepository, b.billRepository)
+	billDomain := domain_service.NewBillingCalculatorDomainService(b.productRepository, b.contractRepository, b.billRepository)
 	billDtos, err := billDomain.ExecuteBilling(executeDate, tran)
 	if err != nil {
 		tran.Rollback()

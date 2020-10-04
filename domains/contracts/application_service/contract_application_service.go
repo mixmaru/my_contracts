@@ -11,10 +11,9 @@ import (
 )
 
 type ContractApplicationService struct {
-	contractRepository   interfaces.IContractRepository
-	userRepository       interfaces.IUserRepository
-	productRepository    interfaces.IProductRepository
-	rightToUseRepository interfaces.IRightToUseRepository
+	contractRepository interfaces.IContractRepository
+	userRepository     interfaces.IUserRepository
+	productRepository  interfaces.IProductRepository
 }
 
 func (c *ContractApplicationService) Register(userId int, productId int, contractDateTime time.Time) (productDto data_transfer_objects.ContractDto, validationErrors map[string][]string, err error) {
@@ -30,7 +29,7 @@ func (c *ContractApplicationService) Register(userId int, productId int, contrac
 	}
 
 	// ドメインサービス作成
-	contractDomainService := domain_service.NewContractDomainService(c.contractRepository, c.userRepository, c.productRepository, c.rightToUseRepository)
+	contractDomainService := domain_service.NewContractDomainService(c.contractRepository, c.userRepository, c.productRepository)
 	contractDto, validationErrors, err := contractDomainService.CreateContract(userId, productId, contractDateTime, tran)
 	if err != nil {
 		tran.Rollback()

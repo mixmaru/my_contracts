@@ -96,3 +96,17 @@ func (mr *MockIContractRepositoryMockRecorder) GetRecurTargets(executeDate, exec
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecurTargets", reflect.TypeOf((*MockIContractRepository)(nil).GetRecurTargets), executeDate, executor)
 }
+
+// Update mocks base method.
+func (m *MockIContractRepository) Update(contractEntity *entities.ContractEntity, executor gorp.SqlExecutor) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", contractEntity, executor)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockIContractRepositoryMockRecorder) Update(contractEntity, executor interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockIContractRepository)(nil).Update), contractEntity, executor)
+}

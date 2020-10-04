@@ -11,23 +11,20 @@ import (
 )
 
 type ContractDomainService struct {
-	contractRepository   interfaces.IContractRepository
-	userRepository       interfaces.IUserRepository
-	productRepository    interfaces.IProductRepository
-	rightToUseRepository interfaces.IRightToUseRepository
+	contractRepository interfaces.IContractRepository
+	userRepository     interfaces.IUserRepository
+	productRepository  interfaces.IProductRepository
 }
 
 func NewContractDomainService(
 	contractRepository interfaces.IContractRepository,
 	userRepository interfaces.IUserRepository,
 	productRepository interfaces.IProductRepository,
-	rightToUseRepository interfaces.IRightToUseRepository,
 ) *ContractDomainService {
 	return &ContractDomainService{
-		contractRepository:   contractRepository,
-		userRepository:       userRepository,
-		productRepository:    productRepository,
-		rightToUseRepository: rightToUseRepository,
+		contractRepository: contractRepository,
+		userRepository:     userRepository,
+		productRepository:  productRepository,
 	}
 }
 
