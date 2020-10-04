@@ -81,3 +81,18 @@ func (mr *MockIContractRepositoryMockRecorder) GetBillingTargetByBillingDate(bil
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBillingTargetByBillingDate", reflect.TypeOf((*MockIContractRepository)(nil).GetBillingTargetByBillingDate), billingDate, executor)
 }
+
+// GetRecurTargets mocks base method.
+func (m *MockIContractRepository) GetRecurTargets(executeDate time.Time, executor gorp.SqlExecutor) ([]*entities.ContractEntity, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRecurTargets", executeDate, executor)
+	ret0, _ := ret[0].([]*entities.ContractEntity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRecurTargets indicates an expected call of GetRecurTargets.
+func (mr *MockIContractRepositoryMockRecorder) GetRecurTargets(executeDate, executor interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecurTargets", reflect.TypeOf((*MockIContractRepository)(nil).GetRecurTargets), executeDate, executor)
+}
