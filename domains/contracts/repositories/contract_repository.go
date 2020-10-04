@@ -43,25 +43,34 @@ func (r *ContractRepository) Create(contractEntity *entities.ContractEntity, exe
 	rightToUses := contractEntity.RightToUses()
 	for _, rightToUseEntity := range rightToUses {
 		////// rightToUseの保存
-		rightToUseMapper := data_mappers.RightToUseMapper{}
-		rightToUseMapper.ContractId = contractMapper.Id
-		rightToUseMapper.ValidFrom = rightToUseEntity.ValidFrom()
-		rightToUseMapper.ValidTo = rightToUseEntity.ValidTo()
-		err := executor.Insert(&rightToUseMapper)
+		err := createRightToUse(rightToUseEntity, contractMapper.Id, executor)
 		if err != nil {
-			return 0, errors.Wrapf(err, "right_to_useテーブルへの保存に失敗しました。rightToUseMapper: %+v", rightToUseMapper)
-		}
-		////// rightToUseActiveの保存
-		activeMapper := data_mappers.RightToUseActiveMapper{}
-		activeMapper.RightToUseId = rightToUseMapper.Id
-		err = executor.Insert(&activeMapper)
-		if err != nil {
-			return 0, errors.Wrapf(err, "right_to_use_rightテーブルへの保存に失敗しました。activeMapper: %+v", activeMapper)
+			return 0, err
 		}
 	}
 
 	return contractMapper.Id, nil
 }
+
+func createRightToUse(rightToUseEntity *entities.RightToUseEntity, contractId int, executor gorp.SqlExecutor) error {
+	rightToUseMapper := data_mappers.RightToUseMapper{}
+	rightToUseMapper.ContractId = contractId
+	rightToUseMapper.ValidFrom = rightToUseEntity.ValidFrom()
+	rightToUseMapper.ValidTo = rightToUseEntity.ValidTo()
+	err := executor.Insert(&rightToUseMapper)
+	if err != nil {
+		return errors.Wrapf(err, "right_to_useテーブルへの保存に失敗しました。rightToUseMapper: %+v", rightToUseMapper)
+	}
+	////// rightToUseActiveの保存
+	activeMapper := data_mappers.RightToUseActiveMapper{}
+	activeMapper.RightToUseId = rightToUseMapper.Id
+	err = executor.Insert(&activeMapper)
+	if err != nil {
+		return errors.Wrapf(err, "right_to_use_rightテーブルへの保存に失敗しました。activeMapper: %+v", activeMapper)
+	}
+	return nil
+}
+
 func (r *ContractRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (contracts []*entities.ContractEntity, products []*entities.ProductEntity, users []interface{}, err error) {
 	// データ取得
 	// データマッパー用意
@@ -333,4 +342,18 @@ func (r *ContractRepository) GetRecurTargets(executeDate time.Time, executor gor
 	}
 
 	return contracts, nil
+}
+
+// contractEntityを更新する（まだ使用権の追加しか対応してない）
+func (r *ContractRepository) Update(contractEntity *entities.ContractEntity, executor gorp.SqlExecutor) error {
+	// idがzeroの使用権があれば新規登録する
+	for _, rightToUse := range contractEntity.RightToUses() {
+		if rightToUse.Id() == 0 {
+			err := createRightToUse(rightToUse, contractEntity.Id(), executor)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

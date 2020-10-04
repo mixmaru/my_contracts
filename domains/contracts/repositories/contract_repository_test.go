@@ -545,3 +545,54 @@ func createContract(userId, productId int, contractDate, billingStartDate time.T
 	}
 	return savedContract
 }
+
+func TestContractRepository_Update(t *testing.T) {
+	t.Run("契約エンティティに使用権を追加したものを渡すと、そのデータで更新する", func(t *testing.T) {
+		db, err := db_connection.GetConnection()
+		assert.NoError(t, err)
+		////// 準備
+		userID := createUser(db)
+		productId := createProduct(db)
+		contract := createContract(
+			userID,
+			productId,
+			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0),
+				),
+			},
+			db,
+		)
+
+		////// 実行
+		contract.AddNextTermRightToUses(entities.NewRightToUseEntity(
+			utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 12, 5, 0, 0, 0, 0),
+		))
+		contractRep := NewContractRepository()
+		err = contractRep.Update(contract, db)
+		assert.NoError(t, err)
+
+		////// 検証
+		actual, _, _, err := contractRep.GetById(contract.Id(), db)
+		assert.NoError(t, err)
+		rightToUses := actual.RightToUses()
+		assert.Len(t, rightToUses, 2)
+		assert.NotZero(t, rightToUses[0].Id())
+		assert.NotZero(t, rightToUses[0].CreatedAt())
+		assert.NotZero(t, rightToUses[0].UpdatedAt())
+		assert.False(t, rightToUses[0].WasBilling())
+		assert.True(t, rightToUses[0].ValidFrom().Equal(utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0)))
+		assert.True(t, rightToUses[0].ValidTo().Equal(utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0)))
+
+		assert.NotZero(t, rightToUses[1].Id())
+		assert.NotZero(t, rightToUses[1].CreatedAt())
+		assert.NotZero(t, rightToUses[1].UpdatedAt())
+		assert.False(t, rightToUses[1].WasBilling())
+		assert.True(t, rightToUses[1].ValidFrom().Equal(utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0)))
+		assert.True(t, rightToUses[1].ValidTo().Equal(utils.CreateJstTime(2020, 12, 5, 0, 0, 0, 0)))
+	})
+}
