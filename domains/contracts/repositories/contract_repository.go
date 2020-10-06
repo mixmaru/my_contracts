@@ -72,6 +72,9 @@ func createRightToUse(rightToUseEntity *entities.RightToUseEntity, contractId in
 }
 
 func (r *ContractRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (contracts []*entities.ContractEntity, products []*entities.ProductEntity, users []interface{}, err error) {
+	if len(ids) == 0 {
+		return nil, nil, nil, errors.Errorf("idsが空スライスです。ids: %+v", ids)
+	}
 	// データ取得
 	// データマッパー用意
 	var mappers []*data_mappers.ContractView
@@ -333,6 +336,10 @@ func (r *ContractRepository) GetRecurTargets(executeDate time.Time, executor gor
 	var _, err = executor.Select(&contractIds, query, from, to)
 	if err != nil {
 		return nil, errors.Wrapf(err, "継続処理対象使用権をもつ契約IDの取得に失敗しました。query: %v, from: %v, to: %v", query, from, to)
+	}
+	if len(contractIds) == 0 {
+		// 対象がない
+		return []*entities.ContractEntity{}, nil
 	}
 
 	// 契約集約を取得

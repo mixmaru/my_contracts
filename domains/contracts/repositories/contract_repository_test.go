@@ -478,6 +478,37 @@ func TestContractRepository_GetRecurTarget(t *testing.T) {
 		assert.Equal(t, contractB.Id(), expects[0].Id())
 		assert.Equal(t, contractC.Id(), expects[1].Id())
 	})
+
+	t.Run("更新対象がなければ空スライスが返る", func(t *testing.T) {
+		////// 準備
+		// 契約データ全削除
+		db, err := db_connection.GetConnection()
+		defer db.Db.Close()
+		tran, err := db.Begin()
+		assert.NoError(t, err)
+		_, err = tran.Exec("DELETE FROM discount_apply_contract_updates")
+		assert.NoError(t, err)
+		_, err = tran.Exec("DELETE FROM bill_details")
+		assert.NoError(t, err)
+		_, err = tran.Exec("DELETE FROM right_to_use_active")
+		assert.NoError(t, err)
+		_, err = tran.Exec("DELETE FROM right_to_use_history")
+		assert.NoError(t, err)
+		_, err = tran.Exec("DELETE FROM right_to_use")
+		assert.NoError(t, err)
+		_, err = tran.Exec("DELETE FROM contracts")
+		assert.NoError(t, err)
+
+		////// 実行
+		contractRep := NewContractRepository()
+		expects, err := contractRep.GetRecurTargets(utils.CreateJstTime(3020, 6, 1, 0, 0, 0, 0), tran)
+		assert.NoError(t, err)
+		err = tran.Commit()
+		assert.NoError(t, err)
+
+		////// 検証
+		assert.Len(t, expects, 0)
+	})
 }
 
 // 使用権データを作成するのに事前に必要なデータを準備する
