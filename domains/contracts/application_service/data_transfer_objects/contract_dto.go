@@ -10,6 +10,7 @@ type ContractDto struct {
 	ProductId        int
 	ContractDate     time.Time
 	BillingStartDate time.Time
+	RightToUseDtos   []RightToUseDto
 	BaseDto
 }
 
