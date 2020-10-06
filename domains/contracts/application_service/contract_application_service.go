@@ -83,7 +83,7 @@ func (c *ContractApplicationService) GetById(id int) (contractDto data_transfer_
 /*
 渡した実行日から5日以内に期間終了である使用権に対して、次の期間の使用権データを作成して永続化して返却する
 */
-func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time) (nextTermRightToUseDtos []data_transfer_objects.RightToUseDto, err error) {
+func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time) (nextTermContracts []data_transfer_objects.ContractDto, err error) {
 	db, err := db_connection.GetConnection()
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time)
 		return nil, err
 	}
 
-	nextTermRightToUseDtos = make([]data_transfer_objects.RightToUseDto, 0, len(contracts))
+	nextTermContracts = make([]data_transfer_objects.ContractDto, 0, len(contracts))
 	// 次の使用権を作成して更新する
 	for _, contract := range contracts {
 		if len(contract.RightToUses()) >= 2 {
@@ -130,7 +130,7 @@ func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time)
 		if err != nil {
 			return nil, errors.Wrapf(err, "コミットに失敗しました")
 		}
-		nextTermRightToUseDtos = append(nextTermRightToUseDtos, data_transfer_objects.NewRightToUseDtoFromEntity(contract.Id(), reloadedContract.RightToUses()[1]))
+		nextTermContracts = append(nextTermContracts, data_transfer_objects.NewContractDtoFromEntity(reloadedContract))
 	}
-	return nextTermRightToUseDtos, nil
+	return nextTermContracts, nil
 }
