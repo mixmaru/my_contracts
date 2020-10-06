@@ -11,23 +11,20 @@ import (
 )
 
 type ContractDomainService struct {
-	contractRepository   interfaces.IContractRepository
-	userRepository       interfaces.IUserRepository
-	productRepository    interfaces.IProductRepository
-	rightToUseRepository interfaces.IRightToUseRepository
+	contractRepository interfaces.IContractRepository
+	userRepository     interfaces.IUserRepository
+	productRepository  interfaces.IProductRepository
 }
 
 func NewContractDomainService(
 	contractRepository interfaces.IContractRepository,
 	userRepository interfaces.IUserRepository,
 	productRepository interfaces.IProductRepository,
-	rightToUseRepository interfaces.IRightToUseRepository,
 ) *ContractDomainService {
 	return &ContractDomainService{
-		contractRepository:   contractRepository,
-		userRepository:       userRepository,
-		productRepository:    productRepository,
-		rightToUseRepository: rightToUseRepository,
+		contractRepository: contractRepository,
+		userRepository:     userRepository,
+		productRepository:  productRepository,
 	}
 }
 
@@ -50,12 +47,6 @@ func (c *ContractDomainService) CreateContract(userId, productId int, executeDat
 		return data_transfer_objects.ContractDto{}, nil, err
 	}
 
-	// 使用権の作成
-	jst := utils.CreateJstLocation()
-	executeDateJst := executeDate.In(jst)
-	validTo := utils.CreateJstTime(executeDateJst.Year(), executeDateJst.Month()+1, executeDateJst.Day(), 0, 0, 0, 0)
-	_, err = c.createNewRightToUse(savedContractId, executeDate, validTo, executor)
-
 	// 再読込
 	savedEntity, _, _, err := c.contractRepository.GetById(savedContractId, executor)
 	if err != nil {
@@ -70,8 +61,14 @@ func (c *ContractDomainService) CreateContract(userId, productId int, executeDat
 }
 
 func (c *ContractDomainService) createNewContract(userId, productId int, executeDate, billingStartDate time.Time, executor gorp.SqlExecutor) (savedContractId int, err error) {
+	// 使用権entityを作成
+	jst := utils.CreateJstLocation()
+	executeDateJst := executeDate.In(jst)
+	validTo := utils.CreateJstTime(executeDateJst.Year(), executeDateJst.Month()+1, executeDateJst.Day(), 0, 0, 0, 0)
+	rightToUseEntity := entities.NewRightToUseEntity(executeDate, validTo)
+
 	// 契約entityを作成
-	entity := entities.NewContractEntity(userId, productId, executeDate, billingStartDate)
+	entity := entities.NewContractEntity(userId, productId, executeDate, billingStartDate, []*entities.RightToUseEntity{rightToUseEntity})
 
 	// リポジトリで保存
 	savedContractId, err = c.contractRepository.Create(entity, executor)
@@ -79,18 +76,6 @@ func (c *ContractDomainService) createNewContract(userId, productId int, execute
 		return 0, err
 	}
 	return savedContractId, nil
-}
-
-func (c *ContractDomainService) createNewRightToUse(contractId int, validFrom, validTo time.Time, executor gorp.SqlExecutor) (savedRightToUseId int, err error) {
-	// 使用権entityを作成
-	rightToUseEntity := entities.NewRightToUseEntity(contractId, validFrom, validTo)
-
-	// リポジトリで保存
-	savedRightToUseId, err = c.rightToUseRepository.Create(rightToUseEntity, executor)
-	if err != nil {
-		return 0, err
-	}
-	return savedRightToUseId, nil
 }
 
 func (c *ContractDomainService) registerValidation(userId int, productId int, executor gorp.SqlExecutor) (validationErrors map[string][]string, err error) {
@@ -127,17 +112,9 @@ func (c *ContractDomainService) calculateBillingStartDate(contractDate time.Time
 }
 
 /*
-渡された使用権の次の期間の使用権を作成して永続化する。永続化したデータを返却する
+渡された契約集約の使用権を元に、次の期間の使用権を作成して返す（永続化はしない）
 */
-func (c *ContractDomainService) CreateNextTermRightToUse(currentRightToUse *entities.RightToUseEntity, executor gorp.SqlExecutor) (*entities.RightToUseEntity, error) {
-	jst := utils.CreateJstLocation()
-
-	// 商品集約を取得する
-	product, err := c.productRepository.GetByRightToUseId(currentRightToUse.Id(), executor)
-	if err != nil {
-		return nil, err
-	}
-
+func CreateNextTermRightToUse(currentRightToUse *entities.RightToUseEntity, product *entities.ProductEntity) (*entities.RightToUseEntity, error) {
 	// 商品の期間（年、月、カスタム期間）を取得する
 	termType, err := product.GetTermType()
 	if err != nil {
@@ -145,6 +122,7 @@ func (c *ContractDomainService) CreateNextTermRightToUse(currentRightToUse *enti
 	}
 
 	// 期間から次の期間を算出する
+	jst := utils.CreateJstLocation()
 	from := currentRightToUse.ValidTo().In(jst)
 	var to time.Time
 	switch termType {
@@ -165,19 +143,6 @@ func (c *ContractDomainService) CreateNextTermRightToUse(currentRightToUse *enti
 	}
 
 	// entityを作る
-	nextTermEntity := entities.NewRightToUseEntity(currentRightToUse.ContractId(), from, to)
-
-	// 保存する。
-	nextTermEntityId, err := c.rightToUseRepository.Create(nextTermEntity, executor)
-	if err != nil {
-		return nil, err
-	}
-
-	// 再読込
-	nextTermEntity, err = c.rightToUseRepository.GetById(nextTermEntityId, executor)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextTermEntity, nil
+	nextTermEntity := entities.NewRightToUseEntity(from, to)
+	return nextTermEntity, err
 }

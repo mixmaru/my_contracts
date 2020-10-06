@@ -6,21 +6,16 @@ import (
 
 type RightToUseEntity struct {
 	BaseEntity
-	contractId int
-	validFrom  time.Time
-	validTo    time.Time
+	validFrom    time.Time
+	validTo      time.Time
+	billDetailId int // 請求詳細への関連。0だったら未請求
 }
 
-func NewRightToUseEntity(contractId int, validFrom, validTo time.Time) *RightToUseEntity {
+func NewRightToUseEntity(validFrom, validTo time.Time) *RightToUseEntity {
 	return &RightToUseEntity{
-		contractId: contractId,
-		validFrom:  validFrom,
-		validTo:    validTo,
+		validFrom: validFrom,
+		validTo:   validTo,
 	}
-}
-
-func (r *RightToUseEntity) ContractId() int {
-	return r.contractId
 }
 
 func (r *RightToUseEntity) ValidFrom() time.Time {
@@ -31,17 +26,30 @@ func (r *RightToUseEntity) ValidTo() time.Time {
 	return r.validTo
 }
 
-func NewRightToUseEntityWithData(id, contractId int, validFrom, validTo, createdAt, updatedAt time.Time) *RightToUseEntity {
+func (r *RightToUseEntity) BillDetailId() int {
+	return r.billDetailId
+}
+
+// 請求済かどうかを返す
+func (r *RightToUseEntity) WasBilling() bool {
+	if r.billDetailId == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+func NewRightToUseEntityWithData(id int, validFrom, validTo time.Time, billDetailId int, createdAt, updatedAt time.Time) *RightToUseEntity {
 	entity := &RightToUseEntity{}
-	entity.LoadData(id, contractId, validFrom, validTo, createdAt, updatedAt)
+	entity.LoadData(id, validFrom, validTo, billDetailId, createdAt, updatedAt)
 	return entity
 }
 
-func (r *RightToUseEntity) LoadData(id, contractId int, validFrom, validTo, createdAt, updatedAt time.Time) {
+func (r *RightToUseEntity) LoadData(id int, validFrom, validTo time.Time, billDetailId int, createdAt, updatedAt time.Time) {
 	r.id = id
-	r.contractId = contractId
 	r.validFrom = validFrom
 	r.validTo = validTo
+	r.billDetailId = billDetailId
 	r.createdAt = createdAt
 	r.updatedAt = updatedAt
 }

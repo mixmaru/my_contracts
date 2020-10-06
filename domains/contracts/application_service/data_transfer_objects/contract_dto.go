@@ -10,6 +10,7 @@ type ContractDto struct {
 	ProductId        int
 	ContractDate     time.Time
 	BillingStartDate time.Time
+	RightToUseDtos   []RightToUseDto
 	BaseDto
 }
 
@@ -22,5 +23,26 @@ func NewContractDtoFromEntity(entity *entities.ContractEntity) ContractDto {
 	dto.BillingStartDate = entity.BillingStartDate()
 	dto.CreatedAt = entity.CreatedAt()
 	dto.UpdatedAt = entity.UpdatedAt()
+	// rightToUseを作成する
+	dto.RightToUseDtos = make([]RightToUseDto, 0, len(entity.RightToUses()))
+	for _, rightToUseEntity := range entity.RightToUses() {
+		dto.RightToUseDtos = append(dto.RightToUseDtos, NewRightToUseDtoFromEntity(rightToUseEntity))
+	}
+	return dto
+}
+
+type RightToUseDto struct {
+	ValidFrom time.Time
+	ValidTo   time.Time
+	BaseDto
+}
+
+func NewRightToUseDtoFromEntity(entity *entities.RightToUseEntity) RightToUseDto {
+	dto := RightToUseDto{}
+	dto.Id = entity.Id()
+	dto.CreatedAt = entity.CreatedAt()
+	dto.UpdatedAt = entity.UpdatedAt()
+	dto.ValidFrom = entity.ValidFrom()
+	dto.ValidTo = entity.ValidTo()
 	return dto
 }

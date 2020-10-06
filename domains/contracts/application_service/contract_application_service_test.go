@@ -144,6 +144,8 @@ func TestContractApplicationService_CreateNextRightToUse(t *testing.T) {
 		db, err := db_connection.GetConnection()
 		assert.NoError(t, err)
 		defer db.Db.Close()
+		_, err = db.Exec("DELETE FROM right_to_use_active WHERE right_to_use_id IN (SELECT id FROM right_to_use WHERE '2020-05-25' <= valid_to AND valid_to <= '2020-06-02')")
+		assert.NoError(t, err)
 		_, err = db.Exec("DELETE FROM right_to_use WHERE '2020-05-25' <= valid_to AND valid_to <= '2020-06-02'")
 		assert.NoError(t, err)
 
@@ -151,35 +153,35 @@ func TestContractApplicationService_CreateNextRightToUse(t *testing.T) {
 		user := createUser()
 		product := createProduct()
 		contractApp := NewContractApplicationService()
-		contractDto1, validErrors, err := contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 5, 1, 3, 0, 0, 0))
+		_, validErrors, err := contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 5, 1, 3, 0, 0, 0))
 		if err != nil || len(validErrors) > 0 {
 			panic("データ作成失敗")
 		}
-		contractDto2, validErrors, err := contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 4, 30, 0, 0, 0, 0))
+		_, validErrors, err = contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 4, 30, 0, 0, 0, 0))
 		if err != nil || len(validErrors) > 0 {
 			panic("データ作成失敗")
 		}
 
 		////// 実行
 		app := NewContractApplicationService()
-		nextRights, err := app.CreateNextRightToUse(utils.CreateJstTime(2020, 5, 28, 0, 10, 0, 0))
+		actualContracts, err := app.CreateNextRightToUse(utils.CreateJstTime(2020, 5, 28, 0, 10, 0, 0))
 		assert.NoError(t, err)
 
 		////// 検証
-		assert.Len(t, nextRights, 2)
+		assert.Len(t, actualContracts, 2)
 		// 1つめ
-		assert.NotZero(t, nextRights[0].Id)
-		assert.NotZero(t, nextRights[0].CreatedAt)
-		assert.NotZero(t, nextRights[0].UpdatedAt)
-		assert.True(t, nextRights[0].ValidFrom.Equal(utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0)))
-		assert.True(t, nextRights[0].ValidTo.Equal(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0)))
-		assert.Equal(t, contractDto1.Id, nextRights[0].ContractId)
+		recurRightToUse1 := actualContracts[0].RightToUseDtos[1]
+		assert.NotZero(t, recurRightToUse1.Id)
+		assert.NotZero(t, recurRightToUse1.CreatedAt)
+		assert.NotZero(t, recurRightToUse1.UpdatedAt)
+		assert.True(t, recurRightToUse1.ValidFrom.Equal(utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0)))
+		assert.True(t, recurRightToUse1.ValidTo.Equal(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0)))
 		// 2つめ
-		assert.NotZero(t, nextRights[1].Id)
-		assert.NotZero(t, nextRights[1].CreatedAt)
-		assert.NotZero(t, nextRights[1].UpdatedAt)
-		assert.True(t, nextRights[1].ValidFrom.Equal(utils.CreateJstTime(2020, 5, 30, 0, 0, 0, 0)))
-		assert.True(t, nextRights[1].ValidTo.Equal(utils.CreateJstTime(2020, 6, 30, 0, 0, 0, 0)))
-		assert.Equal(t, contractDto2.Id, nextRights[1].ContractId)
+		recurRightToUse2 := actualContracts[1].RightToUseDtos[1]
+		assert.NotZero(t, recurRightToUse2.Id)
+		assert.NotZero(t, recurRightToUse2.CreatedAt)
+		assert.NotZero(t, recurRightToUse2.UpdatedAt)
+		assert.True(t, recurRightToUse2.ValidFrom.Equal(utils.CreateJstTime(2020, 5, 30, 0, 0, 0, 0)))
+		assert.True(t, recurRightToUse2.ValidTo.Equal(utils.CreateJstTime(2020, 6, 30, 0, 0, 0, 0)))
 	})
 }

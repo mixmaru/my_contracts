@@ -75,10 +75,9 @@ func TestApplicationServiceFactory_NewBillApplicationServiceWithMock(t *testing.
 	defer ctrl.Finish()
 	product := mock_interfaces.NewMockIProductRepository(ctrl)
 	contract := mock_interfaces.NewMockIContractRepository(ctrl)
-	rightToUse := mock_interfaces.NewMockIRightToUseRepository(ctrl)
 	bill := mock_interfaces.NewMockIBillRepository(ctrl)
 
 	// インスタンス化テスト
-	app := NewBillApplicationServiceWithMock(product, contract, rightToUse, bill)
+	app := NewBillApplicationServiceWithMock(product, contract, bill)
 	assert.IsType(t, &BillApplicationService{}, app)
 }

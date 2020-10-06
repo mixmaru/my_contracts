@@ -11,10 +11,9 @@ import (
 )
 
 type ContractApplicationService struct {
-	contractRepository   interfaces.IContractRepository
-	userRepository       interfaces.IUserRepository
-	productRepository    interfaces.IProductRepository
-	rightToUseRepository interfaces.IRightToUseRepository
+	contractRepository interfaces.IContractRepository
+	userRepository     interfaces.IUserRepository
+	productRepository  interfaces.IProductRepository
 }
 
 func (c *ContractApplicationService) Register(userId int, productId int, contractDateTime time.Time) (productDto data_transfer_objects.ContractDto, validationErrors map[string][]string, err error) {
@@ -30,7 +29,7 @@ func (c *ContractApplicationService) Register(userId int, productId int, contrac
 	}
 
 	// ドメインサービス作成
-	contractDomainService := domain_service.NewContractDomainService(c.contractRepository, c.userRepository, c.productRepository, c.rightToUseRepository)
+	contractDomainService := domain_service.NewContractDomainService(c.contractRepository, c.userRepository, c.productRepository)
 	contractDto, validationErrors, err := contractDomainService.CreateContract(userId, productId, contractDateTime, tran)
 	if err != nil {
 		tran.Rollback()
@@ -84,37 +83,54 @@ func (c *ContractApplicationService) GetById(id int) (contractDto data_transfer_
 /*
 渡した実行日から5日以内に期間終了である使用権に対して、次の期間の使用権データを作成して永続化して返却する
 */
-func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time) (nextTermRightToUseDtos []data_transfer_objects.RightToUseDto, err error) {
+func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time) (nextTermContracts []data_transfer_objects.ContractDto, err error) {
 	db, err := db_connection.GetConnection()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Db.Close()
-	tran, err := db.Begin()
-	if err != nil {
-		return nil, errors.Wrap(err, "トランザクション開始失敗")
-	}
-
-	// 対象使用権を取得
-	rightToUses, err := c.rightToUseRepository.GetRecurTargets(executeDate, tran)
+	// 使用権更新の対象契約を取得
+	contracts, err := c.contractRepository.GetRecurTargets(executeDate, db)
 	if err != nil {
 		return nil, err
 	}
 
-	// 次の使用権を作成する
-	contractDomainService := domain_service.NewContractDomainService(c.contractRepository, c.userRepository, c.productRepository, c.rightToUseRepository)
-	nextTermRightToUseDtos = make([]data_transfer_objects.RightToUseDto, 0, len(rightToUses))
-	for _, rightToUse := range rightToUses {
-		nextTermRight, err := contractDomainService.CreateNextTermRightToUse(rightToUse, tran)
+	nextTermContracts = make([]data_transfer_objects.ContractDto, 0, len(contracts))
+	// 次の使用権を作成して更新する
+	for _, contract := range contracts {
+		if len(contract.RightToUses()) >= 2 {
+			return nil, errors.Errorf("使用権が2つ以上ある（既に次期使用権がある可能性がある） contract: %+v", contract)
+		}
+
+		tran, err := db.Begin()
+		if err != nil {
+			return nil, errors.Wrap(err, "トランザクション開始失敗")
+		}
+
+		product, err := c.productRepository.GetById(contract.ProductId(), tran)
 		if err != nil {
 			return nil, err
 		}
-		nextTermRightToUseDtos = append(nextTermRightToUseDtos, data_transfer_objects.NewRightToUseDtoFromEntity(nextTermRight))
+		nextTermRightToUse, err := domain_service.CreateNextTermRightToUse(contract.RightToUses()[0], product)
+		if err != nil {
+			return nil, err
+		}
+		contract.AddNextTermRightToUses(nextTermRightToUse)
+		// contractの保存実行
+		err = c.contractRepository.Update(contract, tran)
+		if err != nil {
+			return nil, err
+		}
+		// リロード
+		reloadedContract, _, _, err := c.contractRepository.GetById(contract.Id(), tran)
+		if err != nil {
+			return nil, err
+		}
+		err = tran.Commit()
+		if err != nil {
+			return nil, errors.Wrapf(err, "コミットに失敗しました")
+		}
+		nextTermContracts = append(nextTermContracts, data_transfer_objects.NewContractDtoFromEntity(reloadedContract))
 	}
-	err = tran.Commit()
-	if err != nil {
-		return nil, errors.Wrap(err, "コミットに失敗しました")
-	}
-
-	return nextTermRightToUseDtos, nil
+	return nextTermContracts, nil
 }

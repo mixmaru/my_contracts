@@ -268,9 +268,28 @@ func createRightToUseDataForTest() (rightToUse1Id, rightToUse2Id, userId int) {
 		panic("ユーザーデータ登録失敗")
 	}
 
+	// 使用権データ作成
+	rightToUseEntity1 := entities.NewRightToUseEntity(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0), utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0))
+	rightToUseEntity2 := entities.NewRightToUseEntity(utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0), utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0))
 	// 契約データ作成
-	contractEntity1 := entities.NewContractEntity(userId, product1Id, utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0), utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0))
-	contractEntity2 := entities.NewContractEntity(userId, product2Id, utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0), utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0))
+	contractEntity1 := entities.NewContractEntity(
+		userId,
+		product1Id,
+		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0),
+		[]*entities.RightToUseEntity{
+			rightToUseEntity1,
+		},
+	)
+	contractEntity2 := entities.NewContractEntity(
+		userId,
+		product2Id,
+		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0),
+		[]*entities.RightToUseEntity{
+			rightToUseEntity2,
+		},
+	)
 	contractRep := NewContractRepository()
 	contract1Id, err := contractRep.Create(contractEntity1, db)
 	if err != nil {
@@ -280,18 +299,14 @@ func createRightToUseDataForTest() (rightToUse1Id, rightToUse2Id, userId int) {
 	if err != nil {
 		panic("契約データ登録失敗")
 	}
-
-	// 使用権データ作成
-	rightToUseEntity1 := entities.NewRightToUseEntity(contract1Id, utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0), utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0))
-	rightToUseEntity2 := entities.NewRightToUseEntity(contract2Id, utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0), utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0))
-	rightToUseRep := NewRightToUseRepository()
-	rightToUse1Id, err = rightToUseRep.Create(rightToUseEntity1, db)
+	// 登録データ再読込
+	reloadedContract1, _, _, err := contractRep.GetById(contract1Id, db)
 	if err != nil {
-		panic("使用権データ登録失敗")
+		panic("契約データ再読込失敗")
 	}
-	rightToUse2Id, err = rightToUseRep.Create(rightToUseEntity2, db)
+	reloadedContract2, _, _, err := contractRep.GetById(contract2Id, db)
 	if err != nil {
-		panic("使用権データ登録失敗")
+		panic("契約データ再読込失敗")
 	}
-	return rightToUse1Id, rightToUse2Id, userId
+	return reloadedContract1.RightToUses()[0].Id(), reloadedContract2.RightToUses()[0].Id(), userId
 }

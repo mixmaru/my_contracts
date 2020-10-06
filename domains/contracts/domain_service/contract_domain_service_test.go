@@ -64,7 +64,7 @@ func TestContractDomainService_CreateContract(t *testing.T) {
 }
 
 func TestNewContractDomainService_calculateBillingStartDate(t *testing.T) {
-	app := NewContractDomainService(nil, nil, nil, nil)
+	app := NewContractDomainService(nil, nil, nil)
 	t.Run("契約日と無料期間とタイムゾーンを渡すと_課金開始日が返ってくる", func(t *testing.T) {
 		t.Run("JSTで渡すと_JSTで0時0分で返ってくる", func(t *testing.T) {
 			expect := utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0)
@@ -80,54 +80,36 @@ func TestNewContractDomainService_calculateBillingStartDate(t *testing.T) {
 }
 
 func TestNewContractDomainService_CreateNextTermRightToUse(t *testing.T) {
-	db, err := db_connection.GetConnection()
-	assert.NoError(t, err)
-	defer db.Db.Close()
-
-	contractDomainService := createContractDomainService()
-
-	t.Run("使用権を渡すと次の期間の使用権が作成され保存され返却される", func(t *testing.T) {
-		tran, err := db.Begin()
-		assert.NoError(t, err)
+	t.Run("使用権と商品を渡すと次の期間の使用権が作成され返却される", func(t *testing.T) {
 		////// 準備
-		// userとproductを作成
-		userId, productId := createPrepareData(tran, t)
-		// contractを作成
-		contractEntity := entities.NewContractEntity(
-			userId,
-			productId,
-			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
-			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
-		)
-		contractRep := repositories.NewContractRepository()
-		contractId, err := contractRep.Create(contractEntity, tran)
-		assert.NoError(t, err)
-		// 使用権の作成
-		rightToUseEntity := entities.NewRightToUseEntity(
-			contractId,
+		// 使用権と商品を用意
+		rightToUse := entities.NewRightToUseEntityWithData(1,
 			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 			utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+			10,
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 		)
-		rightToUseRep := repositories.NewRightToUseRepository()
-		rightToUseId, err := rightToUseRep.Create(rightToUseEntity, tran)
-		assert.NoError(t, err)
-		// 使用権データの取得
-		currentRightToUseEntity, err := rightToUseRep.GetById(rightToUseId, tran)
+		product, err := entities.NewProductEntityWithData(
+			10,
+			"1ヶ月商品",
+			"2000",
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		)
 		assert.NoError(t, err)
 
 		////// 実行
-		nextTermRightToUse, err := contractDomainService.CreateNextTermRightToUse(currentRightToUseEntity, tran)
-		assert.NoError(t, err)
-		err = tran.Commit()
+		actual, err := CreateNextTermRightToUse(rightToUse, product)
 		assert.NoError(t, err)
 
 		////// 検証
-		assert.NotZero(t, nextTermRightToUse.Id())
-		assert.NotZero(t, nextTermRightToUse.CreatedAt())
-		assert.NotZero(t, nextTermRightToUse.UpdatedAt())
-		assert.Equal(t, contractId, nextTermRightToUse.ContractId())
-		assert.True(t, nextTermRightToUse.ValidFrom().Equal(utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0)))
-		assert.True(t, nextTermRightToUse.ValidTo().Equal(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0)))
+		assert.Zero(t, actual.Id())
+		assert.Zero(t, actual.CreatedAt())
+		assert.Zero(t, actual.UpdatedAt())
+		assert.False(t, actual.WasBilling())
+		assert.True(t, actual.ValidFrom().Equal(utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0)))
+		assert.True(t, actual.ValidTo().Equal(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0)))
 	})
 }
 
@@ -156,6 +138,5 @@ func createContractDomainService() *ContractDomainService {
 		repositories.NewContractRepository(),
 		repositories.NewUserRepository(),
 		repositories.NewProductRepository(),
-		repositories.NewRightToUseRepository(),
 	)
 }

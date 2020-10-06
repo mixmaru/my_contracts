@@ -10,11 +10,21 @@ import (
 // UserIndividualのインスタンス化をテスト
 func TestContractEntity_NewContractEntity(t *testing.T) {
 	// インスタンス化
+	rightToUses := make([]*RightToUseEntity, 0, 2)
+	rightToUses = append(rightToUses, NewRightToUseEntity(
+		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
+	))
+	rightToUses = append(rightToUses, NewRightToUseEntity(
+		time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2020, 3, 1, 0, 0, 0, 0, time.UTC),
+	))
 	entity := NewContractEntity(
 		1,
 		2,
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+		rightToUses,
 	)
 
 	// テスト
@@ -22,6 +32,14 @@ func TestContractEntity_NewContractEntity(t *testing.T) {
 	assert.Equal(t, 2, entity.ProductId())
 	assert.EqualValues(t, time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), entity.ContractDate())
 	assert.EqualValues(t, time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC), entity.BillingStartDate())
+	// 使用権
+	actualRightToUses := entity.RightToUses()
+	assert.Len(t, actualRightToUses, 2)
+	assert.True(t, actualRightToUses[0].validFrom.Equal(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
+	assert.True(t, actualRightToUses[0].validTo.Equal(time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)))
+	assert.True(t, actualRightToUses[1].validFrom.Equal(time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)))
+	assert.True(t, actualRightToUses[1].validTo.Equal(time.Date(2020, 3, 1, 0, 0, 0, 0, time.UTC)))
+	actualRightToUses[0].validFrom = time.Time{}
 }
 
 func TestContractEntity_NewContractEntityWithData(t *testing.T) {
@@ -30,7 +48,7 @@ func TestContractEntity_NewContractEntityWithData(t *testing.T) {
 	billingStartDate := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	createdAt := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	updatedAt := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
-	entity, err := NewContractEntityWithData(1, 2, 3, contractDate, billingStartDate, createdAt, updatedAt)
+	entity, err := NewContractEntityWithData(1, 2, 3, contractDate, billingStartDate, createdAt, updatedAt, []*RightToUseEntity{})
 	assert.NoError(t, err)
 
 	assert.Equal(t, 1, entity.Id())
@@ -38,6 +56,7 @@ func TestContractEntity_NewContractEntityWithData(t *testing.T) {
 	assert.Equal(t, 3, entity.ProductId())
 	assert.True(t, contractDate.Equal(entity.ContractDate()))
 	assert.True(t, billingStartDate.Equal(entity.BillingStartDate()))
+	assert.Len(t, entity.RightToUses(), 0)
 	assert.True(t, createdAt.Equal(entity.CreatedAt()))
 	assert.True(t, updatedAt.Equal(entity.UpdatedAt()))
 }
@@ -58,6 +77,7 @@ func TestContractEntity_LoadData(t *testing.T) {
 			billingStartDate,
 			createdAt,
 			updateAt,
+			[]*RightToUseEntity{},
 		)
 		assert.NoError(t, err)
 
@@ -66,6 +86,7 @@ func TestContractEntity_LoadData(t *testing.T) {
 		assert.Equal(t, 3, contractEntity.ProductId())
 		assert.EqualValues(t, contractDate, contractEntity.ContractDate())
 		assert.EqualValues(t, billingStartDate, contractEntity.BillingStartDate())
+		assert.Len(t, contractEntity.RightToUses(), 0)
 		assert.EqualValues(t, createdAt, contractEntity.CreatedAt())
 		assert.EqualValues(t, updateAt, contractEntity.UpdatedAt())
 	})
@@ -80,6 +101,7 @@ func TestContractEntity_LastBillingStartDate(t *testing.T) {
 		utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0),
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		[]*RightToUseEntity{},
 	)
 	assert.NoError(t, err)
 

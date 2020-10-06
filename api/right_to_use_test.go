@@ -31,17 +31,26 @@ func TestMain_executeRecur(t *testing.T) {
 		////// 検証
 		assert.Equal(t, http.StatusCreated, rec.Code)
 		// jsonパース
-		var actualRightToUses []*data_transfer_objects.RightToUseDto
-		err := json.Unmarshal(rec.Body.Bytes(), &actualRightToUses)
+		var actualContracts []*data_transfer_objects.ContractDto
+		err := json.Unmarshal(rec.Body.Bytes(), &actualContracts)
 		assert.NoError(t, err)
 		// 件数
-		assert.Len(t, actualRightToUses, 1)
+		assert.Len(t, actualContracts, 1)
 		// 内容
-		assert.NotZero(t, actualRightToUses[0].Id)
-		assert.NotZero(t, actualRightToUses[0].CreatedAt)
-		assert.NotZero(t, actualRightToUses[0].UpdatedAt)
-		assert.Equal(t, contract.Id, actualRightToUses[0].ContractId)
-		assert.True(t, actualRightToUses[0].ValidFrom.Equal(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0)))
-		assert.True(t, actualRightToUses[0].ValidTo.Equal(utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0)))
+		actualContract := actualContracts[0]
+		assert.Equal(t, contract.Id, actualContract.Id)
+		assert.True(t, actualContract.CreatedAt.Equal(contract.CreatedAt))
+		assert.True(t, actualContract.UpdatedAt.Equal(contract.UpdatedAt))
+		assert.Equal(t, contract.ProductId, actualContract.ProductId)
+		assert.True(t, actualContract.BillingStartDate.Equal(contract.BillingStartDate))
+		assert.True(t, actualContract.ContractDate.Equal(contract.ContractDate))
+		// 使用権
+		actualRightToUses := actualContract.RightToUseDtos
+		assert.Equal(t, contract.RightToUseDtos[0].Id, actualRightToUses[0].Id)
+		assert.NotZero(t, actualRightToUses[1].Id)
+		assert.NotZero(t, actualRightToUses[1].CreatedAt)
+		assert.NotZero(t, actualRightToUses[1].UpdatedAt)
+		assert.True(t, actualRightToUses[1].ValidFrom.Equal(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0)))
+		assert.True(t, actualRightToUses[1].ValidTo.Equal(utils.CreateJstTime(2020, 8, 1, 0, 0, 0, 0)))
 	})
 }
