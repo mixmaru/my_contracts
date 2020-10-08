@@ -1,7 +1,6 @@
 package domain_service
 
 import (
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/utils"
@@ -28,39 +27,28 @@ func NewContractDomainService(
 	}
 }
 
-func (c *ContractDomainService) CreateContract(userId, productId int, executeDate time.Time, executor gorp.SqlExecutor) (contractDto data_transfer_objects.ContractDto, validationErrors map[string][]string, err error) {
+func (c *ContractDomainService) CreateContract(userId, productId int, executeDate time.Time, executor gorp.SqlExecutor) (contract *entities.ContractEntity, validationErrors map[string][]string, err error) {
 	// 入力値バリデーション
 	validationErrors, err = c.registerValidation(userId, productId, executor)
 	if err != nil {
-		return data_transfer_objects.ContractDto{}, nil, err
+		return nil, nil, err
 	}
 	if len(validationErrors) > 0 {
-		return data_transfer_objects.ContractDto{}, validationErrors, nil
+		return nil, validationErrors, nil
 	}
 
 	// 課金開始日算出
 	billingStartDate := c.calculateBillingStartDate(executeDate, 0, utils.CreateJstLocation())
 
 	// 契約の作成
-	savedContractId, err := c.createNewContract(userId, productId, executeDate, billingStartDate, executor)
+	contract, err = c.createNewContract(userId, productId, executeDate, billingStartDate, executor)
 	if err != nil {
-		return data_transfer_objects.ContractDto{}, nil, err
+		return nil, nil, err
 	}
-
-	// 再読込
-	savedEntity, _, _, err := c.contractRepository.GetById(savedContractId, executor)
-	if err != nil {
-		return data_transfer_objects.ContractDto{}, nil, err
-	}
-
-	// dtoに詰める
-	dto := data_transfer_objects.NewContractDtoFromEntity(savedEntity)
-
-	// 返却
-	return dto, nil, nil
+	return contract, nil, nil
 }
 
-func (c *ContractDomainService) createNewContract(userId, productId int, executeDate, billingStartDate time.Time, executor gorp.SqlExecutor) (savedContractId int, err error) {
+func (c *ContractDomainService) createNewContract(userId, productId int, executeDate, billingStartDate time.Time, executor gorp.SqlExecutor) (contract *entities.ContractEntity, err error) {
 	// 使用権entityを作成
 	jst := utils.CreateJstLocation()
 	executeDateJst := executeDate.In(jst)
@@ -70,12 +58,7 @@ func (c *ContractDomainService) createNewContract(userId, productId int, execute
 	// 契約entityを作成
 	entity := entities.NewContractEntity(userId, productId, executeDate, billingStartDate, []*entities.RightToUseEntity{rightToUseEntity})
 
-	// リポジトリで保存
-	savedContractId, err = c.contractRepository.Create(entity, executor)
-	if err != nil {
-		return 0, err
-	}
-	return savedContractId, nil
+	return entity, nil
 }
 
 func (c *ContractDomainService) registerValidation(userId int, productId int, executor gorp.SqlExecutor) (validationErrors map[string][]string, err error) {
