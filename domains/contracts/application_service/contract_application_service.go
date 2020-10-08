@@ -29,7 +29,7 @@ func (c *ContractApplicationService) Register(userId int, productId int, contrac
 	}
 
 	// ドメインサービス作成
-	contractDomainService := domain_service.NewContractDomainService(c.contractRepository, c.userRepository, c.productRepository)
+	contractDomainService := domain_service.NewContractDomainService(c.userRepository, c.productRepository)
 	contractEntity, validationErrors, err := contractDomainService.CreateContract(userId, productId, contractDateTime, tran)
 	if err != nil {
 		tran.Rollback()

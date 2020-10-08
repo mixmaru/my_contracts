@@ -10,20 +10,17 @@ import (
 )
 
 type ContractDomainService struct {
-	contractRepository interfaces.IContractRepository
-	userRepository     interfaces.IUserRepository
-	productRepository  interfaces.IProductRepository
+	userRepository    interfaces.IUserRepository
+	productRepository interfaces.IProductRepository
 }
 
 func NewContractDomainService(
-	contractRepository interfaces.IContractRepository,
 	userRepository interfaces.IUserRepository,
 	productRepository interfaces.IProductRepository,
 ) *ContractDomainService {
 	return &ContractDomainService{
-		contractRepository: contractRepository,
-		userRepository:     userRepository,
-		productRepository:  productRepository,
+		userRepository:    userRepository,
+		productRepository: productRepository,
 	}
 }
 
@@ -41,14 +38,14 @@ func (c *ContractDomainService) CreateContract(userId, productId int, executeDat
 	billingStartDate := c.calculateBillingStartDate(executeDate, 0, utils.CreateJstLocation())
 
 	// 契約の作成
-	contract, err = c.createNewContract(userId, productId, executeDate, billingStartDate, executor)
+	contract, err = c.createNewContract(userId, productId, executeDate, billingStartDate)
 	if err != nil {
 		return nil, nil, err
 	}
 	return contract, nil, nil
 }
 
-func (c *ContractDomainService) createNewContract(userId, productId int, executeDate, billingStartDate time.Time, executor gorp.SqlExecutor) (contract *entities.ContractEntity, err error) {
+func (c *ContractDomainService) createNewContract(userId, productId int, executeDate, billingStartDate time.Time) (contract *entities.ContractEntity, err error) {
 	// 使用権entityを作成
 	jst := utils.CreateJstLocation()
 	executeDateJst := executeDate.In(jst)
