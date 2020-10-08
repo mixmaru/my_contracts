@@ -29,8 +29,8 @@ func (c *ContractApplicationService) Register(userId int, productId int, contrac
 	}
 
 	// ドメインサービス作成
-	contractDomainService := domain_service.NewContractDomainService(c.contractRepository, c.userRepository, c.productRepository)
-	contractDto, validationErrors, err := contractDomainService.CreateContract(userId, productId, contractDateTime, tran)
+	contractDomainService := domain_service.NewContractDomainService(c.userRepository, c.productRepository)
+	contractEntity, validationErrors, err := contractDomainService.CreateContract(userId, productId, contractDateTime, tran)
 	if err != nil {
 		tran.Rollback()
 		return data_transfer_objects.ContractDto{}, nil, err
@@ -39,10 +39,24 @@ func (c *ContractApplicationService) Register(userId int, productId int, contrac
 		tran.Rollback()
 		return data_transfer_objects.ContractDto{}, validationErrors, nil
 	}
+	// 契約保存
+	savedContractId, err := c.contractRepository.Create(contractEntity, tran)
+	if err != nil {
+		tran.Rollback()
+		return data_transfer_objects.ContractDto{}, nil, err
+	}
+	// 再読込
+	savedContractEntity, _, _, err := c.contractRepository.GetById(savedContractId, tran)
+	if err != nil {
+		tran.Rollback()
+		return data_transfer_objects.ContractDto{}, nil, err
+	}
 	err = tran.Commit()
 	if err != nil {
 		return data_transfer_objects.ContractDto{}, nil, errors.Wrapf(err, "コミットに失敗した。userId: %v, productId: %v, contractDateTime: %v", userId, productId, contractDateTime)
 	}
+	// dtoに詰める
+	contractDto := data_transfer_objects.NewContractDtoFromEntity(savedContractEntity)
 
 	return contractDto, nil, nil
 }
