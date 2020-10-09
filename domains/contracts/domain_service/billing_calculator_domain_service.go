@@ -1,7 +1,6 @@
 package domain_service
 
 import (
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service/interfaces"
 	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/lib/decimal"
@@ -26,65 +25,8 @@ func NewBillingCalculatorDomainService(productRepository interfaces.IProductRepo
 	}
 }
 
-// 渡した指定日を実行日として請求の実行をする
-//
-// ※もしデータ量がもの凄く多かったら、長期間ロックがかかるかも。それであれば、1件1件取得 => commitを長時間続けたほうがいいのかもしれない。
-// その場合、長時間処理時間がかかるので、別スレッドとかで非同期に動かすことを検討する
-func (b *BillingCalculatorDomainService) ExecuteBilling(executeDate time.Time, executor gorp.SqlExecutor) ([]data_transfer_objects.BillDto, error) {
-	retBillDtos := []data_transfer_objects.BillDto{}
-
-	// 請求対象使用権をもつ契約を取得する
-	contracts, err := b.contractRepository.GetBillingTargetByBillingDate(executeDate, executor)
-	if err != nil {
-		return nil, err
-	}
-
-	billAggs, err := b.createBillAggligationsFromRightToUseEntities(executeDate, contracts, executor)
-
-	for _, billAgg := range billAggs {
-		// billAggを保存
-		savedBillId, err := b.billRepository.Create(billAgg, executor)
-		if err != nil {
-			return nil, err
-		}
-		// 再取得してdtoにする
-		savedBill, err := b.billRepository.GetById(savedBillId, executor)
-		if err != nil {
-			return nil, err
-		}
-		billDto, err := data_transfer_objects.NewBillDtoFromEntity(savedBill)
-		retBillDtos = append(retBillDtos, billDto)
-	}
-	return retBillDtos, nil
-}
-
-// contractsのから未請求かつ、validFromが実行日以前の使用権について請求データを作成する（請求実行する）
-func (b *BillingCalculatorDomainService) createBillAggligationsFromRightToUseEntities(executeDate time.Time, contracts []*entities.ContractEntity, executor gorp.SqlExecutor) ([]*entities.BillAggregation, error) {
-	var retBillAggs []*entities.BillAggregation
-
-	for _, contract := range contracts {
-		billAgg := entities.NewBillingAggregation(executeDate, contract.UserId())
-		for _, rightToUse := range contract.RightToUses() {
-			// 未請求かつ、validFromと課金開始日がexecuteDate以前の物を請求実行
-			if isBillingTarget(executeDate, contract.BillingStartDate(), rightToUse) {
-				amount, err := b.BillingAmount(rightToUse, contract.BillingStartDate(), executor)
-				if err != nil {
-					return nil, err
-				}
-				err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(rightToUse.Id(), amount))
-				if err != nil {
-					return nil, err
-				}
-			}
-		}
-		retBillAggs = append(retBillAggs, billAgg)
-	}
-
-	return retBillAggs, nil
-}
-
 // 未請求かつ、validFromと課金開始日がexecuteDate以前の物が請求対象となる。
-func isBillingTarget(executeDate time.Time, billingStartDate time.Time, rightToUse *entities.RightToUseEntity) bool {
+func IsBillingTarget(executeDate time.Time, billingStartDate time.Time, rightToUse *entities.RightToUseEntity) bool {
 	if (rightToUse.ValidFrom().Equal(executeDate) || rightToUse.ValidFrom().Before(executeDate)) &&
 		(billingStartDate.Equal(executeDate) || billingStartDate.Before(executeDate)) {
 		if !rightToUse.WasBilling() {
