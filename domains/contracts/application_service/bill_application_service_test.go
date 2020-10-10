@@ -128,7 +128,7 @@ func TestBillApplicationService_ExecuteBilling(t *testing.T) {
 					rep := repositories.NewProductRepository()
 					return rep.GetByRightToUseId(id, executor)
 				}
-			}).Times(4)
+			}).AnyTimes()
 			// アプリケーションサービス作成
 			billApp := NewBillApplicationServiceWithMock(productRep, repositories.NewContractRepository(), repositories.NewBillRepository())
 			// 事前に同日で実行してすべて請求実行済にしておく。テストのために。
