@@ -46,7 +46,7 @@ func executeBilling(c echo.Context) error {
 	billApp := application_service.NewBillApplicationService()
 	billDtos, err := billApp.ExecuteBilling(executeDate)
 	if err != nil {
-		logger.Sugar().Errorw("請求実行に失敗。", "executeDate", executeDate, "err", err)
+		logger.Sugar().Errorw("請求実行に失敗。", "executeDate", executeDate, "err", err, "完了したbill", billDtos)
 		c.Error(err)
 		return err
 	}

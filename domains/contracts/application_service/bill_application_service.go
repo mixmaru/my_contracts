@@ -16,7 +16,11 @@ type BillApplicationService struct {
 	billRepository     interfaces.IBillRepository
 }
 
-// 渡した指定日を実行日として請求の実行をする
+/*
+渡した指定日を実行日として請求の実行をする
+
+処理途中でエラーが発生しても、処理完了した部分までは処理された状態になり、データが返却される
+*/
 func (b *BillApplicationService) ExecuteBilling(executeDate time.Time) ([]data_transfer_objects.BillDto, error) {
 	db, err := db_connection.GetConnection()
 	if err != nil {
