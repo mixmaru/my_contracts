@@ -6,6 +6,7 @@ import (
 	"github.com/mixmaru/my_contracts/domains/contracts/domain_service"
 	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -34,24 +35,35 @@ func (b *BillApplicationService) ExecuteBilling(executeDate time.Time) ([]data_t
 	retBillDtos := make([]data_transfer_objects.BillDto, 0, len(contracts))
 	for _, contract := range contracts {
 		billAgg := entities.NewBillingAggregation(executeDate, contract.UserId())
+		// トランザクション
+		tran, err := db.Begin()
+		if err != nil {
+			return retBillDtos, errors.Wrapf(err, "トランザクション開始失敗")
+		}
 		for _, rightToUse := range contract.RightToUses() {
 			// 未請求かつ、validFromと課金開始日がexecuteDate以前の物を請求実行
 			if domain_service.IsBillingTarget(executeDate, contract.BillingStartDate(), rightToUse) {
-				amount, err := billDomain.BillingAmount(rightToUse, contract.BillingStartDate(), db)
+				amount, err := billDomain.BillingAmount(rightToUse, contract.BillingStartDate(), tran)
 				if err != nil {
-					return nil, err
+					return retBillDtos, err
 				}
 				err = billAgg.AddBillDetail(entities.NewBillingDetailEntity(rightToUse.Id(), amount))
 				if err != nil {
-					return nil, err
+					return retBillDtos, err
 				}
 			}
 		}
 		// 保存
-		savedBillId, err := b.billRepository.Create(billAgg, db)
+		savedBillId, err := b.billRepository.Create(billAgg, tran)
 		if err != nil {
-			return nil, err
+			return retBillDtos, err
 		}
+		// コミットする
+		err = tran.Commit()
+		if err != nil {
+			return retBillDtos, errors.Wrapf(err, "トランザクションコミット失敗")
+		}
+
 		// 再取得してdtoにする
 		savedBill, err := b.billRepository.GetById(savedBillId, db)
 		billDto, err := data_transfer_objects.NewBillDtoFromEntity(savedBill)

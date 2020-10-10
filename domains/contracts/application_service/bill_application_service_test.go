@@ -1,11 +1,15 @@
 package application_service
 
 import (
+	"errors"
+	"github.com/golang/mock/gomock"
+	"github.com/mixmaru/my_contracts/domains/contracts/application_service/interfaces/mock_interfaces"
 	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/gorp.v2"
 	"testing"
 )
 
@@ -106,6 +110,41 @@ func TestBillApplicationService_ExecuteBilling(t *testing.T) {
 
 			////// 検証
 			assert.Len(t, billDtos, 0)
+		})
+
+		t.Run("処理途中で失敗したときエラーを返すが、処理したものに関しては保存し返却する", func(t *testing.T) {
+			////// 準備
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			// 商品リポジトリのモック作成
+			productRep := mock_interfaces.NewMockIProductRepository(ctrl)
+			callCount := 0
+			productRep.EXPECT().GetByRightToUseId(gomock.Any(), gomock.Any()).DoAndReturn(func(id int, executor gorp.SqlExecutor) (*entities.ProductEntity, error) {
+				callCount += 1
+				if callCount == 3 {
+					// 3回目にエラーを発生させる
+					return nil, errors.New("Productデータの取得に失敗しました")
+				} else {
+					rep := repositories.NewProductRepository()
+					return rep.GetByRightToUseId(id, executor)
+				}
+			}).Times(4)
+			// アプリケーションサービス作成
+			billApp := NewBillApplicationServiceWithMock(productRep, repositories.NewContractRepository(), repositories.NewBillRepository())
+			// 事前に同日で実行してすべて請求実行済にしておく。テストのために。
+			ap := NewBillApplicationService()
+			_, err := ap.ExecuteBilling(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0))
+			assert.NoError(t, err)
+			// テストデータ作成
+			_, _, _, _ = createTestData(t)
+			_, _, _, _ = createTestData(t)
+
+			////// 実行（途中で失敗するのでエラーがでる）
+			billDtos, err := billApp.ExecuteBilling(utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0))
+			assert.Error(t, err) // エラーが出る。
+
+			////// 検証（処理が完了したものについては返却される）
+			assert.Len(t, billDtos, 1)
 		})
 	})
 }
