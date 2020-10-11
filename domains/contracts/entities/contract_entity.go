@@ -114,6 +114,22 @@ func remove(slice []*RightToUseEntity, s int) []*RightToUseEntity {
 }
 
 /*
+指定のValidTo(有効期限終了日時)以前に期限を迎えている使用権をアーカイブ行きにする
+*/
+func (c *ContractEntity) ArchiveRightToUseByValidTo(ValidTo time.Time) error {
+	target := c.rightToUseEntities
+	c.rightToUseEntities = []*RightToUseEntity{}
+	for _, rightToUse := range target {
+		if rightToUse.validTo.Equal(ValidTo) || rightToUse.validTo.Before(ValidTo) {
+			c.toArchive = append(c.toArchive, rightToUse)
+		} else {
+			c.rightToUseEntities = append(c.rightToUseEntities, rightToUse)
+		}
+	}
+	return nil
+}
+
+/*
 アーカイブ行き指定された使用権Idのスライスを返す
 */
 func (c *ContractEntity) GetToArchiveRightToUseIds() []int {
