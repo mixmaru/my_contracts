@@ -16,3 +16,8 @@ type RightToUseActiveMapper struct {
 	RightToUseId int `db:"right_to_use_id"`
 	CreatedAtUpdatedAtMapper
 }
+
+type RightToUseHistoryMapper struct {
+	RightToUseId int `db:"right_to_use_id"`
+	CreatedAtUpdatedAtMapper
+}
