@@ -362,5 +362,34 @@ func (r *ContractRepository) Update(contractEntity *entities.ContractEntity, exe
 			}
 		}
 	}
+
+	// アーカイブ指定の使用権があればhistoryテーブルに移す
+	for _, id := range contractEntity.GetToArchiveRightToUseIds() {
+		err := executeArchiveRightToUse(id, executor)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// 指定idの使用権をright_to_use_activeからhistoryテーブルへ移す
+func executeArchiveRightToUse(id int, executor gorp.SqlExecutor) error {
+	// right_to_use_historyへのinsert
+	history := data_mappers.RightToUseHistoryMapper{}
+	history.RightToUseId = id
+	err := executor.Insert(&history)
+	if err != nil {
+		return errors.Wrapf(err, "right_to_use_historyテーブルへのinsert失敗。history: %+v", history)
+	}
+
+	// right_to_use_activeからの削除
+	active := data_mappers.RightToUseActiveMapper{}
+	active.RightToUseId = id
+	_, err = executor.Delete(&active)
+	if err != nil {
+		return errors.Wrapf(err, "right_to_use_activeテーブルからのdelete失敗。active: %+v", active)
+	}
 	return nil
 }
