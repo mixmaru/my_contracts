@@ -185,3 +185,58 @@ func TestContractApplicationService_CreateNextRightToUse(t *testing.T) {
 		assert.True(t, recurRightToUse2.ValidTo.Equal(utils.CreateJstTime(2020, 6, 30, 0, 0, 0, 0)))
 	})
 }
+
+func TestContractApplicationService_ArchiveExpiredRightToUse(t *testing.T) {
+	t.Run("渡した基準日に期限が切れている使用権をアーカイブ処理し、処理した使用権dtoを返す", func(t *testing.T) {
+		////// 準備
+		// 事前に存在するデータを削除しておく
+		db, err := db_connection.GetConnection()
+		assert.NoError(t, err)
+		deleteSql := `
+DELETE FROM discount_apply_contract_updates;
+DELETE FROM bill_details;
+DELETE FROM right_to_use_active;
+DELETE FROM right_to_use_history;
+DELETE FROM right_to_use;
+DELETE FROM contracts;
+`
+		_, err = db.Exec(deleteSql)
+		assert.NoError(t, err)
+
+		user := createUser()
+		product := createProduct()
+		contractApp := NewContractApplicationService()
+		contractDto1, validErrors, err := contractApp.Register(
+			user.Id,
+			product.Id,
+			utils.CreateJstTime(2020, 5, 1, 3, 0, 0, 0))
+		if err != nil || len(validErrors) > 0 {
+			panic("データ作成失敗")
+		}
+
+		contractDto2, validErrors, err := contractApp.Register(
+			user.Id,
+			product.Id,
+			utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0))
+		if err != nil || len(validErrors) > 0 {
+			panic("データ作成失敗")
+		}
+
+		_, validErrors, err = contractApp.Register(
+			user.Id,
+			product.Id,
+			utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0))
+		if err != nil || len(validErrors) > 0 {
+			panic("データ作成失敗")
+		}
+
+		////// 実行
+		app := NewContractApplicationService()
+		dtos, err := app.ArchiveExpiredRightToUse(utils.CreateJstTime(2020, 6, 2, 0, 0, 0, 0))
+
+		////// 検証
+		assert.Len(t, dtos, 2)
+		assert.Equal(t, contractDto1.RightToUseDtos[0], dtos[0])
+		assert.Equal(t, contractDto2.RightToUseDtos[1], dtos[1])
+	})
+}
