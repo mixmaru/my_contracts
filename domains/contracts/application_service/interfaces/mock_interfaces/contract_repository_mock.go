@@ -110,3 +110,18 @@ func (mr *MockIContractRepositoryMockRecorder) Update(contractEntity, executor i
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockIContractRepository)(nil).Update), contractEntity, executor)
 }
+
+// GetHavingExpiredRightToUseContract mocks base method.
+func (m *MockIContractRepository) GetHavingExpiredRightToUseContract(baseDate time.Time, executor gorp.SqlExecutor) ([]*entities.ContractEntity, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHavingExpiredRightToUseContract", baseDate, executor)
+	ret0, _ := ret[0].([]*entities.ContractEntity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHavingExpiredRightToUseContract indicates an expected call of GetHavingExpiredRightToUseContract.
+func (mr *MockIContractRepositoryMockRecorder) GetHavingExpiredRightToUseContract(baseDate, executor interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHavingExpiredRightToUseContract", reflect.TypeOf((*MockIContractRepository)(nil).GetHavingExpiredRightToUseContract), baseDate, executor)
+}
