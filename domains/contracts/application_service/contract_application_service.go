@@ -162,20 +162,26 @@ func (c *ContractApplicationService) ArchiveExpiredRightToUse(baseDate time.Time
 	retDto := []data_transfer_objects.RightToUseDto{}
 
 	// 対象取得
-	targetContracts, err := c.contractRepository.GetHavingExpiredRightToUseContract(baseDate, db)
+	targetContractIds, err := c.contractRepository.GetHavingExpiredRightToUseContractIds(baseDate, db)
 	if err != nil {
 		return retDto, err
 	}
 
 	// アーカイブ処理
-	for _, contract := range targetContracts {
-		contract.ArchiveRightToUseByValidTo(baseDate)
-		err := c.contractRepository.Update(contract, db)
+	for _, contractId := range targetContractIds {
+		// データ取得
+		contractEntity, _, _, err := c.contractRepository.GetById(contractId, db)
+		if err != nil {
+			return retDto, err
+		}
+		// アーカイブ処理
+		contractEntity.ArchiveRightToUseByValidTo(baseDate)
+		err = c.contractRepository.Update(contractEntity, db)
 		if err != nil {
 			return retDto, err
 		}
 		// 返却dtoを用意
-		for _, entity := range contract.GetToArchiveRightToUses() {
+		for _, entity := range contractEntity.GetToArchiveRightToUses() {
 			retDto = append(retDto, data_transfer_objects.NewRightToUseDtoFromEntity(entity))
 		}
 	}
