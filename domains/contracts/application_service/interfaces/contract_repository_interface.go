@@ -12,5 +12,5 @@ type IContractRepository interface {
 	GetBillingTargetByBillingDate(billingDate time.Time, executor gorp.SqlExecutor) ([]*entities.ContractEntity, error)
 	GetRecurTargets(executeDate time.Time, executor gorp.SqlExecutor) ([]*entities.ContractEntity, error)
 	Update(contractEntity *entities.ContractEntity, executor gorp.SqlExecutor) error
-	GetHavingExpiredRightToUseContract(baseDate time.Time, executor gorp.SqlExecutor) ([]*entities.ContractEntity, error)
+	GetHavingExpiredRightToUseContractIds(baseDate time.Time, executor gorp.SqlExecutor) ([]int, error)
 }

@@ -725,13 +725,13 @@ DELETE FROM contracts;
 
 		////// 実行
 		rep := NewContractRepository()
-		actuals, err := rep.GetHavingExpiredRightToUseContract(utils.CreateJstTime(2020, 11, 10, 0, 0, 0, 0), tran)
+		actuals, err := rep.GetHavingExpiredRightToUseContractIds(utils.CreateJstTime(2020, 11, 10, 0, 0, 0, 0), tran)
 		assert.NoError(t, err)
 		err = tran.Commit()
 		assert.NoError(t, err)
 
 		////// 検証
 		assert.Len(t, actuals, 1)
-		assert.Equal(t, expiredContract.Id(), actuals[0].Id())
+		assert.Equal(t, expiredContract.Id(), actuals[0])
 	})
 }
