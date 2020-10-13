@@ -148,3 +148,37 @@ func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time)
 	}
 	return nextTermContracts, nil
 }
+
+/*
+渡した基準日に期限が切れている使用権をアーカイブ処理し、処理した使用権dtoを返す
+*/
+func (c *ContractApplicationService) ArchiveExpiredRightToUse(baseDate time.Time) (archivedRightToUse []data_transfer_objects.RightToUseDto, err error) {
+	db, err := db_connection.GetConnection()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Db.Close()
+
+	retDto := []data_transfer_objects.RightToUseDto{}
+
+	// 対象取得
+	targetContracts, err := c.contractRepository.GetHavingExpiredRightToUseContract(baseDate, db)
+	if err != nil {
+		return retDto, err
+	}
+
+	// アーカイブ処理
+	for _, contract := range targetContracts {
+		contract.ArchiveRightToUseByValidTo(baseDate)
+		err := c.contractRepository.Update(contract, db)
+		if err != nil {
+			return retDto, err
+		}
+		// 返却dtoを用意
+		for _, entity := range contract.GetToArchiveRightToUses() {
+			retDto = append(retDto, data_transfer_objects.NewRightToUseDtoFromEntity(entity))
+		}
+	}
+
+	return retDto, nil
+}

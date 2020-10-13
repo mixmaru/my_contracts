@@ -201,7 +201,7 @@ func TestContractEntity_ArchiveRightToUseByValidTo(t *testing.T) {
 		assert.NoError(t, err)
 
 		////// 実行
-		err = entity.ArchiveRightToUseByValidTo(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0))
+		entity.ArchiveRightToUseByValidTo(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0))
 		assert.NoError(t, err)
 
 		////// 検証

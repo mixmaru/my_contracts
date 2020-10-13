@@ -116,7 +116,7 @@ func remove(slice []*RightToUseEntity, s int) []*RightToUseEntity {
 /*
 指定のValidTo(有効期限終了日時)以前に期限を迎えている使用権をアーカイブ行きにする
 */
-func (c *ContractEntity) ArchiveRightToUseByValidTo(ValidTo time.Time) error {
+func (c *ContractEntity) ArchiveRightToUseByValidTo(ValidTo time.Time) {
 	target := c.rightToUseEntities
 	c.rightToUseEntities = []*RightToUseEntity{}
 	for _, rightToUse := range target {
@@ -126,7 +126,7 @@ func (c *ContractEntity) ArchiveRightToUseByValidTo(ValidTo time.Time) error {
 			c.rightToUseEntities = append(c.rightToUseEntities, rightToUse)
 		}
 	}
-	return nil
+	return
 }
 
 /*
@@ -138,4 +138,16 @@ func (c *ContractEntity) GetToArchiveRightToUseIds() []int {
 		retIds = append(retIds, entity.Id())
 	}
 	return retIds
+}
+
+/*
+アーカイブ行き指定された使用権のスライスを返す
+*/
+func (c *ContractEntity) GetToArchiveRightToUses() []*RightToUseEntity {
+	retEntities := make([]*RightToUseEntity, 0, len(c.toArchive))
+	for _, rightToUse := range c.toArchive {
+		entity := *rightToUse // 外からいじられないようにコピーしてわたす
+		retEntities = append(retEntities, &entity)
+	}
+	return retEntities
 }

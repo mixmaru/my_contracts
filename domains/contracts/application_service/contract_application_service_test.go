@@ -232,11 +232,11 @@ DELETE FROM contracts;
 
 		////// 実行
 		app := NewContractApplicationService()
-		dtos, err := app.ArchiveExpiredRightToUse(utils.CreateJstTime(2020, 6, 2, 0, 0, 0, 0))
+		dtos, err := app.ArchiveExpiredRightToUse(utils.CreateJstTime(2020, 7, 2, 0, 0, 0, 0))
 
 		////// 検証
 		assert.Len(t, dtos, 2)
 		assert.Equal(t, contractDto1.RightToUseDtos[0], dtos[0])
-		assert.Equal(t, contractDto2.RightToUseDtos[1], dtos[1])
+		assert.Equal(t, contractDto2.RightToUseDtos[0], dtos[1])
 	})
 }
