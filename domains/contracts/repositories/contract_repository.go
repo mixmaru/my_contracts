@@ -393,3 +393,27 @@ func executeArchiveRightToUse(id int, executor gorp.SqlExecutor) error {
 	}
 	return nil
 }
+
+/*
+渡した基準日時点で期限が切れているactiveな使用権を持っている契約エンティティを返す
+*/
+func (r *ContractRepository) GetHavingExpiredRightToUseContract(baseDate time.Time, executor gorp.SqlExecutor) ([]*entities.ContractEntity, error) {
+	query := `
+SELECT c.id
+FROM contracts c
+    INNER JOIN right_to_use rtu ON rtu.contract_id = c.id
+    INNER JOIN right_to_use_active rtua ON rtua.right_to_use_id = rtu.id
+WHERE rtu.valid_to <= $1
+`
+	contractIds := []int{}
+	_, err := executor.Select(&contractIds, query, baseDate)
+	if err != nil {
+		return nil, errors.Wrapf(err, "期限切れ使用権保持契約idの取得失敗。query: %v", query)
+	}
+
+	contracts, _, _, err := r.GetByIds(contractIds, executor)
+	if err != nil {
+		return nil, errors.Wrapf(err, "期限切れ使用権保持契約データの取得失敗。query: %v", query)
+	}
+	return contracts, nil
+}

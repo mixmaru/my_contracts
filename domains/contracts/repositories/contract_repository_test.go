@@ -672,3 +672,66 @@ func createTestContract(db gorp.SqlExecutor) *entities.ContractEntity {
 	)
 	return contract
 }
+
+func TestContractRepository_GetHavingExpiredRightToUseContract(t *testing.T) {
+	t.Run("渡した基準日時点で期限が切れているactiveな使用権を持っている契約エンティティを返す", func(t *testing.T) {
+		////// 準備（期限が切れている使用権をもってる契約と、持ってない契約を用意する）
+		db, err := db_connection.GetConnection()
+		assert.NoError(t, err)
+		tran, err := db.Begin()
+		assert.NoError(t, err)
+		// 事前データを全て削除する
+		deleteSql := `
+DELETE FROM discount_apply_contract_updates;
+DELETE FROM bill_details;
+DELETE FROM right_to_use_active;
+DELETE FROM right_to_use_history;
+DELETE FROM right_to_use;
+DELETE FROM contracts;
+`
+		_, err = db.Exec(deleteSql)
+		assert.NoError(t, err)
+		// 今回のテスト用データの作成
+		userID := createUser(tran)
+		productId := createProduct(tran)
+		// 期限切れ使用権を持ってる契約
+		expiredContract := createContract(
+			userID,
+			productId,
+			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0),
+				),
+			},
+			tran,
+		)
+		// 期限切れ使用権を持ってない契約
+		_ = createContract(
+			userID,
+			productId,
+			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 12, 5, 0, 0, 0, 0),
+				),
+			},
+			tran,
+		)
+
+		////// 実行
+		rep := NewContractRepository()
+		actuals, err := rep.GetHavingExpiredRightToUseContract(utils.CreateJstTime(2020, 11, 10, 0, 0, 0, 0), tran)
+		assert.NoError(t, err)
+		err = tran.Commit()
+		assert.NoError(t, err)
+
+		////// 検証
+		assert.Len(t, actuals, 1)
+		assert.Equal(t, expiredContract.Id(), actuals[0].Id())
+	})
+}
