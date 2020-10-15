@@ -121,8 +121,8 @@ from contracts c
 inner join products p on c.product_id = p.id
 inner join product_price_monthlies ppm on ppm.product_id = p.id
 inner join users u on c.user_id = u.id
-inner join right_to_use rtu on rtu.contract_id = c.id
-inner join right_to_use_active rtua on rtua.right_to_use_id = rtu.id
+left outer join right_to_use rtu on rtu.contract_id = c.id
+left outer join right_to_use_active rtua on rtua.right_to_use_id = rtu.id
 left outer join users_individual ui on u.id = ui.user_id
 left outer join users_corporation uc on u.id = uc.user_id
 left outer join bill_details bd on bd.right_to_use_id = rtu.id
@@ -197,9 +197,11 @@ func createEntitiesFromMapper(mappers []*data_mappers.ContractView) (
 ) {
 	// 使用権データ作成
 	rightToUseEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
-	for _, mapper := range mappers {
-		// 使用権エンティティにデータを詰める
-		rightToUseEntities = append(rightToUseEntities, createRightToUseFromMapper(mapper))
+	if mappers[0].RightToUseId.Valid {
+		for _, mapper := range mappers {
+			// 使用権エンティティにデータを詰める
+			rightToUseEntities = append(rightToUseEntities, createRightToUseFromMapper(mapper))
+		}
 	}
 
 	// productエンティティにデータを詰める
@@ -223,12 +225,12 @@ func createEntitiesFromMapper(mappers []*data_mappers.ContractView) (
 
 func createRightToUseFromMapper(mapper *data_mappers.ContractView) *entities.RightToUseEntity {
 	return entities.NewRightToUseEntityWithData(
-		mapper.RightToUseId,
-		mapper.RightToUseValidFrom,
-		mapper.RightToUseValidTo,
+		int(mapper.RightToUseId.Int64),
+		mapper.RightToUseValidFrom.Time,
+		mapper.RightToUseValidTo.Time,
 		mapper.BillDetailId,
-		mapper.RightToUseCreatedAt,
-		mapper.RightToUseUpdatedAt,
+		mapper.RightToUseCreatedAt.Time,
+		mapper.RightToUseUpdatedAt.Time,
 	)
 }
 

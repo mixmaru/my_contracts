@@ -190,6 +190,30 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.Nil(t, loadedProduct)
 		assert.Nil(t, loadedUser)
 	})
+
+	t.Run("使用権がない契約も返る", func(t *testing.T) {
+		////// 準備
+		r := NewContractRepository()
+		// データ登録
+		contractEntity := entities.NewContractEntity(
+			savedUserId,
+			savedProductId,
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{},
+		)
+		savedId, err := r.Create(contractEntity, db)
+		assert.NoError(t, err)
+
+		////// 実行
+		loadedContract, product, user, err := r.GetById(savedId, db)
+		assert.NoError(t, err)
+		assert.NotZero(t, product)
+		assert.NotZero(t, user)
+
+		////// 検証
+		assert.Equal(t, savedId, loadedContract.Id())
+	})
 }
 
 func TestContractRepository_GetBillingTargetByBillingDate(t *testing.T) {
