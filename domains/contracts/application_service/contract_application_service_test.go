@@ -1,11 +1,16 @@
 package application_service
 
 import (
+	"errors"
+	"github.com/golang/mock/gomock"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
+	"github.com/mixmaru/my_contracts/domains/contracts/application_service/interfaces/mock_interfaces"
+	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/gorp.v2"
 	"testing"
 	"time"
 )
@@ -242,100 +247,90 @@ DELETE FROM contracts;
 		assert.Equal(t, dtos[1], contractDto2.RightToUseDtos[0])
 	})
 
-	t.Run("リード込みテッド同時実行テスト。取得したタイミングで別トランザクションが取得して更新をかけるとと不整合が起きるか？", func(t *testing.T) {
-		// T1で対象データ取得後に、T2で同じデータを取得して更新をかけたあと、T1で更新をかけると失敗するかテスト
-		db, err := db_connection.GetConnection()
-		assert.NoError(t, err)
+	t.Run("同時実行テスト", func(t *testing.T) {
+		t.Run("別トランザクションが先に同じデータを処理して失敗した場合再トライしてスキップされる", func(t *testing.T) {
+			////// 準備
+			// 事前に存在するデータを削除しておく
+			db, err := db_connection.GetConnection()
+			assert.NoError(t, err)
+			deleteSql := `
+DELETE FROM discount_apply_contract_updates;
+DELETE FROM bill_details;
+DELETE FROM right_to_use_active;
+DELETE FROM right_to_use_history;
+DELETE FROM right_to_use;
+DELETE FROM contracts;
+`
+			_, err = db.Exec(deleteSql)
+			assert.NoError(t, err)
 
-		// 事前データ削除
-		deleteSql := `
-		DELETE FROM discount_apply_contract_updates;
-		DELETE FROM bill_details;
-		DELETE FROM right_to_use_active;
-		DELETE FROM right_to_use_history;
-		DELETE FROM right_to_use;
-		DELETE FROM contracts;
-		`
-		_, err = db.Exec(deleteSql)
-		assert.NoError(t, err)
+			user := createUser()
+			product := createProduct()
+			contractApp := NewContractApplicationService()
+			contractDto1, validErrors, err := contractApp.Register(
+				user.Id,
+				product.Id,
+				utils.CreateJstTime(2020, 5, 1, 3, 0, 0, 0))
+			if err != nil || len(validErrors) > 0 {
+				panic("データ作成失敗")
+			}
 
-		// テスト用データ登録
-		user := createUser()
-		product := createProduct()
-		contractApp := NewContractApplicationService()
-		_, validErrors, err := contractApp.Register(
-			user.Id,
-			product.Id,
-			utils.CreateJstTime(2020, 5, 1, 3, 0, 0, 0))
-		if err != nil || len(validErrors) > 0 {
-			panic("データ作成失敗")
-		}
+			_, validErrors, err = contractApp.Register(
+				user.Id,
+				product.Id,
+				utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0))
+			if err != nil || len(validErrors) > 0 {
+				panic("データ作成失敗")
+			}
 
-		_, validErrors, err = contractApp.Register(
-			user.Id,
-			product.Id,
-			utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0))
-		if err != nil || len(validErrors) > 0 {
-			panic("データ作成失敗")
-		}
+			_, validErrors, err = contractApp.Register(
+				user.Id,
+				product.Id,
+				utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0))
+			if err != nil || len(validErrors) > 0 {
+				panic("データ作成失敗")
+			}
 
-		_, validErrors, err = contractApp.Register(
-			user.Id,
-			product.Id,
-			utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0))
-		if err != nil || len(validErrors) > 0 {
-			panic("データ作成失敗")
-		}
+			// モックリポジトリ
+			contractRep := repositories.NewContractRepository()
+			ctrl := gomock.NewController(t)
+			contractRepMock := mock_interfaces.NewMockIContractRepository(ctrl)
+			contractRepMock.EXPECT().GetHavingExpiredRightToUseContractIds(gomock.Any(), gomock.Any()).DoAndReturn(
+				func(baseDate time.Time, executor gorp.SqlExecutor) ([]int, error) {
+					return contractRep.GetHavingExpiredRightToUseContractIds(baseDate, executor)
+				}).AnyTimes()
+			contractRepMock.EXPECT().GetById(gomock.Any(), gomock.Any()).DoAndReturn(
+				func(id int, executor gorp.SqlExecutor) (contract *entities.ContractEntity, product *entities.ProductEntity, user interface{}, err error) {
+					return contractRep.GetById(id, executor)
+				}).AnyTimes()
+			count := 0
+			contractRepMock.EXPECT().Update(gomock.Any(), gomock.Any()).DoAndReturn(
+				func(contractEntity *entities.ContractEntity, executor gorp.SqlExecutor) error {
+					count++
+					if count == 2 {
+						// ２回目はエラーを返す（別トランザクションが既に更新をかけていたという想定）
+						db, err := db_connection.GetConnection()
+						if err != nil {
+							return errors.New("別トランザクション用db接続に失敗")
+						}
+						err = contractRep.Update(contractEntity, db) // 別トランザクションが更新をかけていた事を再現する
+						if err != nil {
+							return errors.New("更新に失敗した。")
+						}
+						return errors.New("先にやられた")
+					} else {
+						return contractRep.Update(contractEntity, executor)
+					}
+				}).AnyTimes()
 
-		baseDate := utils.CreateJstTime(2020, 7, 2, 0, 0, 0, 0)
+			////// 実行
+			app := NewContractApplicationServiceWithMock(contractRepMock)
+			dtos, err := app.ArchiveExpiredRightToUse(utils.CreateJstTime(2020, 7, 2, 0, 0, 0, 0))
+			assert.NoError(t, err)
 
-		conRep := repositories.NewContractRepository()
-		targetContractIds, err := conRep.GetHavingExpiredRightToUseContractIds(baseDate, db)
-		assert.NoError(t, err)
-		// T1で対象データ取得
-		tran1, err := db.Begin()
-		assert.NoError(t, err)
-		_, err = tran1.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
-		assert.NoError(t, err)
-		targetContract1, _, _, err := conRep.GetById(targetContractIds[0], tran1)
-
-		// T2で同じ対象データ取得
-		tran2, err := db.Begin()
-		assert.NoError(t, err)
-		_, err = tran2.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
-		assert.NoError(t, err)
-		targetContract2, _, _, err := conRep.GetById(targetContractIds[0], tran2)
-		// T2でデータ更新する
-		targetContract2.ArchiveRightToUseByValidTo(baseDate)
-		err = conRep.Update(targetContract2, tran2)
-		assert.NoError(t, err)
-		// T2コミット
-		err = tran2.Commit()
-		assert.NoError(t, err)
-
-		// T1でデータ更新する
-		targetContract1.ArchiveRightToUseByValidTo(baseDate)
-		err = conRep.Update(targetContract1, tran1)
-		assert.Error(t, err)
-		// T1コミット
-		//err = tran1.Commit()
-		//assert.Error(t, err)
-		err = tran1.Rollback()
-		assert.NoError(t, err)
-		// 失敗するのでT3で再実行
-		tran3, err := db.Begin()
-		assert.NoError(t, err)
-		_, err = tran3.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
-		assert.NoError(t, err)
-		targetContract3, _, _, err := conRep.GetById(targetContractIds[0], tran3)
-		targetContractTest, _, _, err := conRep.GetById(targetContractIds[0], db)
-		assert.NotZero(t, targetContractTest)
-		// T2でデータ更新する
-		targetContract3.ArchiveRightToUseByValidTo(baseDate)
-		err = conRep.Update(targetContract3, tran3)
-		assert.NoError(t, err)
-		// T2コミット
-		err = tran3.Commit()
-		assert.NoError(t, err)
+			////// 検証
+			assert.Len(t, dtos, 1)
+			assert.Equal(t, dtos[0], contractDto1.RightToUseDtos[0])
+		})
 	})
 }

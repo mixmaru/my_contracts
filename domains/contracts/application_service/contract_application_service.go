@@ -173,38 +173,48 @@ func (c *ContractApplicationService) ArchiveExpiredRightToUse(baseDate time.Time
 		count := 0
 		for {
 			count++
-			dtos, err := c.execArchive(contractId, baseDate, db)
+
+			// トランザクション開始
+			tran, err := db.Begin()
+			if err != nil {
+				return retDto, errors.Wrapf(err, "トランザクション開始失敗")
+			}
+			_, err = tran.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+			if err != nil {
+				return retDto, errors.Wrapf(err, "トランザクション分離レベル切り替え失敗。")
+			}
+
+			// アーカイブ実行
+			dtos, err := c.execArchive(contractId, baseDate, tran)
 			retDto = append(retDto, dtos...)
 			if err != nil {
+				// 失敗してたら3回までリトライ
+				tran.Rollback()
 				if count < 3 {
 					continue
 				} else {
+					// 3回以上だったらエラーにする
 					return retDto, err
 				}
-			} else {
-				break
 			}
+
+			//コミット
+			err = tran.Commit()
+			if err != nil {
+				return retDto, errors.Wrapf(err, "コミット失敗")
+			}
+			break
 		}
 	}
 
 	return retDto, nil
 }
 
-func (c *ContractApplicationService) execArchive(contractId int, baseDate time.Time, executor *gorp.DbMap) ([]data_transfer_objects.RightToUseDto, error) {
+func (c *ContractApplicationService) execArchive(contractId int, baseDate time.Time, executor gorp.SqlExecutor) ([]data_transfer_objects.RightToUseDto, error) {
 	retDtos := []data_transfer_objects.RightToUseDto{}
 
-	// トランザクション開始
-	tran, err := executor.Begin()
-	if err != nil {
-		return retDtos, errors.Wrapf(err, "トランザクション開始失敗")
-	}
-	_, err = tran.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
-	if err != nil {
-		return retDtos, errors.Wrapf(err, "トランザクション分離レベル切り替え失敗。")
-	}
-
 	// データ取得
-	contractEntity, _, _, err := c.contractRepository.GetById(contractId, tran)
+	contractEntity, _, _, err := c.contractRepository.GetById(contractId, executor)
 	if err != nil {
 		return retDtos, err
 	}
@@ -217,11 +227,6 @@ func (c *ContractApplicationService) execArchive(contractId int, baseDate time.T
 	// 返却dtoを用意
 	for _, entity := range contractEntity.GetToArchiveRightToUses() {
 		retDtos = append(retDtos, data_transfer_objects.NewRightToUseDtoFromEntity(entity))
-	}
-	// コミット
-	err = tran.Commit()
-	if err != nil {
-		return retDtos, errors.Wrapf(err, "コミット失敗")
 	}
 
 	return retDtos, nil
