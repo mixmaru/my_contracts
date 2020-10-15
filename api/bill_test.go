@@ -25,7 +25,7 @@ func createTestDate(t *testing.T) (data_transfer_objects.UserIndividualDto, data
 	assert.Len(t, validErrors, 0)
 	// 契約作成（使用権も内部で作成されている）
 	contractApp := application_service.NewContractApplicationService()
-	contract, validErrors, err := contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 6, 1, 12, 30, 26, 111111))
+	contract, validErrors, err := contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 6, 1, 12, 30, 26, 111111000))
 	assert.NoError(t, err)
 	assert.Len(t, validErrors, 0)
 	return user, product, contract

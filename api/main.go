@@ -37,6 +37,8 @@ func newRouter() *echo.Echo {
 	e.POST("/batches/bills/billing", executeBilling)
 	// 使用権継続処理実行バッチ
 	e.POST("/batches/right_to_uses/recur", executeRecur)
+	// 有効期限切れ使用権のアーカイブ処理バッチ
+	e.POST("/batches/right_to_uses/archive", executeRightToUseArchive)
 
 	return e
 }
