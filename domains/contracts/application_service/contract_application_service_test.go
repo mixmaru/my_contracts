@@ -238,8 +238,8 @@ DELETE FROM contracts;
 
 		////// 検証
 		assert.Len(t, dtos, 2)
-		assert.Contains(t, dtos, contractDto1.RightToUseDtos[0])
-		assert.Contains(t, dtos, contractDto2.RightToUseDtos[0])
+		assert.Equal(t, dtos[0], contractDto1.RightToUseDtos[0])
+		assert.Equal(t, dtos[1], contractDto2.RightToUseDtos[0])
 	})
 
 	t.Run("リード込みテッド同時実行テスト。取得したタイミングで別トランザクションが取得して更新をかけるとと不整合が起きるか？", func(t *testing.T) {

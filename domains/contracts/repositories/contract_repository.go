@@ -410,6 +410,7 @@ FROM contracts c
     INNER JOIN right_to_use rtu ON rtu.contract_id = c.id
     INNER JOIN right_to_use_active rtua ON rtua.right_to_use_id = rtu.id
 WHERE rtu.valid_to <= $1
+ORDER BY c.id
 `
 	contractIds := []int{}
 	_, err := executor.Select(&contractIds, query, baseDate)
