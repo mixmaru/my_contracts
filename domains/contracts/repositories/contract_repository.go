@@ -197,7 +197,7 @@ func createEntitiesFromMapper(mappers []*data_mappers.ContractView) (
 ) {
 	// 使用権データ作成
 	rightToUseEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
-	if mappers[0].RightToUseId.Valid {
+	if hasActiveRightToUse(*mappers[0]) {
 		for _, mapper := range mappers {
 			// 使用権エンティティにデータを詰める
 			rightToUseEntities = append(rightToUseEntities, createRightToUseFromMapper(mapper))
@@ -221,6 +221,10 @@ func createEntitiesFromMapper(mappers []*data_mappers.ContractView) (
 	}
 
 	return contract, product, user, nil
+}
+
+func hasActiveRightToUse(mapper data_mappers.ContractView) bool {
+	return mapper.RightToUseId.Valid && mapper.RightToUseCreatedAt.Valid
 }
 
 func createRightToUseFromMapper(mapper *data_mappers.ContractView) *entities.RightToUseEntity {

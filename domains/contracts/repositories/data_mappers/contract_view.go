@@ -1,6 +1,7 @@
 package data_mappers
 
 import (
+	"database/sql"
 	"github.com/mixmaru/my_contracts/lib/decimal"
 	"time"
 )
@@ -18,11 +19,11 @@ type ContractView struct {
 	ProductCreatedAt time.Time       `db:"product_created_at"`
 	ProductUpdatedAt time.Time       `db:"product_updated_at"`
 
-	RightToUseId        int       `db:"right_to_use_id"`
-	RightToUseValidFrom time.Time `db:"right_to_use_valid_from"`
-	RightToUseValidTo   time.Time `db:"right_to_use_valid_to"`
-	RightToUseCreatedAt time.Time `db:"right_to_use_active_created_at"`
-	RightToUseUpdatedAt time.Time `db:"right_to_use_active_updated_at"`
+	RightToUseId        sql.NullInt64 `db:"right_to_use_id"`
+	RightToUseValidFrom sql.NullTime  `db:"right_to_use_valid_from"`
+	RightToUseValidTo   sql.NullTime  `db:"right_to_use_valid_to"`
+	RightToUseCreatedAt sql.NullTime  `db:"right_to_use_active_created_at"`
+	RightToUseUpdatedAt sql.NullTime  `db:"right_to_use_active_updated_at"`
 
 	BillDetailId int `db:"bill_detail_id"`
 
