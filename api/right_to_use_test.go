@@ -81,11 +81,11 @@ DELETE FROM contracts;
 `
 		_, err = db.Exec(deleteSql)
 		assert.NoError(t, err)
-		// 今回更新対象になる使用権を作成する（2020, 6, 30が使用権の終了日）
+		// 今回更新対象になる使用権を作成する（2020, 6, 30が使用権の終了日（20200701がValidToの値））
 		_, _, contract := createTestDate(t)
 
 		// リクエスト実行
-		req := httptest.NewRequest("POST", "/batches/right_to_uses/archive?date=20200730", nil)
+		req := httptest.NewRequest("POST", "/batches/right_to_uses/archive?date=20200701", nil)
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)

@@ -784,7 +784,7 @@ DELETE FROM contracts;
 
 		////// 実行
 		rep := NewContractRepository()
-		actuals, err := rep.GetHavingExpiredRightToUseContractIds(utils.CreateJstTime(2020, 11, 10, 0, 0, 0, 0), tran)
+		actuals, err := rep.GetHavingExpiredRightToUseContractIds(utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0), tran)
 		assert.NoError(t, err)
 		err = tran.Commit()
 		assert.NoError(t, err)
