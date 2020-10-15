@@ -2,6 +2,7 @@ package application_service
 
 import (
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
+	"github.com/mixmaru/my_contracts/domains/contracts/repositories"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
@@ -233,10 +234,108 @@ DELETE FROM contracts;
 		////// 実行
 		app := NewContractApplicationService()
 		dtos, err := app.ArchiveExpiredRightToUse(utils.CreateJstTime(2020, 7, 2, 0, 0, 0, 0))
+		assert.NoError(t, err)
 
 		////// 検証
 		assert.Len(t, dtos, 2)
-		assert.Equal(t, contractDto1.RightToUseDtos[0], dtos[0])
-		assert.Equal(t, contractDto2.RightToUseDtos[0], dtos[1])
+		assert.Contains(t, dtos, contractDto1.RightToUseDtos[0])
+		assert.Contains(t, dtos, contractDto2.RightToUseDtos[0])
+	})
+
+	t.Run("リード込みテッド同時実行テスト。取得したタイミングで別トランザクションが取得して更新をかけるとと不整合が起きるか？", func(t *testing.T) {
+		// T1で対象データ取得後に、T2で同じデータを取得して更新をかけたあと、T1で更新をかけると失敗するかテスト
+		db, err := db_connection.GetConnection()
+		assert.NoError(t, err)
+
+		// 事前データ削除
+		deleteSql := `
+		DELETE FROM discount_apply_contract_updates;
+		DELETE FROM bill_details;
+		DELETE FROM right_to_use_active;
+		DELETE FROM right_to_use_history;
+		DELETE FROM right_to_use;
+		DELETE FROM contracts;
+		`
+		_, err = db.Exec(deleteSql)
+		assert.NoError(t, err)
+
+		// テスト用データ登録
+		user := createUser()
+		product := createProduct()
+		contractApp := NewContractApplicationService()
+		_, validErrors, err := contractApp.Register(
+			user.Id,
+			product.Id,
+			utils.CreateJstTime(2020, 5, 1, 3, 0, 0, 0))
+		if err != nil || len(validErrors) > 0 {
+			panic("データ作成失敗")
+		}
+
+		_, validErrors, err = contractApp.Register(
+			user.Id,
+			product.Id,
+			utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0))
+		if err != nil || len(validErrors) > 0 {
+			panic("データ作成失敗")
+		}
+
+		_, validErrors, err = contractApp.Register(
+			user.Id,
+			product.Id,
+			utils.CreateJstTime(2020, 7, 1, 0, 0, 0, 0))
+		if err != nil || len(validErrors) > 0 {
+			panic("データ作成失敗")
+		}
+
+		baseDate := utils.CreateJstTime(2020, 7, 2, 0, 0, 0, 0)
+
+		conRep := repositories.NewContractRepository()
+		targetContractIds, err := conRep.GetHavingExpiredRightToUseContractIds(baseDate, db)
+		assert.NoError(t, err)
+		// T1で対象データ取得
+		tran1, err := db.Begin()
+		assert.NoError(t, err)
+		_, err = tran1.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+		assert.NoError(t, err)
+		targetContract1, _, _, err := conRep.GetById(targetContractIds[0], tran1)
+
+		// T2で同じ対象データ取得
+		tran2, err := db.Begin()
+		assert.NoError(t, err)
+		_, err = tran2.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+		assert.NoError(t, err)
+		targetContract2, _, _, err := conRep.GetById(targetContractIds[0], tran2)
+		// T2でデータ更新する
+		targetContract2.ArchiveRightToUseByValidTo(baseDate)
+		err = conRep.Update(targetContract2, tran2)
+		assert.NoError(t, err)
+		// T2コミット
+		err = tran2.Commit()
+		assert.NoError(t, err)
+
+		// T1でデータ更新する
+		targetContract1.ArchiveRightToUseByValidTo(baseDate)
+		err = conRep.Update(targetContract1, tran1)
+		assert.Error(t, err)
+		// T1コミット
+		//err = tran1.Commit()
+		//assert.Error(t, err)
+		err = tran1.Rollback()
+		assert.NoError(t, err)
+		// 失敗するのでT3で再実行
+		tran3, err := db.Begin()
+		assert.NoError(t, err)
+		_, err = tran3.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+		assert.NoError(t, err)
+		targetContract3, _, _, err := conRep.GetById(targetContractIds[0], tran3)
+		targetContractTest, _, _, err := conRep.GetById(targetContractIds[0], db)
+		assert.NotZero(t, targetContractTest)
+		// T2でデータ更新する
+		targetContract3.ArchiveRightToUseByValidTo(baseDate)
+		err = conRep.Update(targetContract3, tran3)
+		assert.NoError(t, err)
+		// T2コミット
+		err = tran3.Commit()
+		assert.NoError(t, err)
 	})
 }
