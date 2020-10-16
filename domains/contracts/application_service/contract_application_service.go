@@ -47,7 +47,7 @@ func (c *ContractApplicationService) Register(userId int, productId int, contrac
 		return data_transfer_objects.ContractDto{}, nil, err
 	}
 	// 再読込
-	savedContractEntity, _, _, err := c.contractRepository.GetById(savedContractId, tran)
+	savedContractEntity, err := c.contractRepository.GetById(savedContractId, tran)
 	if err != nil {
 		tran.Rollback()
 		return data_transfer_objects.ContractDto{}, nil, err
@@ -70,13 +70,23 @@ func (c *ContractApplicationService) GetById(id int) (contractDto data_transfer_
 	defer conn.Db.Close()
 
 	// リポジトリつかってデータ取得
-	contractEntity, productEntity, userEntity, err := c.contractRepository.GetById(id, conn)
+	contractEntity, err := c.contractRepository.GetById(id, conn)
 	if err != nil {
 		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, err
 	}
 	if contractEntity == nil {
 		// データがない
 		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, nil
+	}
+	// 商品データ
+	productEntity, err := c.productRepository.GetById(contractEntity.ProductId(), conn)
+	if err != nil {
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, err
+	}
+	// ユーザーデータ
+	userEntity, err := c.userRepository.GetUserById(contractEntity.UserId(), conn)
+	if err != nil {
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, err
 	}
 
 	// dtoにつめる
@@ -137,7 +147,7 @@ func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time)
 			return nil, err
 		}
 		// リロード
-		reloadedContract, _, _, err := c.contractRepository.GetById(contract.Id(), tran)
+		reloadedContract, err := c.contractRepository.GetById(contract.Id(), tran)
 		if err != nil {
 			return nil, err
 		}
@@ -214,7 +224,7 @@ func (c *ContractApplicationService) execArchive(contractId int, baseDate time.T
 	retDtos := []data_transfer_objects.RightToUseDto{}
 
 	// データ取得
-	contractEntity, _, _, err := c.contractRepository.GetById(contractId, executor)
+	contractEntity, err := c.contractRepository.GetById(contractId, executor)
 	if err != nil {
 		return retDtos, err
 	}

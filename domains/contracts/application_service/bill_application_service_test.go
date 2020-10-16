@@ -23,11 +23,13 @@ func TestBillApplicationService_ExecuteBilling(t *testing.T) {
 		// 影響するデータを事前削除しておく
 		db, err := db_connection.GetConnection()
 		assert.NoError(t, err)
-		_, err = db.Exec("DELETE FROM bill_details")
-		assert.NoError(t, err)
-		_, err = db.Exec("DELETE FROM right_to_use_active")
-		assert.NoError(t, err)
-		_, err = db.Exec("DELETE FROM right_to_use")
+		deleteQuery := `
+DELETE FROM bill_details;
+DELETE FROM right_to_use_active;
+DELETE FROM right_to_use_history;
+DELETE FROM right_to_use;
+`
+		_, err = db.Exec(deleteQuery)
 		assert.NoError(t, err)
 		// 商品作成
 		product, validErrors, err := productApp.Register("商品", "1234")
@@ -186,7 +188,7 @@ func createTestData(t *testing.T) (userId, rightToUse1Id, rightToUse2Id, rightTo
 	contract1Id, err := contractRep.Create(contract1, executor)
 	assert.NoError(t, err)
 	// リロード
-	savedContract, _, _, err := contractRep.GetById(contract1Id, executor)
+	savedContract, err := contractRep.GetById(contract1Id, executor)
 	rightToUses := savedContract.RightToUses()
 
 	return user1Id, rightToUses[0].Id(), rightToUses[1].Id(), rightToUses[2].Id()

@@ -300,7 +300,7 @@ DELETE FROM contracts;
 					return contractRep.GetHavingExpiredRightToUseContractIds(baseDate, executor)
 				}).AnyTimes()
 			contractRepMock.EXPECT().GetById(gomock.Any(), gomock.Any()).DoAndReturn(
-				func(id int, executor gorp.SqlExecutor) (contract *entities.ContractEntity, product *entities.ProductEntity, user interface{}, err error) {
+				func(id int, executor gorp.SqlExecutor) (contract *entities.ContractEntity, err error) {
 					return contractRep.GetById(id, executor)
 				}).AnyTimes()
 			count := 0
