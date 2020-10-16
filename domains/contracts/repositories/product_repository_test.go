@@ -165,7 +165,7 @@ func TestProductRepository_GetByRightToUseId(t *testing.T) {
 		savedContractId, err := contractRep.Create(contractEntity, db)
 		assert.NoError(t, err)
 		// 登録した契約データを再読込
-		loadedContract, _, _, err := contractRep.GetById(savedContractId, db)
+		loadedContract, err := contractRep.GetById(savedContractId, db)
 
 		////// 実行
 		actual, err := r.GetByRightToUseId(loadedContract.RightToUses()[0].Id(), db)

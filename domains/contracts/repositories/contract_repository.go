@@ -71,13 +71,14 @@ func createRightToUse(rightToUseEntity *entities.RightToUseEntity, contractId in
 	return nil
 }
 
-func (r *ContractRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (contracts []*entities.ContractEntity, products []*entities.ProductEntity, users []interface{}, err error) {
+func (r *ContractRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (contracts []*entities.ContractEntity, err error) {
 	if len(ids) == 0 {
-		return nil, nil, nil, errors.Errorf("idsが空スライスです。ids: %+v", ids)
+		return nil, errors.Errorf("idsが空スライスです。ids: %+v", ids)
 	}
 	// データ取得
+	// contracts取得
 	// データマッパー用意
-	var mappers []*data_mappers.ContractView
+	var contractMappers []*data_mappers.ContractMapper
 	// idsをインターフェース型に変更
 	idsInterfaceType := make([]interface{}, 0, len(ids))
 	preparedStatement := make([]string, 0, len(ids))
@@ -86,77 +87,97 @@ func (r *ContractRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (con
 		preparedStatement = append(preparedStatement, "$"+strconv.Itoa(int(i)+1))
 	}
 	// sql作成
-	query := `
+	contractQuery := `
 select
        c.id as id,
+       c.user_id as user_id,
+       c.product_id as product_id,
        c.contract_date as contract_date,
        c.billing_start_date as billing_start_date,
        c.created_at as created_at,
-       c.updated_at as updated_at,
-       p.id as product_id,
-       p.name as product_name,
-       ppm.price as product_price,
-       p.created_at as product_created_at,
-       p.updated_at as product_updated_at,
-       u.id as user_id,
-       case
-           when ui.user_id IS NOT NULL then 'individual'
-           when uc.user_id IS NOT NULL then 'corporation'
-        end as user_type,
-       ui.name as user_individual_name,
-       u.created_at as user_individual_created_at,
-       u.updated_at as user_individual_updated_at,
-       uc.corporation_name as user_corporation_corporation_name,
-       uc.contact_person_name as user_corporation_contact_person_name,
-       uc.president_name as user_corporation_president_name,
-       u.created_at as user_corporation_created_at,
-       u.updated_at as user_corporation_updated_at,
-       rtu.id as right_to_use_id,
-       rtu.valid_from as right_to_use_valid_from,
-       rtu.valid_to as right_to_use_valid_to,
-       rtua.created_at as right_to_use_active_created_at,
-       rtua.updated_at as right_to_use_active_updated_at,
-       COALESCE(bd.id, 0) as bill_detail_id
+       c.updated_at as updated_at
 from contracts c
-inner join products p on c.product_id = p.id
-inner join product_price_monthlies ppm on ppm.product_id = p.id
-inner join users u on c.user_id = u.id
-left outer join right_to_use rtu on rtu.contract_id = c.id
-left outer join right_to_use_active rtua on rtua.right_to_use_id = rtu.id
-left outer join users_individual ui on u.id = ui.user_id
-left outer join users_corporation uc on u.id = uc.user_id
-left outer join bill_details bd on bd.right_to_use_id = rtu.id
 where c.id IN (%v)
-order by c.id, right_to_use_id`
-	query = fmt.Sprintf(query, strings.Join(preparedStatement, ", "))
+order by c.id
+`
+	contractQuery = fmt.Sprintf(contractQuery, strings.Join(preparedStatement, ", "))
 	// sqlとデータマッパーでクエリ実行
-	_, err = executor.Select(&mappers, query, idsInterfaceType...)
+	_, err = executor.Select(&contractMappers, contractQuery, idsInterfaceType...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil, nil, nil
+			return nil, nil
 		} else {
-			return nil, nil, nil, errors.Wrapf(err, "契約情報取得失敗。query: %v, ids: %v", query, ids)
+			return nil, errors.Wrapf(err, "契約情報取得失敗。contractQuery: %v, ids: %v", contractQuery, ids)
 		}
 	}
 
-	if len(mappers) == 0 {
+	if len(contractMappers) == 0 {
 		// データが無い時
-		return nil, nil, nil, nil
+		return nil, nil
 	}
 
-	// contract単位でmapperを分割する
-	mappersByContract := separateMapper(mappers)
-	// contract毎にentityを組み立てる
-	for _, mappers := range mappersByContract {
-		contract, product, user, err := createEntitiesFromMapper(mappers)
+	retContracts := make([]*entities.ContractEntity, 0, len(contractMappers))
+	for _, mapper := range contractMappers {
+		// 使用権データを取得
+		rightToUseEntities, err := getRightToUseEntitiesByContractId(mapper.Id, executor)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, err
 		}
-		contracts = append(contracts, contract)
-		products = append(products, product)
-		users = append(users, user)
+		// contractEntityを作成
+		contractEntity, err := entities.NewContractEntityWithData(
+			mapper.Id,
+			mapper.UserId,
+			mapper.ProductId,
+			mapper.ContractDate,
+			mapper.BillingStartDate,
+			mapper.CreatedAt,
+			mapper.UpdatedAt,
+			rightToUseEntities,
+		)
+		if err != nil {
+			return nil, err
+		}
+		retContracts = append(retContracts, contractEntity)
 	}
-	return contracts, products, users, nil
+	return retContracts, nil
+}
+
+func getRightToUseEntitiesByContractId(contractId int, executor gorp.SqlExecutor) ([]*entities.RightToUseEntity, error) {
+	query := `
+SELECT 
+	right_to_use.*,
+    COALESCE(bd.id, 0) as bill_detail_id
+FROM right_to_use
+INNER JOIN right_to_use_active rtua on right_to_use.id = rtua.right_to_use_id
+LEFT OUTER JOIN bill_details bd ON bd.right_to_use_id = right_to_use.id
+
+WHERE contract_id = $1
+ORDER BY id
+`
+	var mappers []*rightToUseMapper
+	_, err := executor.Select(&mappers, query, contractId)
+	if err != nil {
+		return nil, errors.Wrapf(err, "使用権データの取得に失敗しました。query: %v, contractId: %v", query, contractId)
+	}
+
+	retEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
+	for _, mapper := range mappers {
+		entity := entities.NewRightToUseEntityWithData(
+			mapper.Id,
+			mapper.ValidFrom,
+			mapper.ValidTo,
+			mapper.BillDetailId,
+			mapper.CreatedAt,
+			mapper.UpdatedAt)
+		retEntities = append(retEntities, entity)
+	}
+
+	return retEntities, nil
+}
+
+type rightToUseMapper struct {
+	data_mappers.RightToUseMapper
+	BillDetailId int `db:"bill_detail_id"`
 }
 
 // dbから取得したレコードをcontract単位で分割する
@@ -175,24 +196,24 @@ func separateMapper(mappers []*data_mappers.ContractView) [][]*data_mappers.Cont
 	return retMapper
 }
 
-func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contract *entities.ContractEntity, product *entities.ProductEntity, user interface{}, err error) {
-	contracts, products, users, err := r.GetByIds([]int{id}, executor)
+func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contract *entities.ContractEntity, err error) {
+	contracts, err := r.GetByIds([]int{id}, executor)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
 	if contracts == nil {
 		// データが無い時
-		return nil, nil, nil, nil
+		return nil, nil
 	} else {
-		return contracts[0], products[0], users[0], nil
+		return contracts[0], nil
 	}
 }
 
 // dbから取得したレコード情報からエンティティを組み上げる
 func createEntitiesFromMapper(mappers []*data_mappers.ContractView) (
 	contract *entities.ContractEntity,
-	product *entities.ProductEntity,
-	user interface{},
+	//product *entities.ProductEntity,
+	//user interface{},
 	err error,
 ) {
 	// 使用権データ作成
@@ -205,22 +226,22 @@ func createEntitiesFromMapper(mappers []*data_mappers.ContractView) (
 	}
 
 	// productエンティティにデータを詰める
-	product, err = createProductEntityFromMapper(mappers[0])
-	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "productEntity作成失敗。mappers[0]: %v", mappers[0])
-	}
+	//product, err = createProductEntityFromMapper(mappers[0])
+	//if err != nil {
+	//	return nil,  errors.Wrapf(err, "productEntity作成失敗。mappers[0]: %v", mappers[0])
+	//}
 	// contractエンティティにデータを詰める
 	contract, err = createContractEntityFromMapper(mappers[0], rightToUseEntities)
 	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "contractEntity作成失敗。mappers[0]: %v", mappers[0])
+		return nil, errors.Wrapf(err, "contractEntity作成失敗。mappers[0]: %v", mappers[0])
 	}
 	// userエンティティにデータを詰める
-	user, err = createUserEntityFromMapper(mappers[0])
-	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "userEntity作成失敗。mappers[0]: %v", mappers[0])
-	}
+	//user, err = createUserEntityFromMapper(mappers[0])
+	//if err != nil {
+	//	return nil, nil, nil, errors.Wrapf(err, "userEntity作成失敗。mappers[0]: %v", mappers[0])
+	//}
 
-	return contract, product, user, nil
+	return contract, nil
 }
 
 func hasActiveRightToUse(mapper data_mappers.ContractView) bool {
@@ -303,7 +324,7 @@ WHERE bd.id IS NULL
 		// データがなかった時
 		return []*entities.ContractEntity{}, nil
 	} else {
-		contracts, _, _, err := r.GetByIds(targetIds, executor)
+		contracts, err := r.GetByIds(targetIds, executor)
 		if err != nil {
 			return nil, err
 		}
@@ -349,7 +370,7 @@ func (r *ContractRepository) GetRecurTargets(executeDate time.Time, executor gor
 	}
 
 	// 契約集約を取得
-	contracts, _, _, err := r.GetByIds(contractIds, executor)
+	contracts, err := r.GetByIds(contractIds, executor)
 	if err != nil {
 		return nil, errors.Wrapf(err, "継続処理対象使用権をもつ契約集約の取得に失敗しました。contractIds: %v", contractIds)
 	}

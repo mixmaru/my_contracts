@@ -113,7 +113,7 @@ func TestContractRepository_GetById(t *testing.T) {
 	savedProductId, err := productRepository.Save(productEntity, db)
 	assert.NoError(t, err)
 
-	t.Run("データがある時_Idで契約データと関連する商品データとユーザーデータを返す_一緒に使うことが多い気がするため", func(t *testing.T) {
+	t.Run("データがある時_Idで契約エンティティを返す", func(t *testing.T) {
 		r := NewContractRepository()
 		// データ登録
 		contractEntity := entities.NewContractEntity(
@@ -136,7 +136,7 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.NoError(t, err)
 
 		// データ取得（使用権idを取得するため）
-		loadedContract, _, _, err := r.GetById(savedId, db)
+		loadedContract, err := r.GetById(savedId, db)
 		assert.NoError(t, err)
 		// 1つめの使用権は請求済にしておく
 		bill := entities.NewBillingAggregation(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0), savedUserId)
@@ -146,7 +146,7 @@ func TestContractRepository_GetById(t *testing.T) {
 		_, err = billRep.Create(bill, db)
 		assert.NoError(t, err)
 		// データ取得（請求済データを反映するため）
-		loadedContract, loadedProduct, loadedUser, err := r.GetById(savedId, db)
+		loadedContract, err = r.GetById(savedId, db)
 		assert.NoError(t, err)
 
 		// contractテスト
@@ -164,31 +164,14 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.True(t, rightToUses[1].ValidFrom().Equal(utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0)))
 		assert.True(t, rightToUses[1].ValidTo().Equal(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0)))
 		assert.Zero(t, rightToUses[1].BillDetailId())
-		// productテスト
-		assert.Equal(t, savedProductId, loadedProduct.Id())
-		assert.Equal(t, productEntity.Name(), loadedProduct.Name())
-		price, exist := loadedProduct.MonthlyPrice()
-		assert.True(t, exist)
-		assert.Equal(t, "1000", price.String())
-		assert.NotZero(t, loadedProduct.CreatedAt())
-		assert.NotZero(t, loadedProduct.UpdatedAt())
-		// userテスト
-		user, ok := loadedUser.(*entities.UserIndividualEntity)
-		assert.True(t, ok)
-		assert.Equal(t, savedUserId, user.Id())
-		assert.Equal(t, "担当太郎", user.Name())
-		assert.NotZero(t, user.CreatedAt())
-		assert.NotZero(t, user.UpdatedAt())
 	})
 
 	t.Run("データがない時はnilが返る", func(t *testing.T) {
 		r := NewContractRepository()
 		// データ取得
-		loadedContract, loadedProduct, loadedUser, err := r.GetById(-100, db)
+		loadedContract, err := r.GetById(-100, db)
 		assert.NoError(t, err)
 		assert.Nil(t, loadedContract)
-		assert.Nil(t, loadedProduct)
-		assert.Nil(t, loadedUser)
 	})
 
 	t.Run("使用権がない契約も返る", func(t *testing.T) {
@@ -206,10 +189,8 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.NoError(t, err)
 
 		////// 実行
-		loadedContract, product, user, err := r.GetById(savedId, db)
+		loadedContract, err := r.GetById(savedId, db)
 		assert.NoError(t, err)
-		assert.NotZero(t, product)
-		assert.NotZero(t, user)
 
 		////// 検証
 		assert.Equal(t, savedId, loadedContract.Id())
@@ -234,16 +215,14 @@ func TestContractRepository_GetById(t *testing.T) {
 		savedId, err := r.Create(contractEntity, db)
 		assert.NoError(t, err)
 		// 取得して使用権をアーカイブ
-		contract, _, _, err := r.GetById(savedId, db)
+		contract, err := r.GetById(savedId, db)
 		contract.ArchiveRightToUseByValidTo(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0))
 		err = r.Update(contract, db)
 		assert.NoError(t, err)
 
 		////// 実行
-		loadedContract, product, user, err := r.GetById(savedId, db)
+		loadedContract, err := r.GetById(savedId, db)
 		assert.NoError(t, err)
-		assert.NotZero(t, product)
-		assert.NotZero(t, user)
 
 		////// 検証
 		assert.Equal(t, savedId, loadedContract.Id())
@@ -629,7 +608,7 @@ func createContract(userId, productId int, contractDate, billingStartDate time.T
 		panic("contractEntity保存失敗")
 	}
 	// 再読込
-	savedContract, _, _, err := contractRepository.GetById(savedContractId, executor)
+	savedContract, err := contractRepository.GetById(savedContractId, executor)
 	if err != nil {
 		panic("contractEntity取得失敗")
 	}
@@ -653,7 +632,7 @@ func TestContractRepository_Update(t *testing.T) {
 		assert.NoError(t, err)
 
 		////// 検証
-		actual, _, _, err := contractRep.GetById(contract.Id(), db)
+		actual, err := contractRep.GetById(contract.Id(), db)
 		assert.NoError(t, err)
 		rightToUses := actual.RightToUses()
 		assert.Len(t, rightToUses, 2)

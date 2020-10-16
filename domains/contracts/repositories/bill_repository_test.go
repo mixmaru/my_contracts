@@ -300,11 +300,11 @@ func createRightToUseDataForTest() (rightToUse1Id, rightToUse2Id, userId int) {
 		panic("契約データ登録失敗")
 	}
 	// 登録データ再読込
-	reloadedContract1, _, _, err := contractRep.GetById(contract1Id, db)
+	reloadedContract1, err := contractRep.GetById(contract1Id, db)
 	if err != nil {
 		panic("契約データ再読込失敗")
 	}
-	reloadedContract2, _, _, err := contractRep.GetById(contract2Id, db)
+	reloadedContract2, err := contractRep.GetById(contract2Id, db)
 	if err != nil {
 		panic("契約データ再読込失敗")
 	}
