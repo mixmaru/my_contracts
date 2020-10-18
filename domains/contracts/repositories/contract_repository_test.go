@@ -740,6 +740,10 @@ DELETE FROM contracts;
 			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
 			[]*entities.RightToUseEntity{
 				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 9, 5, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+				),
+				entities.NewRightToUseEntity(
 					utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
 					utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0),
 				),

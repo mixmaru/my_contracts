@@ -319,7 +319,7 @@ func executeArchiveRightToUse(id int, executor gorp.SqlExecutor) error {
 */
 func (r *ContractRepository) GetHavingExpiredRightToUseContractIds(baseDate time.Time, executor gorp.SqlExecutor) ([]int, error) {
 	query := `
-SELECT c.id
+SELECT DISTINCT c.id
 FROM contracts c
     INNER JOIN right_to_use rtu ON rtu.contract_id = c.id
     INNER JOIN right_to_use_active rtua ON rtua.right_to_use_id = rtu.id
