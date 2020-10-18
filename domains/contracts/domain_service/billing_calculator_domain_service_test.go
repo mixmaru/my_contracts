@@ -76,7 +76,7 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 			assert.NoError(t, err)
 
 			// リロード
-			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
+			savedContract, err := contractRep.GetById(savedContractId, db)
 			assert.NoError(t, err)
 
 			// 実行
@@ -106,7 +106,7 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 			savedContractId, err := contractRep.Create(contractEntity, db)
 			assert.NoError(t, err)
 			// リロード
-			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
+			savedContract, err := contractRep.GetById(savedContractId, db)
 			assert.NoError(t, err)
 
 			// 実行
@@ -138,7 +138,7 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 			savedContractId, err := contractRep.Create(contractEntity, db)
 			assert.NoError(t, err)
 			// リロード
-			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
+			savedContract, err := contractRep.GetById(savedContractId, db)
 
 			// 実行
 			billingAmount, err := billingDS.BillingAmount(savedContract.RightToUses()[0], savedContract.BillingStartDate(), db)
@@ -167,7 +167,7 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 			savedContractId, err := contractRep.Create(contractEntity, db)
 			assert.NoError(t, err)
 			// リロード
-			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
+			savedContract, err := contractRep.GetById(savedContractId, db)
 
 			// 実行
 			billingAmount, err := billingDS.BillingAmount(savedContract.RightToUses()[0], savedContract.BillingStartDate(), db)
@@ -198,7 +198,7 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 			savedContractId, err := contractRep.Create(contractEntity, db)
 			assert.NoError(t, err)
 			// リロード
-			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
+			savedContract, err := contractRep.GetById(savedContractId, db)
 
 			// 実行
 			billingAmount, err := billingDS.BillingAmount(savedContract.RightToUses()[0], savedContract.BillingStartDate(), db)
@@ -227,7 +227,7 @@ func TestBillingCalculatorDomainService_BillingAmount(t *testing.T) {
 			savedContractId, err := contractRep.Create(contractEntity, db)
 			assert.NoError(t, err)
 			// リロード
-			savedContract, _, _, err := contractRep.GetById(savedContractId, db)
+			savedContract, err := contractRep.GetById(savedContractId, db)
 
 			// 実行
 			billingAmount, err := billingDS.BillingAmount(savedContract.RightToUses()[0], savedContract.BillingStartDate(), db)
@@ -275,7 +275,7 @@ func createTestData(executor gorp.SqlExecutor, t *testing.T) (userId, rightToUse
 	contract1Id, err := contractRep.Create(contract1, executor)
 	assert.NoError(t, err)
 	// リロード
-	savedContract, _, _, err := contractRep.GetById(contract1Id, executor)
+	savedContract, err := contractRep.GetById(contract1Id, executor)
 	rightToUses := savedContract.RightToUses()
 
 	return user1Id, rightToUses[0].Id(), rightToUses[1].Id(), rightToUses[2].Id()
