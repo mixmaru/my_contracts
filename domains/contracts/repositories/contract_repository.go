@@ -180,22 +180,6 @@ type rightToUseMapper struct {
 	BillDetailId int `db:"bill_detail_id"`
 }
 
-// dbから取得したレコードをcontract単位で分割する
-func separateMapper(mappers []*data_mappers.ContractView) [][]*data_mappers.ContractView {
-	retMapper := [][]*data_mappers.ContractView{}
-	index := -1
-	prevContractId := 0
-	for _, mapper := range mappers {
-		if prevContractId != mapper.Id {
-			prevContractId = mapper.Id
-			index += 1
-			retMapper = append(retMapper, []*data_mappers.ContractView{})
-		}
-		retMapper[index] = append(retMapper[index], mapper)
-	}
-	return retMapper
-}
-
 func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contract *entities.ContractEntity, err error) {
 	contracts, err := r.GetByIds([]int{id}, executor)
 	if err != nil {
@@ -207,97 +191,6 @@ func (r *ContractRepository) GetById(id int, executor gorp.SqlExecutor) (contrac
 	} else {
 		return contracts[0], nil
 	}
-}
-
-// dbから取得したレコード情報からエンティティを組み上げる
-func createEntitiesFromMapper(mappers []*data_mappers.ContractView) (
-	contract *entities.ContractEntity,
-	//product *entities.ProductEntity,
-	//user interface{},
-	err error,
-) {
-	// 使用権データ作成
-	rightToUseEntities := make([]*entities.RightToUseEntity, 0, len(mappers))
-	if hasActiveRightToUse(*mappers[0]) {
-		for _, mapper := range mappers {
-			// 使用権エンティティにデータを詰める
-			rightToUseEntities = append(rightToUseEntities, createRightToUseFromMapper(mapper))
-		}
-	}
-
-	// productエンティティにデータを詰める
-	//product, err = createProductEntityFromMapper(mappers[0])
-	//if err != nil {
-	//	return nil,  errors.Wrapf(err, "productEntity作成失敗。mappers[0]: %v", mappers[0])
-	//}
-	// contractエンティティにデータを詰める
-	contract, err = createContractEntityFromMapper(mappers[0], rightToUseEntities)
-	if err != nil {
-		return nil, errors.Wrapf(err, "contractEntity作成失敗。mappers[0]: %v", mappers[0])
-	}
-	// userエンティティにデータを詰める
-	//user, err = createUserEntityFromMapper(mappers[0])
-	//if err != nil {
-	//	return nil, nil, nil, errors.Wrapf(err, "userEntity作成失敗。mappers[0]: %v", mappers[0])
-	//}
-
-	return contract, nil
-}
-
-func hasActiveRightToUse(mapper data_mappers.ContractView) bool {
-	return mapper.RightToUseId.Valid && mapper.RightToUseCreatedAt.Valid
-}
-
-func createRightToUseFromMapper(mapper *data_mappers.ContractView) *entities.RightToUseEntity {
-	return entities.NewRightToUseEntityWithData(
-		int(mapper.RightToUseId.Int64),
-		mapper.RightToUseValidFrom.Time,
-		mapper.RightToUseValidTo.Time,
-		mapper.BillDetailId,
-		mapper.RightToUseCreatedAt.Time,
-		mapper.RightToUseUpdatedAt.Time,
-	)
-}
-
-func createProductEntityFromMapper(mapper *data_mappers.ContractView) (*entities.ProductEntity, error) {
-	return entities.NewProductEntityWithData(
-		mapper.ProductId,
-		mapper.ProductName,
-		mapper.ProductPrice.String(),
-		mapper.ProductCreatedAt,
-		mapper.ProductUpdatedAt,
-	)
-}
-
-func createContractEntityFromMapper(mapper *data_mappers.ContractView, rightToUseEntities []*entities.RightToUseEntity) (*entities.ContractEntity, error) {
-	return entities.NewContractEntityWithData(
-		mapper.Id,
-		mapper.UserId,
-		mapper.ProductId,
-		mapper.ContractDate,
-		mapper.BillingStartDate,
-		mapper.CreatedAt,
-		mapper.UpdatedAt,
-		rightToUseEntities,
-	)
-}
-
-func createUserEntityFromMapper(mapper *data_mappers.ContractView) (user interface{}, err error) {
-	switch mapper.UserType {
-	case "individual":
-		user, err = entities.NewUserIndividualEntityWithData(mapper.UserId, mapper.UserIndividualName.String, mapper.UserIndividualCreatedAt.Time, mapper.UserIndividualUpdatedAt.Time)
-		if err != nil {
-			return nil, errors.Wrapf(err, "userIndividualEntity作成失敗。mapper: %v", mapper)
-		}
-	case "corporation":
-		user, err = entities.NewUserCorporationEntityWithData(mapper.UserId, mapper.UserCorporationCorporationName.String, mapper.UserCorporationContractPersonName.String, mapper.UserCorporationPresidentName.String, mapper.UserCorporationCreatedAt.Time, mapper.UserCorporationUpdatedAt.Time)
-		if err != nil {
-			return nil, errors.Wrapf(err, "userCorporationEntity作成失敗。mapper: %v", mapper)
-		}
-	default:
-		return nil, errors.Errorf("考慮外のUserTypeが来た。mappers[0].UserType: %v, mapper: %v", mapper.UserType, mapper)
-	}
-	return user, nil
 }
 
 func (r *ContractRepository) GetBillingTargetByBillingDate(billingDate time.Time, executor gorp.SqlExecutor) ([]*entities.ContractEntity, error) {
