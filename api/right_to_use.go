@@ -24,23 +24,11 @@ func executeRecur(c echo.Context) error {
 	validErrs := map[string][]string{}
 
 	// 実行日取得
-	var executeDate time.Time
-	executeDateStr := c.FormValue("date")
-	jst := utils.CreateJstLocation()
-
-	if executeDateStr == "" {
-		// 日付指定がなければ現在日時を実行日とする
-		executeDate = time.Now().In(jst)
-	} else {
-		// 日付指定があればそれをを実行日とする
-		executeDate, err = time.ParseInLocation("20060102", executeDateStr, jst)
-		if err != nil {
-			// dateに変な値が渡された
-			validErrs["date"] = []string{
-				"YYYYMMDDの形式ではありません",
-			}
-		}
+	executeDate, errMsg := getExecuteDate(c.FormValue("date"))
+	if errMsg != "" {
+		validErrs["date"] = []string{errMsg}
 	}
+
 	if len(validErrs) > 0 {
 		return c.JSON(http.StatusBadRequest, validErrs)
 	}
@@ -53,4 +41,58 @@ func executeRecur(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusCreated, rightToUseDtos)
+}
+
+/*
+期限切れ使用権権のアーカイブ処理バッチ
+実行日以前に使用期限の切れた使用権データをアーカイブする
+
+params:
+date string 実行日
+*/
+func executeRightToUseArchive(c echo.Context) error {
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	validErrs := map[string][]string{}
+	// 実行日取得
+	executeDate, errMsg := getExecuteDate(c.FormValue("date"))
+	if errMsg != "" {
+		validErrs["date"] = []string{errMsg}
+	}
+
+	if len(validErrs) > 0 {
+		return c.JSON(http.StatusBadRequest, validErrs)
+	}
+
+	contractApp := application_service.NewContractApplicationService()
+	rightToUseDtos, err := contractApp.ArchiveExpiredRightToUse(executeDate)
+	if err != nil {
+		logger.Sugar().Errorw("期限切れ使用権のアーカイブに失敗。", "executeDate", executeDate, "アーカイブ処理された使用権", rightToUseDtos, "err", err)
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message":             "期限切れ使用権のアーカイブに失敗。",
+			"succeed_rightToUses": rightToUseDtos,
+		})
+	}
+	return c.JSON(http.StatusCreated, rightToUseDtos)
+}
+
+func getExecuteDate(dateStr string) (executeDate time.Time, errMsg string) {
+	jst := utils.CreateJstLocation()
+
+	if dateStr == "" {
+		// 日付指定がなければ現在日時を実行日とする
+		executeDate = time.Now().In(jst)
+	} else {
+		// 日付指定があればそれをを実行日とする
+		var err error
+		executeDate, err = time.ParseInLocation("20060102", dateStr, jst)
+		if err != nil {
+			// dateに変な値が渡された
+			return time.Time{}, "YYYYMMDDの形式ではありません"
+		}
+	}
+	return executeDate, ""
 }

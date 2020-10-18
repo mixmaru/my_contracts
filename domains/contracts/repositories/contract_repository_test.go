@@ -113,7 +113,7 @@ func TestContractRepository_GetById(t *testing.T) {
 	savedProductId, err := productRepository.Save(productEntity, db)
 	assert.NoError(t, err)
 
-	t.Run("データがある時_Idで契約データと関連する商品データとユーザーデータを返す_一緒に使うことが多い気がするため", func(t *testing.T) {
+	t.Run("データがある時_Idで契約エンティティを返す", func(t *testing.T) {
 		r := NewContractRepository()
 		// データ登録
 		contractEntity := entities.NewContractEntity(
@@ -136,7 +136,7 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.NoError(t, err)
 
 		// データ取得（使用権idを取得するため）
-		loadedContract, _, _, err := r.GetById(savedId, db)
+		loadedContract, err := r.GetById(savedId, db)
 		assert.NoError(t, err)
 		// 1つめの使用権は請求済にしておく
 		bill := entities.NewBillingAggregation(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0), savedUserId)
@@ -146,7 +146,7 @@ func TestContractRepository_GetById(t *testing.T) {
 		_, err = billRep.Create(bill, db)
 		assert.NoError(t, err)
 		// データ取得（請求済データを反映するため）
-		loadedContract, loadedProduct, loadedUser, err := r.GetById(savedId, db)
+		loadedContract, err = r.GetById(savedId, db)
 		assert.NoError(t, err)
 
 		// contractテスト
@@ -164,31 +164,68 @@ func TestContractRepository_GetById(t *testing.T) {
 		assert.True(t, rightToUses[1].ValidFrom().Equal(utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0)))
 		assert.True(t, rightToUses[1].ValidTo().Equal(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0)))
 		assert.Zero(t, rightToUses[1].BillDetailId())
-		// productテスト
-		assert.Equal(t, savedProductId, loadedProduct.Id())
-		assert.Equal(t, productEntity.Name(), loadedProduct.Name())
-		price, exist := loadedProduct.MonthlyPrice()
-		assert.True(t, exist)
-		assert.Equal(t, "1000", price.String())
-		assert.NotZero(t, loadedProduct.CreatedAt())
-		assert.NotZero(t, loadedProduct.UpdatedAt())
-		// userテスト
-		user, ok := loadedUser.(*entities.UserIndividualEntity)
-		assert.True(t, ok)
-		assert.Equal(t, savedUserId, user.Id())
-		assert.Equal(t, "担当太郎", user.Name())
-		assert.NotZero(t, user.CreatedAt())
-		assert.NotZero(t, user.UpdatedAt())
 	})
 
 	t.Run("データがない時はnilが返る", func(t *testing.T) {
 		r := NewContractRepository()
 		// データ取得
-		loadedContract, loadedProduct, loadedUser, err := r.GetById(-100, db)
+		loadedContract, err := r.GetById(-100, db)
 		assert.NoError(t, err)
 		assert.Nil(t, loadedContract)
-		assert.Nil(t, loadedProduct)
-		assert.Nil(t, loadedUser)
+	})
+
+	t.Run("使用権がない契約も返る", func(t *testing.T) {
+		////// 準備
+		r := NewContractRepository()
+		// データ登録
+		contractEntity := entities.NewContractEntity(
+			savedUserId,
+			savedProductId,
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{},
+		)
+		savedId, err := r.Create(contractEntity, db)
+		assert.NoError(t, err)
+
+		////// 実行
+		loadedContract, err := r.GetById(savedId, db)
+		assert.NoError(t, err)
+
+		////// 検証
+		assert.Equal(t, savedId, loadedContract.Id())
+	})
+
+	t.Run("使用権がない(historyには存在する)契約も返る", func(t *testing.T) {
+		////// 準備
+		r := NewContractRepository()
+		// データ登録
+		contractEntity := entities.NewContractEntity(
+			savedUserId,
+			savedProductId,
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 1, 11, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+				),
+			},
+		)
+		savedId, err := r.Create(contractEntity, db)
+		assert.NoError(t, err)
+		// 取得して使用権をアーカイブ
+		contract, err := r.GetById(savedId, db)
+		contract.ArchiveRightToUseByValidTo(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0))
+		err = r.Update(contract, db)
+		assert.NoError(t, err)
+
+		////// 実行
+		loadedContract, err := r.GetById(savedId, db)
+		assert.NoError(t, err)
+
+		////// 検証
+		assert.Equal(t, savedId, loadedContract.Id())
 	})
 }
 
@@ -307,11 +344,12 @@ func TestContractRepository_GetBillingTargetByBillingDate(t *testing.T) {
 
 func deleteTestRightToUseData(executor gorp.SqlExecutor) {
 	_, err := executor.Exec(`
-delete from right_to_use_active where right_to_use_id in (
-    select rtu.id from right_to_use rtu
-    left outer join bill_details bd on rtu.id = bd.right_to_use_id
-    where bd.id is null
-);`)
+DELETE FROM right_to_use_active;
+DELETE FROM right_to_use_history;
+DELETE FROM discount_apply_contract_updates;
+DELETE FROM bill_details;
+DELETE FROM right_to_use;
+`)
 	if err != nil {
 		panic("事前データ削除失敗" + err.Error())
 	}
@@ -570,7 +608,7 @@ func createContract(userId, productId int, contractDate, billingStartDate time.T
 		panic("contractEntity保存失敗")
 	}
 	// 再読込
-	savedContract, _, _, err := contractRepository.GetById(savedContractId, executor)
+	savedContract, err := contractRepository.GetById(savedContractId, executor)
 	if err != nil {
 		panic("contractEntity取得失敗")
 	}
@@ -582,21 +620,7 @@ func TestContractRepository_Update(t *testing.T) {
 		db, err := db_connection.GetConnection()
 		assert.NoError(t, err)
 		////// 準備
-		userID := createUser(db)
-		productId := createProduct(db)
-		contract := createContract(
-			userID,
-			productId,
-			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
-			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
-			[]*entities.RightToUseEntity{
-				entities.NewRightToUseEntity(
-					utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
-					utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0),
-				),
-			},
-			db,
-		)
+		contract := createTestContract(db)
 
 		////// 実行
 		contract.AddNextTermRightToUses(entities.NewRightToUseEntity(
@@ -608,7 +632,7 @@ func TestContractRepository_Update(t *testing.T) {
 		assert.NoError(t, err)
 
 		////// 検証
-		actual, _, _, err := contractRep.GetById(contract.Id(), db)
+		actual, err := contractRep.GetById(contract.Id(), db)
 		assert.NoError(t, err)
 		rightToUses := actual.RightToUses()
 		assert.Len(t, rightToUses, 2)
@@ -625,5 +649,131 @@ func TestContractRepository_Update(t *testing.T) {
 		assert.False(t, rightToUses[1].WasBilling())
 		assert.True(t, rightToUses[1].ValidFrom().Equal(utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0)))
 		assert.True(t, rightToUses[1].ValidTo().Equal(utils.CreateJstTime(2020, 12, 5, 0, 0, 0, 0)))
+	})
+
+	t.Run("アーカイブされた使用権は、historyテーブルへ移動させられる", func(t *testing.T) {
+		db, err := db_connection.GetConnection()
+		assert.NoError(t, err)
+		////// 準備
+		contract := createTestContract(db)
+		err = contract.ArchiveRightToUseById(contract.RightToUses()[0].Id())
+		assert.NoError(t, err)
+
+		////// 実行
+		rep := NewContractRepository()
+		err = rep.Update(contract, db)
+		assert.NoError(t, err)
+
+		////// 検証（activeテーブルに0件、historyテーブルに1件データがあるはず。）
+		sql := `
+SELECT
+       COUNT(rtu.id)
+           FROM
+                right_to_use_active rtua
+                    INNER JOIN right_to_use rtu ON rtua.right_to_use_id = rtu.id
+WHERE rtu.contract_id = $1
+;`
+		activeCount, err := db.SelectInt(sql, contract.Id())
+		assert.NoError(t, err)
+		assert.Equal(t, 0, int(activeCount))
+
+		sql = `
+SELECT
+       COUNT(rtu.id)
+           FROM
+                right_to_use_history rtuh
+                    INNER JOIN right_to_use rtu ON rtuh.right_to_use_id = rtu.id
+WHERE rtu.contract_id = $1
+;`
+		historyCount, err := db.SelectInt(sql, contract.Id())
+		assert.NoError(t, err)
+		assert.Equal(t, 1, int(historyCount))
+
+	})
+}
+
+func createTestContract(db gorp.SqlExecutor) *entities.ContractEntity {
+	userID := createUser(db)
+	productId := createProduct(db)
+	contract := createContract(
+		userID,
+		productId,
+		utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+		[]*entities.RightToUseEntity{
+			entities.NewRightToUseEntity(
+				utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+				utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0),
+			),
+		},
+		db,
+	)
+	return contract
+}
+
+func TestContractRepository_GetHavingExpiredRightToUseContract(t *testing.T) {
+	t.Run("渡した基準日時点で期限が切れているactiveな使用権を持っている契約エンティティを返す", func(t *testing.T) {
+		////// 準備（期限が切れている使用権をもってる契約と、持ってない契約を用意する）
+		db, err := db_connection.GetConnection()
+		assert.NoError(t, err)
+		tran, err := db.Begin()
+		assert.NoError(t, err)
+		// 事前データを全て削除する
+		deleteSql := `
+DELETE FROM discount_apply_contract_updates;
+DELETE FROM bill_details;
+DELETE FROM right_to_use_active;
+DELETE FROM right_to_use_history;
+DELETE FROM right_to_use;
+DELETE FROM contracts;
+`
+		_, err = db.Exec(deleteSql)
+		assert.NoError(t, err)
+		// 今回のテスト用データの作成
+		userID := createUser(tran)
+		productId := createProduct(tran)
+		// 期限切れ使用権を持ってる契約
+		expiredContract := createContract(
+			userID,
+			productId,
+			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 9, 5, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+				),
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0),
+				),
+			},
+			tran,
+		)
+		// 期限切れ使用権を持ってない契約
+		_ = createContract(
+			userID,
+			productId,
+			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 10, 5, 0, 0, 0, 0),
+			[]*entities.RightToUseEntity{
+				entities.NewRightToUseEntity(
+					utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 12, 5, 0, 0, 0, 0),
+				),
+			},
+			tran,
+		)
+
+		////// 実行
+		rep := NewContractRepository()
+		actuals, err := rep.GetHavingExpiredRightToUseContractIds(utils.CreateJstTime(2020, 11, 5, 0, 0, 0, 0), tran)
+		assert.NoError(t, err)
+		err = tran.Commit()
+		assert.NoError(t, err)
+
+		////// 検証
+		assert.Len(t, actuals, 1)
+		assert.Equal(t, expiredContract.Id(), actuals[0])
 	})
 }

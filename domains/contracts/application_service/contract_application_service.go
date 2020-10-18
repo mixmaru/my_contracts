@@ -7,6 +7,7 @@ import (
 	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
 	"github.com/pkg/errors"
+	"gopkg.in/gorp.v2"
 	"time"
 )
 
@@ -46,7 +47,7 @@ func (c *ContractApplicationService) Register(userId int, productId int, contrac
 		return data_transfer_objects.ContractDto{}, nil, err
 	}
 	// 再読込
-	savedContractEntity, _, _, err := c.contractRepository.GetById(savedContractId, tran)
+	savedContractEntity, err := c.contractRepository.GetById(savedContractId, tran)
 	if err != nil {
 		tran.Rollback()
 		return data_transfer_objects.ContractDto{}, nil, err
@@ -69,13 +70,23 @@ func (c *ContractApplicationService) GetById(id int) (contractDto data_transfer_
 	defer conn.Db.Close()
 
 	// リポジトリつかってデータ取得
-	contractEntity, productEntity, userEntity, err := c.contractRepository.GetById(id, conn)
+	contractEntity, err := c.contractRepository.GetById(id, conn)
 	if err != nil {
 		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, err
 	}
 	if contractEntity == nil {
 		// データがない
 		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, nil
+	}
+	// 商品データ
+	productEntity, err := c.productRepository.GetById(contractEntity.ProductId(), conn)
+	if err != nil {
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, err
+	}
+	// ユーザーデータ
+	userEntity, err := c.userRepository.GetUserById(contractEntity.UserId(), conn)
+	if err != nil {
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, err
 	}
 
 	// dtoにつめる
@@ -136,7 +147,7 @@ func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time)
 			return nil, err
 		}
 		// リロード
-		reloadedContract, _, _, err := c.contractRepository.GetById(contract.Id(), tran)
+		reloadedContract, err := c.contractRepository.GetById(contract.Id(), tran)
 		if err != nil {
 			return nil, err
 		}
@@ -147,4 +158,86 @@ func (c *ContractApplicationService) CreateNextRightToUse(executeDate time.Time)
 		nextTermContracts = append(nextTermContracts, data_transfer_objects.NewContractDtoFromEntity(reloadedContract))
 	}
 	return nextTermContracts, nil
+}
+
+/*
+渡した基準日に期限が切れている使用権をアーカイブ処理し、処理した使用権dtoを返す
+*/
+func (c *ContractApplicationService) ArchiveExpiredRightToUse(baseDate time.Time) (archivedRightToUse []data_transfer_objects.RightToUseDto, err error) {
+	db, err := db_connection.GetConnection()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Db.Close()
+
+	retDto := []data_transfer_objects.RightToUseDto{}
+
+	// 対象取得
+	targetContractIds, err := c.contractRepository.GetHavingExpiredRightToUseContractIds(baseDate, db)
+	if err != nil {
+		return retDto, err
+	}
+
+	// アーカイブ処理（同時実行時の更新失敗（別トランザクションがアーカイブした等）に備えて3回までリトライする）
+	for _, contractId := range targetContractIds {
+		count := 0
+		for {
+			count++
+
+			// トランザクション開始
+			tran, err := db.Begin()
+			if err != nil {
+				return retDto, errors.Wrapf(err, "トランザクション開始失敗")
+			}
+			_, err = tran.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+			if err != nil {
+				return retDto, errors.Wrapf(err, "トランザクション分離レベル切り替え失敗。")
+			}
+
+			// アーカイブ実行
+			dtos, err := c.execArchive(contractId, baseDate, tran)
+			retDto = append(retDto, dtos...)
+			if err != nil {
+				// 失敗してたら3回までリトライ
+				tran.Rollback()
+				if count < 3 {
+					continue
+				} else {
+					// 3回以上だったらエラーにする
+					return retDto, err
+				}
+			}
+
+			//コミット
+			err = tran.Commit()
+			if err != nil {
+				return retDto, errors.Wrapf(err, "コミット失敗")
+			}
+			break
+		}
+	}
+
+	return retDto, nil
+}
+
+func (c *ContractApplicationService) execArchive(contractId int, baseDate time.Time, executor gorp.SqlExecutor) ([]data_transfer_objects.RightToUseDto, error) {
+	retDtos := []data_transfer_objects.RightToUseDto{}
+
+	// データ取得
+	contractEntity, err := c.contractRepository.GetById(contractId, executor)
+	if err != nil {
+		return retDtos, err
+	}
+	// アーカイブ処理
+	contractEntity.ArchiveRightToUseByValidTo(baseDate)
+	err = c.contractRepository.Update(contractEntity, executor)
+	if err != nil {
+		return retDtos, err
+	}
+	// 返却dtoを用意
+	for _, entity := range contractEntity.GetToArchiveRightToUses() {
+		retDtos = append(retDtos, data_transfer_objects.NewRightToUseDtoFromEntity(entity))
+	}
+
+	return retDtos, nil
 }

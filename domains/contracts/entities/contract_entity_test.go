@@ -122,3 +122,91 @@ func TestContractEntity_LastBillingStartDate(t *testing.T) {
 		assert.True(t, actual.Equal(utils.CreateJstTime(2020, 2, 2, 0, 0, 0, 0)))
 	})
 }
+
+func TestContractEntity_ArchiveRightToUseById(t *testing.T) {
+	////// 準備
+	entity, err := NewContractEntityWithData(
+		1, 2, 3, utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+		[]*RightToUseEntity{
+			NewRightToUseEntityWithData(
+				4,
+				utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+				utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+				6,
+				utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+				utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			),
+			NewRightToUseEntityWithData(
+				5,
+				utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+				utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0),
+				0,
+				utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+				utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+			),
+		},
+	)
+	assert.NoError(t, err)
+
+	t.Run("その契約集約が持っている使用権Idを渡すと、その使用権がアーカイブ（リポジトリで更新をかけたときにhistoryテーブル行き）される", func(t *testing.T) {
+		////// 実行
+		err = entity.ArchiveRightToUseById(4)
+		assert.NoError(t, err)
+
+		////// 検証
+		rightToUses := entity.RightToUses()
+		assert.Len(t, rightToUses, 1)
+		assert.Equal(t, 5, rightToUses[0].Id())
+		assert.Equal(t, []int{4}, entity.GetToArchiveRightToUseIds())
+	})
+
+	t.Run("その契約集約が持っていない使用権Idを渡すとエラーが発生する", func(t *testing.T) {
+		////// 実行
+		err = entity.ArchiveRightToUseById(100)
+		////// 検証
+		assert.Error(t, err)
+	})
+}
+
+func TestContractEntity_ArchiveRightToUseByValidTo(t *testing.T) {
+	t.Run("使用期限日（ValidTo）を渡すと、それ以前に使用期限日時がある使用権がアーカイブ（リポジトリで更新をかけたときにhistoryテーブル行き）される", func(t *testing.T) {
+		////// 準備
+		entity, err := NewContractEntityWithData(
+			1, 2, 3, utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+			[]*RightToUseEntity{
+				NewRightToUseEntityWithData(
+					4,
+					utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+					6,
+					utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
+				),
+				NewRightToUseEntityWithData(
+					5,
+					utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0),
+					0,
+					utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+					utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
+				),
+			},
+		)
+		assert.NoError(t, err)
+
+		////// 実行
+		entity.ArchiveRightToUseByValidTo(utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0))
+		assert.NoError(t, err)
+
+		////// 検証
+		rightToUses := entity.RightToUses()
+		assert.Len(t, rightToUses, 0)
+		assert.Equal(t, []int{4, 5}, entity.GetToArchiveRightToUseIds())
+	})
+}

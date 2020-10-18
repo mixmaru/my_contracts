@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -11,6 +12,7 @@ type ContractEntity struct {
 	contractDate       time.Time
 	billingStartDate   time.Time
 	rightToUseEntities []*RightToUseEntity // アクティブな使用権
+	toArchive          []*RightToUseEntity // ArchiveRightToUseByIdで指定されたやつ。リポジトリで処理されるのを期待
 }
 
 func NewContractEntity(userId int, productId int, contractDate, billingStartDate time.Time, rightToUses []*RightToUseEntity) *ContractEntity {
@@ -91,4 +93,61 @@ func (c *ContractEntity) LoadData(id, userId, productId int, contractDate, billi
 	c.createdAt = createdAt
 	c.updatedAt = updatedAt
 	return nil
+}
+
+/*
+指定idの使用権をアーカイブ行きにする
+*/
+func (c *ContractEntity) ArchiveRightToUseById(rightToUseId int) error {
+	for i, rightToUse := range c.rightToUseEntities {
+		if rightToUse.Id() == rightToUseId {
+			c.toArchive = append(c.toArchive, rightToUse)
+			c.rightToUseEntities = remove(c.rightToUseEntities, i)
+			return nil
+		}
+	}
+	return errors.Errorf("指定Idの使用権が存在しない。rightToUseId: %v", rightToUseId)
+}
+
+func remove(slice []*RightToUseEntity, s int) []*RightToUseEntity {
+	return append(slice[:s], slice[s+1:]...)
+}
+
+/*
+指定のValidTo(有効期限終了日時)以前に期限を迎えている使用権をアーカイブ行きにする
+*/
+func (c *ContractEntity) ArchiveRightToUseByValidTo(ValidTo time.Time) {
+	target := c.rightToUseEntities
+	c.rightToUseEntities = []*RightToUseEntity{}
+	for _, rightToUse := range target {
+		if rightToUse.validTo.Equal(ValidTo) || rightToUse.validTo.Before(ValidTo) {
+			c.toArchive = append(c.toArchive, rightToUse)
+		} else {
+			c.rightToUseEntities = append(c.rightToUseEntities, rightToUse)
+		}
+	}
+	return
+}
+
+/*
+アーカイブ行き指定された使用権Idのスライスを返す
+*/
+func (c *ContractEntity) GetToArchiveRightToUseIds() []int {
+	retIds := make([]int, 0, len(c.toArchive))
+	for _, entity := range c.toArchive {
+		retIds = append(retIds, entity.Id())
+	}
+	return retIds
+}
+
+/*
+アーカイブ行き指定された使用権のスライスを返す
+*/
+func (c *ContractEntity) GetToArchiveRightToUses() []*RightToUseEntity {
+	retEntities := make([]*RightToUseEntity, 0, len(c.toArchive))
+	for _, rightToUse := range c.toArchive {
+		entity := *rightToUse // 外からいじられないようにコピーしてわたす
+		retEntities = append(retEntities, &entity)
+	}
+	return retEntities
 }
