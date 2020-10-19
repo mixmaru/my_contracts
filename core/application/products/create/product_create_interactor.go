@@ -2,12 +2,12 @@ package create
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 
 	"github.com/mixmaru/my_contracts/core/domain/models/product"
 	"github.com/mixmaru/my_contracts/core/domain/validators"
+	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/mixmaru/my_contracts/domains/contracts/entities/values"
-	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
+	"github.com/pkg/errors"
 )
 
 type ProductCreateInteractor struct {
@@ -22,7 +22,7 @@ func NewProductCreateInteractor(productRepository IProductRepository) *ProductCr
 
 func (i *ProductCreateInteractor) Handle(request *ProductCreateUseCaseRequest) (*ProductCreateUseCaseResponse, error) {
 	// トランザクション開始
-	conn, err := db_connection.GetConnection()
+	conn, err := db.GetConnection()
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (i *ProductCreateInteractor) Handle(request *ProductCreateUseCaseRequest) (
 		return nil, errors.WithStack(err)
 	}
 	// 入力値バリデーション
-	validationErrors, err := registerValidation(request.Name, request.Price)
+	validationErrors, err := createValidation(request.Name, request.Price)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (i *ProductCreateInteractor) Handle(request *ProductCreateUseCaseRequest) (
 	return response, nil
 }
 
-func registerValidation(name string, price string) (validationErrors map[string][]string, err error) {
+func createValidation(name string, price string) (validationErrors map[string][]string, err error) {
 	validationErrors = map[string][]string{}
 
 	// 商品名バリデーション
