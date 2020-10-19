@@ -7,7 +7,7 @@ import (
 )
 
 type IProductCreateUseCase interface {
-	Handle(request ProductCreateUseCaseRequest) (ProductCreateUseCaseResponse, error)
+	Handle(request *ProductCreateUseCaseRequest) (*ProductCreateUseCaseResponse, error)
 }
 
 type ProductCreateUseCaseRequest struct {

@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMain_createProduct(t *testing.T) {
+func TestMain_CreateProduct(t *testing.T) {
 	conn, err := db_connection.GetConnection()
 	assert.NoError(t, err)
 	defer conn.Db.Close()

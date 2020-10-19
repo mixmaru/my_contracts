@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/mixmaru/my_contracts/core/application/products/create"
+	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 )
 
 func main() {
@@ -21,12 +23,15 @@ func newRouter() *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	// controller
+	productController := NewProductController(create.NewProductCreateInteractor(db.NewProductRepository()))
+
 	// 顧客新規登録
 	e.POST("/users/", saveUser)
 	// 顧客情報取得
 	e.GET("/users/:id", getUser)
 	// 商品登録
-	e.POST("/products/", crateProduct)
+	e.POST("/products/", productController.CrateProduct)
 	// 商品情報取得
 	e.GET("/products/:id", getProduct)
 	// 契約登録
