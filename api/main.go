@@ -26,7 +26,7 @@ func newRouter() *echo.Echo {
 	// 顧客情報取得
 	e.GET("/users/:id", getUser)
 	// 商品登録
-	e.POST("/products/", saveProduct)
+	e.POST("/products/", crateProduct)
 	// 商品情報取得
 	e.GET("/products/:id", getProduct)
 	// 契約登録

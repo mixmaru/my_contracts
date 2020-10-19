@@ -1,11 +1,14 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
-	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
 	"strconv"
+
+	"github.com/labstack/echo/v4"
+	"github.com/mixmaru/my_contracts/core/application/products/create"
+	"github.com/mixmaru/my_contracts/core/infrastructure/db"
+	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
+	"github.com/mixmaru/my_contracts/utils/my_logger"
 )
 
 // 商品新規登録
@@ -13,28 +16,25 @@ import (
 // name string 商品名
 // price string 価格
 // curl -F "name=A商品" -F "price=10.1" http://localhost:1323/individual_users
-func saveProduct(c echo.Context) error {
+func crateProduct(c echo.Context) error {
 	logger, err := my_logger.GetLogger()
 	if err != nil {
 		return err
 	}
 
-	// Get name and email
-	name := c.FormValue("name")
-	price := c.FormValue("price")
-
-	productAppService := application_service.NewProductApplicationService()
-	product, validErrs, err := productAppService.Register(name, price)
+	request := create.NewProductCreateUseCaseRequest(c.FormValue("name"), c.FormValue("price"))
+	interactor := create.NewProductCreateInteractor(db.NewProductRepository())
+	response, err := interactor.Handle(request)
 	if err != nil {
-		logger.Sugar().Errorw("商品データ登録に失敗。", "name", name, "price", price, "err", err)
+		logger.Sugar().Errorw("商品データ登録に失敗。", "name", request.Name, "price", request.Price, "err", err)
 		c.Error(err)
 		return err
 	}
-	if len(validErrs) > 0 {
-		return c.JSON(http.StatusBadRequest, validErrs)
+	if len(response.ValidationError) > 0 {
+		return c.JSON(http.StatusBadRequest, response.ValidationError)
 	}
 
-	return c.JSON(http.StatusCreated, product)
+	return c.JSON(http.StatusCreated, response.ProductDto)
 }
 
 // 商品情報取得
