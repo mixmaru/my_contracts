@@ -25,24 +25,24 @@ func TestApplicationServiceFactory_NewUserApplicationServiceWithMock(t *testing.
 	assert.IsType(t, &UserApplicationService{}, userApp)
 }
 
-////// ProductApplicationService
-func TestApplicationServiceFactory_NewProductApplicationService(t *testing.T) {
-	// インスタンス化テスト
-	productApp := NewProductApplicationService()
-	assert.IsType(t, &ProductApplicationService{}, productApp)
-}
-
-func TestApplicationServiceFactory_NewProductApplicationServiceWithMock(t *testing.T) {
-	// mock作成
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	productRepositoryMock := mock_interfaces.NewMockIProductRepository(ctrl)
-
-	// インスタンス化テスト
-	productApp := NewProductApplicationServiceWithMock(productRepositoryMock)
-	assert.IsType(t, &ProductApplicationService{}, productApp)
-
-}
+//////// ProductApplicationService
+//func TestApplicationServiceFactory_NewProductApplicationService(t *testing.T) {
+//	// インスタンス化テスト
+//	productApp := NewProductApplicationService()
+//	assert.IsType(t, &ProductApplicationService{}, productApp)
+//}
+//
+//func TestApplicationServiceFactory_NewProductApplicationServiceWithMock(t *testing.T) {
+//	// mock作成
+//	ctrl := gomock.NewController(t)
+//	defer ctrl.Finish()
+//	productRepositoryMock := mock_interfaces.NewMockIProductRepository(ctrl)
+//
+//	// インスタンス化テスト
+//	productApp := NewProductApplicationServiceWithMock(productRepositoryMock)
+//	assert.IsType(t, &ProductApplicationService{}, productApp)
+//
+//}
 
 ////// ContractApplicationService
 func TestApplicationServiceFactory_NewContractApplicationService(t *testing.T) {

@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mixmaru/my_contracts/core/application/products/create"
+	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
 	"github.com/stretchr/testify/assert"
@@ -17,10 +19,10 @@ import (
 
 func TestMain_saveContract(t *testing.T) {
 	// 商品登録
-	productApp := application_service.NewProductApplicationService()
-	productDto, validErrs, err := productApp.Register("商品", "200")
+	productApp := create.NewProductCreateInteractor(db.NewProductRepository())
+	productResponse, err := productApp.Handle(create.NewProductCreateUseCaseRequest("商品", "200"))
 	assert.NoError(t, err)
-	assert.Len(t, validErrs, 0)
+	assert.Len(t, productResponse.ValidationError, 0)
 	// ユーザー登録
 	userApp := application_service.NewUserApplicationService()
 	userDto, validErrs, err := userApp.RegisterUserIndividual("太郎くん")
@@ -33,7 +35,7 @@ func TestMain_saveContract(t *testing.T) {
 		// 準備
 		body := url.Values{}
 		body.Set("user_id", strconv.Itoa(userDto.Id))
-		body.Set("product_id", strconv.Itoa(productDto.Id))
+		body.Set("product_id", strconv.Itoa(productResponse.ProductDto.Id))
 
 		// リクエスト実行
 		req := httptest.NewRequest("POST", "/contracts/", strings.NewReader(body.Encode()))
@@ -48,7 +50,7 @@ func TestMain_saveContract(t *testing.T) {
 		err := json.Unmarshal(rec.Body.Bytes(), &registeredContract)
 		assert.NoError(t, err)
 		assert.Equal(t, userDto.Id, registeredContract.UserId)
-		assert.Equal(t, productDto.Id, registeredContract.ProductId)
+		assert.Equal(t, productResponse.ProductDto.Id, registeredContract.ProductId)
 		assert.NotZero(t, registeredContract.Id)
 		assert.NotZero(t, registeredContract.ContractDate)
 		assert.NotZero(t, registeredContract.BillingStartDate)
@@ -146,10 +148,10 @@ func TestMain_saveContract(t *testing.T) {
 
 func TestMain_getContract(t *testing.T) {
 	// 検証用データ(商品)登録
-	productAppService := application_service.NewProductApplicationService()
-	product, validErrs, err := productAppService.Register("商品", "100")
+	productApp := create.NewProductCreateInteractor(db.NewProductRepository())
+	productResponse, err := productApp.Handle(create.NewProductCreateUseCaseRequest("商品", "100"))
 	assert.NoError(t, err)
-	assert.Len(t, validErrs, 0)
+	assert.Len(t, productResponse.ValidationError, 0)
 
 	// 検証用データ(user)登録
 	userAppService := application_service.NewUserApplicationService()
@@ -159,7 +161,7 @@ func TestMain_getContract(t *testing.T) {
 
 	// 検証用データ(契約)登録
 	contractAppService := application_service.NewContractApplicationService()
-	contract, validErrs, err := contractAppService.Register(user.Id, product.Id, time.Now())
+	contract, validErrs, err := contractAppService.Register(user.Id, productResponse.ProductDto.Id, time.Now())
 	assert.NoError(t, err)
 	assert.Len(t, validErrs, 0)
 
@@ -192,7 +194,7 @@ func TestMain_getContract(t *testing.T) {
 		assert.NotZero(t, gotContractData.User.CreatedAt)
 		assert.NotZero(t, gotContractData.User.UpdatedAt)
 
-		assert.Equal(t, product.Id, gotContractData.Product.Id)
+		assert.Equal(t, productResponse.ProductDto.Id, gotContractData.Product.Id)
 		assert.Equal(t, "商品", gotContractData.Product.Name)
 		assert.Equal(t, "100", gotContractData.Product.Price)
 		assert.NotZero(t, gotContractData.Product.CreatedAt)

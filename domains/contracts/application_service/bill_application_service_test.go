@@ -3,6 +3,8 @@ package application_service
 import (
 	"errors"
 	"github.com/golang/mock/gomock"
+	"github.com/mixmaru/my_contracts/core/application/products/create"
+	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service/interfaces/mock_interfaces"
 	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories"
@@ -14,7 +16,7 @@ import (
 )
 
 func TestBillApplicationService_ExecuteBilling(t *testing.T) {
-	productApp := NewProductApplicationService()
+	productCreateInteractor := create.NewProductCreateInteractor(db.NewProductRepository())
 	userApp := NewUserApplicationService()
 	contractApp := NewContractApplicationService()
 	billApp := NewBillApplicationService()
@@ -32,15 +34,15 @@ DELETE FROM right_to_use;
 		_, err = db.Exec(deleteQuery)
 		assert.NoError(t, err)
 		// 商品作成
-		product, validErrors, err := productApp.Register("商品", "1234")
+		productCreateResponse, err := productCreateInteractor.Handle(create.NewProductCreateUseCaseRequest("商品", "1234"))
 		assert.NoError(t, err)
-		assert.Len(t, validErrors, 0)
+		assert.Len(t, productCreateResponse.ValidationError, 0)
 		// user作成
 		user, validErrors, err := userApp.RegisterUserIndividual("請求実行テスト太郎")
 		assert.NoError(t, err)
 		assert.Len(t, validErrors, 0)
 		// 契約作成（使用権も自動的に作成される）（課金開始日は6/2からになる。）
-		_, validErrors, err = contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0))
+		_, validErrors, err = contractApp.Register(user.Id, productCreateResponse.ProductDto.Id, utils.CreateJstTime(2020, 6, 1, 0, 0, 0, 0))
 		assert.NoError(t, err)
 		assert.Len(t, validErrors, 0)
 

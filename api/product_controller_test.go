@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mixmaru/my_contracts/core/application/products"
+	"github.com/mixmaru/my_contracts/core/application/products/create"
+	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
 
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
 	"github.com/stretchr/testify/assert"
 )
@@ -108,16 +109,18 @@ func TestMain_CreateProduct(t *testing.T) {
 
 func TestMain_getProduct(t *testing.T) {
 	// 検証用データ登録
-	productAppService := application_service.NewProductApplicationService()
-	registeredProduct, validErrors, err := productAppService.Register("商品", "1000.001")
+	interactor := create.NewProductCreateInteractor(db.NewProductRepository())
+	//registeredResponse, validErrors, err := interactor.Handle("商品", "1000.001")
+	registeredResponse, err := interactor.Handle(create.NewProductCreateUseCaseRequest("商品", "1000.001"))
 	assert.NoError(t, err)
-	assert.Len(t, validErrors, 0)
+	assert.Len(t, registeredResponse.ValidationError, 0)
+	registeredProduct := registeredResponse.ProductDto
 
 	router := newRouter()
 
 	t.Run("商品IDを受け取って商品データを返す", func(t *testing.T) {
 		////// 実行
-		req := httptest.NewRequest("GET", fmt.Sprintf("/products/%v", registeredProduct.Id), nil)
+		req := httptest.NewRequest("GET", fmt.Sprintf("/products/%v", registeredResponse.ProductDto.Id), nil)
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
 
