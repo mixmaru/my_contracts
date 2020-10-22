@@ -31,9 +31,9 @@ func newRouter() *echo.Echo {
 	// 顧客情報取得
 	e.GET("/users/:id", getUser)
 	// 商品登録
-	e.POST("/products/", productController.CrateProduct)
+	e.POST("/products/", productController.Crate)
 	// 商品情報取得
-	e.GET("/products/:id", getProduct)
+	e.GET("/products/:id", productController.Get)
 	// 契約登録
 	e.POST("/contracts/", saveContract)
 	// 契約情報取得

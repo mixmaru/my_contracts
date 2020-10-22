@@ -3,15 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mixmaru/my_contracts/core/application/products"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
 
-	"github.com/mixmaru/my_contracts/core/application/products/create"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
 	"github.com/stretchr/testify/assert"
 )
@@ -39,7 +38,7 @@ func TestMain_CreateProduct(t *testing.T) {
 		////// 検証
 		assert.Equal(t, http.StatusCreated, rec.Code)
 		// jsonパース
-		var registeredProduct create.ProductDto
+		var registeredProduct products.ProductDto
 		err := json.Unmarshal(rec.Body.Bytes(), &registeredProduct)
 		assert.NoError(t, err)
 		assert.Equal(t, "商品", registeredProduct.Name)
@@ -123,7 +122,7 @@ func TestMain_getProduct(t *testing.T) {
 		router.ServeHTTP(rec, req)
 
 		// 保存したデータを取得
-		var gotProductData data_transfer_objects.ProductDto
+		var gotProductData products.ProductDto
 		err = json.Unmarshal(rec.Body.Bytes(), &gotProductData)
 		assert.NoError(t, err)
 
