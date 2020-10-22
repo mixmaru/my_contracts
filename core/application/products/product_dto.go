@@ -1,4 +1,4 @@
-package dto
+package products
 
 import (
 	"github.com/mixmaru/my_contracts/core/domain/models/product"

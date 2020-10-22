@@ -3,8 +3,6 @@ package create
 import (
 	"fmt"
 	"github.com/mixmaru/my_contracts/core/application/products"
-	"github.com/mixmaru/my_contracts/core/application/products/dto"
-
 	"github.com/mixmaru/my_contracts/core/domain/models/product"
 	"github.com/mixmaru/my_contracts/core/domain/validators"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
@@ -40,7 +38,7 @@ func (i *ProductCreateInteractor) Handle(request *ProductCreateUseCaseRequest) (
 		return nil, err
 	}
 	if len(validationErrors) > 0 {
-		response := NewProductCreateUseCaseResponse(dto.ProductDto{}, validationErrors)
+		response := NewProductCreateUseCaseResponse(products.ProductDto{}, validationErrors)
 		return response, nil
 	}
 
@@ -68,7 +66,7 @@ func (i *ProductCreateInteractor) Handle(request *ProductCreateUseCaseRequest) (
 	}
 
 	// dtoに詰める
-	dto := dto.NewProductDtoFromEntity(savedEntity)
+	dto := products.NewProductDtoFromEntity(savedEntity)
 
 	response := NewProductCreateUseCaseResponse(dto, validationErrors)
 	return response, nil

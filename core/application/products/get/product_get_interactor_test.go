@@ -1,8 +1,8 @@
 package get
 
 import (
+	"github.com/mixmaru/my_contracts/core/application/products"
 	"github.com/mixmaru/my_contracts/core/application/products/create"
-	"github.com/mixmaru/my_contracts/core/application/products/dto"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -31,7 +31,7 @@ func TestProductGetInteractor_Handle(t *testing.T) {
 	})
 }
 
-func createProduct() dto.ProductDto {
+func createProduct() products.ProductDto {
 	createInteractor := create.NewProductCreateInteractor(db.NewProductRepository())
 	response, err := createInteractor.Handle(create.NewProductCreateUseCaseRequest("商品", "2000"))
 	if err != nil || len(response.ValidationError) > 0 {

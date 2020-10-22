@@ -2,7 +2,6 @@ package get
 
 import (
 	"github.com/mixmaru/my_contracts/core/application/products"
-	"github.com/mixmaru/my_contracts/core/application/products/dto"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 )
 
@@ -30,11 +29,11 @@ func (p *ProductGetInteractor) Handle(request *ProductGetUseCaseRequest) (*Produ
 	}
 	if entity == nil {
 		// データがない
-		return NewProductGetUseCaseResponse(dto.ProductDto{}), nil
+		return NewProductGetUseCaseResponse(products.ProductDto{}), nil
 	}
 
 	// dtoにつめる
-	dto := dto.NewProductDtoFromEntity(entity)
+	dto := products.NewProductDtoFromEntity(entity)
 
 	// 返却
 	return NewProductGetUseCaseResponse(dto), nil

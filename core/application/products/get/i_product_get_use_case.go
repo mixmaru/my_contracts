@@ -1,6 +1,8 @@
 package get
 
-import "github.com/mixmaru/my_contracts/core/application/products/dto"
+import (
+	"github.com/mixmaru/my_contracts/core/application/products"
+)
 
 type IProductGetUesCase interface {
 	Handle(request *ProductGetUseCaseRequest) (*ProductGetUseCaseResponse, error)
@@ -17,10 +19,10 @@ func NewProductGetUseCaseRequest(id int) *ProductGetUseCaseRequest {
 }
 
 type ProductGetUseCaseResponse struct {
-	ProductDto dto.ProductDto
+	ProductDto products.ProductDto
 }
 
-func NewProductGetUseCaseResponse(productDto dto.ProductDto) *ProductGetUseCaseResponse {
+func NewProductGetUseCaseResponse(productDto products.ProductDto) *ProductGetUseCaseResponse {
 	return &ProductGetUseCaseResponse{
 		ProductDto: productDto,
 	}
