@@ -2,6 +2,7 @@ package create
 
 import (
 	"fmt"
+	"github.com/mixmaru/my_contracts/core/application/products"
 	"github.com/mixmaru/my_contracts/core/application/products/dto"
 
 	"github.com/mixmaru/my_contracts/core/domain/models/product"
@@ -12,10 +13,10 @@ import (
 )
 
 type ProductCreateInteractor struct {
-	productRepository IProductRepository
+	productRepository products.IProductRepository
 }
 
-func NewProductCreateInteractor(productRepository IProductRepository) *ProductCreateInteractor {
+func NewProductCreateInteractor(productRepository products.IProductRepository) *ProductCreateInteractor {
 	return &ProductCreateInteractor{
 		productRepository: productRepository,
 	}
