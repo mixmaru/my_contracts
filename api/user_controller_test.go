@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mixmaru/my_contracts/core/application/users"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +33,7 @@ func TestMain_saveUser(t *testing.T) {
 			////// 検証
 			assert.Equal(t, http.StatusCreated, rec.Code)
 			// jsonパース
-			var registeredUser data_transfer_objects.UserIndividualDto
+			var registeredUser users.UserIndividualDto
 			err := json.Unmarshal(rec.Body.Bytes(), &registeredUser)
 			assert.NoError(t, err)
 
@@ -223,6 +224,7 @@ func TestMain_getUser(t *testing.T) {
 			req := httptest.NewRequest("GET", fmt.Sprintf("/users/%v", savedIndividualUser.Id), nil)
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusOK, rec.Code)
 
 			// 検証
 			var loadedUser data_transfer_objects.UserIndividualDto

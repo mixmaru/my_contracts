@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mixmaru/my_contracts/core/application/products/create"
+	user_create "github.com/mixmaru/my_contracts/core/application/users/create"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 )
 
@@ -25,9 +26,10 @@ func newRouter() *echo.Echo {
 
 	// controller
 	productController := NewProductController(create.NewProductCreateInteractor(db.NewProductRepository()))
+	userController := NewUserController(user_create.NewUserIndividualCreateInteractor(db.NewUserRepository()))
 
 	// 顧客新規登録
-	e.POST("/users/", saveUser)
+	e.POST("/users/", userController.Save)
 	// 顧客情報取得
 	e.GET("/users/:id", getUser)
 	// 商品登録
