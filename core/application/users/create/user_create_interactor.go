@@ -5,6 +5,7 @@ import (
 	"github.com/mixmaru/my_contracts/core/application/users"
 	entities "github.com/mixmaru/my_contracts/core/domain/models/user"
 	"github.com/mixmaru/my_contracts/core/domain/validators"
+	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/mixmaru/my_contracts/domains/contracts/entities/values"
 	"github.com/pkg/errors"
 )
@@ -21,48 +22,48 @@ func (u *UserIndividualCreateInteractor) Handle(request *UserIndividualCreateUse
 	// 入力値バリデーション
 	validationErrors, err := userIndividualValidation(request.Name)
 	if err != nil {
-		return NewUserCreateUseCaseResponse(users.UserIndividualDto{}, nil), err
+		return NewUserIndividualCreateUseCaseResponse(users.UserIndividualDto{}, nil), err
 	}
 	if len(validationErrors) > 0 {
-		return NewUserCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), nil
+		return NewUserIndividualCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), nil
 	}
 
 	// エンティティ作成
 	userEntity, err := entities.NewUserIndividualEntity(request.Name)
 	if err != nil {
-		return NewUserCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), err
+		return NewUserIndividualCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), err
 	}
 
 	// トランザクション開始
 	dbMap, err := db.GetConnection()
 	if err != nil {
-		return NewUserCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), err
+		return NewUserIndividualCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), err
 	}
 	defer dbMap.Db.Close()
 	tran, err := dbMap.Begin()
 	if err != nil {
-		return NewUserCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), errors.Wrapf(err, "トランザクション開始失敗")
+		return NewUserIndividualCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), errors.Wrapf(err, "トランザクション開始失敗")
 	}
 
 	// リポジトリ使って保存
 	savedId, err := u.userRepository.SaveUserIndividual(userEntity, tran)
 	if err != nil {
-		return NewUserCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), err
+		return NewUserIndividualCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), err
 	}
 
 	// 保存データ再読込
 	savedUserEntity, err := u.userRepository.GetUserIndividualById(savedId, tran)
 	if err != nil {
-		return NewUserCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), err
+		return NewUserIndividualCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), err
 	}
 
 	// コミット
 	err = tran.Commit()
 	if err != nil {
-		return NewUserCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), errors.Wrapf(err, "コミット失敗")
+		return NewUserIndividualCreateUseCaseResponse(users.UserIndividualDto{}, validationErrors), errors.Wrapf(err, "コミット失敗")
 	}
 	userDto := users.NewUserIndividualDtoFromEntity(savedUserEntity)
-	return NewUserCreateUseCaseResponse(userDto, validationErrors), nil
+	return NewUserIndividualCreateUseCaseResponse(userDto, validationErrors), nil
 }
 
 func userIndividualValidation(name string) (validationErrors map[string][]string, err error) {

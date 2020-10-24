@@ -10,18 +10,18 @@ type UserIndividualCreateUseCaseRequest struct {
 	Name string
 }
 
-func NewUserCreateUseCaseRequest(name string) *UserIndividualCreateUseCaseRequest {
+func NewUserIndividualCreateUseCaseRequest(name string) *UserIndividualCreateUseCaseRequest {
 	return &UserIndividualCreateUseCaseRequest{Name: name}
 }
 
 type UserIndividualCreateUseCaseResponse struct {
-	UserDto         users.UserIndividualDto
-	ValidationError map[string][]string
+	UserDto          users.UserIndividualDto
+	ValidationErrors map[string][]string
 }
 
-func NewUserCreateUseCaseResponse(userDto users.UserIndividualDto, validationError map[string][]string) *UserIndividualCreateUseCaseResponse {
+func NewUserIndividualCreateUseCaseResponse(userDto users.UserIndividualDto, validationErrors map[string][]string) *UserIndividualCreateUseCaseResponse {
 	return &UserIndividualCreateUseCaseResponse{
-		UserDto:         userDto,
-		ValidationError: validationError,
+		UserDto:          userDto,
+		ValidationErrors: validationErrors,
 	}
 }
