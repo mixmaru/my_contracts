@@ -84,12 +84,12 @@ where u.id = $1
 			return nil, err
 		}
 		return retUser, nil
-	//case "corporation":
-	//	retUser, err := entities.NewUserCorporationEntityWithData(mapper.UserId, mapper.UserCorporationCorporationName.String, mapper.UserCorporationContractPersonName.String, mapper.UserCorporationPresidentName.String, mapper.UserCorporationCreatedAt.Time, mapper.UserCorporationUpdatedAt.Time)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	return retUser, nil
+	case "corporation":
+		retUser, err := entities.NewUserCorporationEntityWithData(mapper.UserId, mapper.UserCorporationCorporationName.String, mapper.UserCorporationContractPersonName.String, mapper.UserCorporationPresidentName.String, mapper.UserCorporationCreatedAt.Time, mapper.UserCorporationUpdatedAt.Time)
+		if err != nil {
+			return nil, err
+		}
+		return retUser, nil
 	default:
 		return nil, errors.Errorf("想定外のUserTypeが来た。mapper: %v", mapper)
 	}
@@ -147,27 +147,27 @@ func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporatio
 }
 
 // dbからid指定で法人顧客情報を取得する
-//func (r *UserRepository) getUserCorporationEntityById(id int, entity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
-//	// dbからデータ取得
-//	record := data_mappers.UserCorporationView{}
-//	query := "SELECT u.id, uc.corporation_name, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at " +
-//		"FROM users u " +
-//		"inner join users_corporation uc on u.id = uc.user_id " +
-//		"WHERE id = $1"
-//	noRow, err := r.selectOne(executor, &record, entity, query, id)
-//	if err != nil {
-//		return nil, err
-//	}
-//	if noRow {
-//		return nil, nil
-//	}
-//	return entity, nil
-//}
+func (r *UserRepository) getUserCorporationEntityById(id int, entity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
+	// dbからデータ取得
+	record := UserCorporationView{}
+	query := "SELECT u.id, uc.corporation_name, uc.contact_person_name, uc.president_name, u.created_at, u.updated_at " +
+		"FROM users u " +
+		"inner join users_corporation uc on u.id = uc.user_id " +
+		"WHERE id = $1"
+	noRow, err := r.selectOne(executor, &record, entity, query, id)
+	if err != nil {
+		return nil, err
+	}
+	if noRow {
+		return nil, nil
+	}
+	return entity, nil
+}
 
 // Idで法人顧客情報を取得する。データがなければnilを返す
-//func (r *UserRepository) GetUserCorporationById(id int, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
-//	return r.getUserCorporationEntityById(id, &entities.UserCorporationEntity{}, executor)
-//}
+func (r *UserRepository) GetUserCorporationById(id int, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
+	return r.getUserCorporationEntityById(id, &entities.UserCorporationEntity{}, executor)
+}
 
 type UserMapper struct {
 	Id int `db:"id"`
@@ -285,4 +285,23 @@ func NewUserCorporationMapperFromUserCorporationEntity(entity *entities.UserCorp
 			UpdatedAt: entity.UpdatedAt(),
 		},
 	}
+}
+
+type UserCorporationView struct {
+	UserMapper
+	CorporationName   string `db:"corporation_name"`
+	ContactPersonName string `db:"contact_person_name"`
+	PresidentName     string `db:"president_name"`
+}
+
+func (u *UserCorporationView) SetDataToEntity(entity interface{}) error {
+	userCorporationEntity, ok := entity.(*entities.UserCorporationEntity)
+	if !ok {
+		return errors.New(fmt.Sprintf("entityが*entities.UserCorporationEntityではない。%v", reflect.TypeOf(entity)))
+	}
+	err := userCorporationEntity.LoadData(u.Id, u.CorporationName, u.ContactPersonName, u.PresidentName, u.CreatedAt, u.UpdatedAt)
+	if err != nil {
+		return err
+	}
+	return nil
 }
