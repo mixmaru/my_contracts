@@ -1,4 +1,4 @@
-package entities
+package user
 
 import (
 	"github.com/mixmaru/my_contracts/domains/contracts/entities/values"
