@@ -3,10 +3,12 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/mixmaru/my_contracts/core/application/users/create"
+	"github.com/mixmaru/my_contracts/core/application/users/get"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
+	"strconv"
 )
 
 type UserController struct {
@@ -65,33 +67,33 @@ func (u *UserController) Save(c echo.Context) error {
 	}
 }
 
-//func getUser(c echo.Context) error {
-//	logger, err := my_logger.GetLogger()
-//	if err != nil {
-//		return err
-//	}
-//
-//	userId, err := strconv.Atoi(c.Param("id"))
-//	if err != nil {
-//		// idに変な値が渡された
-//		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
-//	}
-//
-//	// サービスインスタンス化
-//	userAppService := application_service.NewUserApplicationService()
-//	// データ取得
-//	user, err := userAppService.GetUserById(userId)
-//	if err != nil {
-//		logger.Sugar().Errorw("顧客データ取得に失敗。", "userId", userId, "err", err)
-//		c.Error(err)
-//		return err
-//	}
-//
-//	// データがない
-//	if user == nil {
-//		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
-//	}
-//
-//	// 返却
-//	return c.JSON(http.StatusOK, user)
-//}
+func (u *UserController) Get(c echo.Context) error {
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	userId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		// idに変な値が渡された
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+	}
+
+	// サービスインスタンス化
+	interactor := get.NewUserGetInteractor(db.NewUserRepository())
+	// データ取得
+	response, err := interactor.Handle(get.NewUserGetUseCaseRequest(userId))
+	if err != nil {
+		logger.Sugar().Errorw("顧客データ取得に失敗。", "userId", userId, "err", err)
+		c.Error(err)
+		return err
+	}
+
+	// データがない
+	if response.UserDto == nil {
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+	}
+
+	// 返却
+	return c.JSON(http.StatusOK, response.UserDto)
+}
