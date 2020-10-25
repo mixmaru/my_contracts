@@ -45,105 +45,55 @@ func TestUserApplicationService_RegisterUserIndividual(t *testing.T) {
 	})
 }
 
-//func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
-//	userApp := NewUserApplicationService()
-//	t.Run("会社名と担当者名と社長名を渡すと法人顧客データが登録できる", func(t *testing.T) {
-//		registeredUser, validErrs, err := userApp.RegisterUserCorporation("イケてる会社", "担当太郎", "社長太郎")
-//		assert.NoError(t, err)
-//		assert.Len(t, validErrs, 0)
-//
-//		assert.NotZero(t, registeredUser.Id)
-//		assert.Equal(t, "イケてる会社", registeredUser.CorporationName)
-//		assert.Equal(t, "担当太郎", registeredUser.ContactPersonName)
-//		assert.Equal(t, "社長太郎", registeredUser.PresidentName)
-//		assert.NotZero(t, registeredUser.CreatedAt)
-//		assert.NotZero(t, registeredUser.UpdatedAt)
-//	})
-//
-//	t.Run("バリデーションエラー　会社名と担当者名と社長名がから文字だったらバリデーションエラーが返る", func(t *testing.T) {
-//		_, validErrs, err := userApp.RegisterUserCorporation("", "", "")
-//		assert.NoError(t, err)
-//		expectValidErrs := map[string][]string{
-//			"corporation_name": []string{
-//				"空です",
-//			},
-//			"contact_person_name": []string{
-//				"空です",
-//			},
-//			"president_name": []string{
-//				"空です",
-//			},
-//		}
-//
-//		assert.Equal(t, expectValidErrs, validErrs)
-//	})
-//
-//	t.Run("バリデーションエラー　名前が50文字以上だったらバリデーションエラーメッセージが返る", func(t *testing.T) {
-//		_, validErrs, err := userApp.RegisterUserCorporation("000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445")
-//		assert.NoError(t, err)
-//		expectValidErrs := map[string][]string{
-//			"corporation_name": []string{
-//				"50文字より多いです",
-//			},
-//			"contact_person_name": []string{
-//				"50文字より多いです",
-//			},
-//			"president_name": []string{
-//				"50文字より多いです",
-//			},
-//		}
-//
-//		assert.Equal(t, expectValidErrs, validErrs)
-//	})
-//}
+func TestUserApplicationService_RegisterUserCorporation(t *testing.T) {
+	interactor := NewUserCorporationCreateInteractor(db.NewUserRepository())
+	t.Run("会社名と担当者名と社長名を渡すと法人顧客データが登録できる", func(t *testing.T) {
+		response, err := interactor.Handle(NewUserCorporationCreateUseCaseRequest("イケてる会社", "担当太郎", "社長太郎"))
+		assert.NoError(t, err)
+		assert.Len(t, response.ValidationErrors, 0)
 
-//func TestUserApplicationService_GetUserById(t *testing.T) {
-//	// 個人顧客と法人顧客データを登録
-//	interactor := NewUserApplicationService()
-//	individualDto, validErrors, err := interactor.RegisterUserIndividual("個人顧客取得テスト")
-//	assert.NoError(t, err)
-//	assert.Len(t, validErrors, 0)
-//	corporationDto, validErrors, err := interactor.RegisterUserCorporation("法人顧客会社名", "法人顧客取得テスト担当", "法人顧客取得テスト社長")
-//	assert.NoError(t, err)
-//	assert.Len(t, validErrors, 0)
-//
-//	t.Run("個人顧客", func(t *testing.T) {
-//		t.Run("データがある時はidでデータ取得ができる", func(t *testing.T) {
-//			user, err := interactor.GetUserById(individualDto.Id)
-//			assert.NoError(t, err)
-//			userDto, ok := user.(data_transfer_objects.UserIndividualDto)
-//			assert.True(t, ok)
-//			assert.NotZero(t, userDto.Id)
-//			assert.Equal(t, "個人顧客取得テスト", userDto.Name)
-//			assert.NotZero(t, userDto.CreatedAt)
-//			assert.NotZero(t, userDto.UpdatedAt)
-//		})
-//
-//		t.Run("データが無いときはnilが返る", func(t *testing.T) {
-//			user, err := interactor.GetUserById(-100)
-//			assert.NoError(t, err)
-//			assert.Nil(t, user)
-//		})
-//	})
-//
-//	t.Run("法人顧客", func(t *testing.T) {
-//		t.Run("データがある時はidでデータが取得できる", func(t *testing.T) {
-//			user, err := interactor.GetUserById(corporationDto.Id)
-//			assert.NoError(t, err)
-//			userDto, ok := user.(data_transfer_objects.UserCorporationDto)
-//			assert.True(t, ok)
-//			assert.NotZero(t, userDto.Id)
-//			assert.Equal(t, "法人顧客会社名", userDto.CorporationName)
-//			assert.Equal(t, "法人顧客取得テスト担当", userDto.ContactPersonName)
-//			assert.Equal(t, "法人顧客取得テスト社長", userDto.PresidentName)
-//			assert.NotZero(t, userDto.CreatedAt)
-//			assert.NotZero(t, userDto.UpdatedAt)
-//		})
-//
-//		t.Run("データが無いときはnilが返る", func(t *testing.T) {
-//			user, err := interactor.GetUserById(-100)
-//			assert.NoError(t, err)
-//			assert.Nil(t, user)
-//		})
-//	})
-//}
+		dto := response.UserDto
+		assert.NotZero(t, dto.Id)
+		assert.Equal(t, "イケてる会社", dto.CorporationName)
+		assert.Equal(t, "担当太郎", dto.ContactPersonName)
+		assert.Equal(t, "社長太郎", dto.PresidentName)
+		assert.NotZero(t, dto.CreatedAt)
+		assert.NotZero(t, dto.UpdatedAt)
+	})
+
+	t.Run("バリデーションエラー　会社名と担当者名と社長名がから文字だったらバリデーションエラーが返る", func(t *testing.T) {
+		response, err := interactor.Handle(NewUserCorporationCreateUseCaseRequest("", "", ""))
+		assert.NoError(t, err)
+		expectValidErrs := map[string][]string{
+			"corporation_name": []string{
+				"空です",
+			},
+			"contact_person_name": []string{
+				"空です",
+			},
+			"president_name": []string{
+				"空です",
+			},
+		}
+
+		assert.Equal(t, expectValidErrs, response.ValidationErrors)
+	})
+
+	t.Run("バリデーションエラー　名前が50文字以上だったらバリデーションエラーメッセージが返る", func(t *testing.T) {
+		response, err := interactor.Handle(NewUserCorporationCreateUseCaseRequest("000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445", "000000000011111111112222222222333333333344444444445"))
+		assert.NoError(t, err)
+		expectValidErrs := map[string][]string{
+			"corporation_name": []string{
+				"50文字より多いです",
+			},
+			"contact_person_name": []string{
+				"50文字より多いです",
+			},
+			"president_name": []string{
+				"50文字より多いです",
+			},
+		}
+
+		assert.Equal(t, expectValidErrs, response.ValidationErrors)
+	})
+}

@@ -35,7 +35,7 @@ func GetConnection() (*gorp.DbMap, error) {
 	// specifying that the Id property is an auto incrementing PK
 	dbmap.AddTableWithName(UserMapper{}, "users").SetKeys(true, "Id")
 	dbmap.AddTableWithName(UserIndividualMapper{}, "users_individual")
-	//dbmap.AddTableWithName(data_mappers.UserCorporationMapper{}, "users_corporation")
+	dbmap.AddTableWithName(UserCorporationMapper{}, "users_corporation")
 
 	dbmap.AddTableWithName(ProductMapper{}, "products").SetKeys(true, "Id")
 	dbmap.AddTableWithName(ProductPriceMonthlyMapper{}, "product_price_monthlies")
