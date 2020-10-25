@@ -5,7 +5,6 @@ import (
 	"github.com/mixmaru/my_contracts/core/application/users/create"
 	"github.com/mixmaru/my_contracts/core/application/users/get"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
 	"strconv"
@@ -42,21 +41,21 @@ func (u *UserController) Save(c echo.Context) error {
 		}
 		return c.JSON(http.StatusCreated, response.UserDto)
 	case "corporation":
-		userAppService := application_service.NewUserApplicationService()
 		corporationName := c.FormValue("corporation_name")
 		contactName := c.FormValue("contact_person_name")
 		presidentName := c.FormValue("president_name")
 
-		user, validErrs, err := userAppService.RegisterUserCorporation(corporationName, contactName, presidentName)
+		interactor := create.NewUserCorporationCreateInteractor(db.NewUserRepository())
+		response, err := interactor.Handle(create.NewUserCorporationCreateUseCaseRequest(corporationName, contactName, presidentName))
 		if err != nil {
 			logger.Sugar().Errorw("法人顧客データ登録に失敗。", "corporationName", corporationName, "contactName", contactName, "presidentName", presidentName, "err", err)
 			c.Error(err)
 			return err
 		}
-		if len(validErrs) > 0 {
-			return c.JSON(http.StatusBadRequest, validErrs)
+		if len(response.ValidationErrors) > 0 {
+			return c.JSON(http.StatusBadRequest, response.ValidationErrors)
 		}
-		return c.JSON(http.StatusCreated, user)
+		return c.JSON(http.StatusCreated, response.UserDto)
 	default:
 		validErrorMessage := map[string][]string{
 			"type": []string{
