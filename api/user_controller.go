@@ -28,8 +28,8 @@ func (u *UserController) Save(c echo.Context) error {
 	switch userType {
 	case "individual":
 		name := c.FormValue("name")
-		intaractor := create.NewUserIndividualCreateInteractor(db.NewUserRepository())
-		response, err := intaractor.Handle(create.NewUserIndividualCreateUseCaseRequest(name))
+		interactor := create.NewUserIndividualCreateInteractor(db.NewUserRepository())
+		response, err := interactor.Handle(create.NewUserIndividualCreateUseCaseRequest(name))
 		if err != nil {
 			logger.Sugar().Errorw("個人顧客データ登録に失敗。", "name", name, "err", err)
 			c.Error(err)
