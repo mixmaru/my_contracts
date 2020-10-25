@@ -11,6 +11,6 @@ type IUserRepository interface {
 	SaveUserIndividual(userEntity *entity.UserIndividualEntity, executor gorp.SqlExecutor) (savedId int, err error)
 	GetUserIndividualById(id int, executor gorp.SqlExecutor) (*entity.UserIndividualEntity, error)
 
-	//SaveUserCorporation(userEntity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (savedId int, err error)
-	//GetUserCorporationById(id int, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error)
+	SaveUserCorporation(userEntity *entity.UserCorporationEntity, executor gorp.SqlExecutor) (savedId int, err error)
+	GetUserCorporationById(id int, executor gorp.SqlExecutor) (*entity.UserCorporationEntity, error)
 }
