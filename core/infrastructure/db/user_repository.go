@@ -122,29 +122,29 @@ func (r *UserRepository) getUserIndividualEntityById(id int, entity *entities.Us
 }
 
 // 法人顧客エンティティを保存する
-//func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (savedId int, err error) {
-//	// userRecord作成
-//	userRecord := data_mappers.NewUserMapperFromUserCorporationEntity(userEntity)
-//
-//	// 保存
-//	err = executor.Insert(userRecord)
-//	if err != nil {
-//		return 0, errors.WithStack(err)
-//	}
-//
-//	// userCorporationRecord作成
-//	userCorporationRecord := data_mappers.NewUserCorporationMapperFromUserCorporationEntity(userEntity)
-//	userCorporationRecord.UserId = userRecord.Id
-//
-//	// 保存
-//	err = executor.Insert(userCorporationRecord)
-//	if err != nil {
-//		return 0, errors.WithStack(err)
-//	}
-//
-//	return userRecord.Id, nil
-//
-//}
+func (r *UserRepository) SaveUserCorporation(userEntity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (savedId int, err error) {
+	// userRecord作成
+	userRecord := NewUserMapperFromUserCorporationEntity(userEntity)
+
+	// 保存
+	err = executor.Insert(userRecord)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+
+	// userCorporationRecord作成
+	userCorporationRecord := NewUserCorporationMapperFromUserCorporationEntity(userEntity)
+	userCorporationRecord.UserId = userRecord.Id
+
+	// 保存
+	err = executor.Insert(userCorporationRecord)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+
+	return userRecord.Id, nil
+
+}
 
 // dbからid指定で法人顧客情報を取得する
 //func (r *UserRepository) getUserCorporationEntityById(id int, entity *entities.UserCorporationEntity, executor gorp.SqlExecutor) (*entities.UserCorporationEntity, error) {
@@ -195,15 +195,15 @@ func NewUserMapperFromUserIndividualEntity(userIndividual *entities.UserIndividu
 }
 
 // UserCorporationEntityからデータを読み込んでUser(DBマッピング用)を作成する
-//func NewUserMapperFromUserCorporationEntity(userCorporation *entities.UserCorporationEntity) *UserMapper {
-//	return &UserMapper{
-//		Id: userCorporation.Id(),
-//		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
-//			CreatedAt: userCorporation.CreatedAt(),
-//			UpdatedAt: userCorporation.UpdatedAt(),
-//		},
-//	}
-//}
+func NewUserMapperFromUserCorporationEntity(userCorporation *entities.UserCorporationEntity) *UserMapper {
+	return &UserMapper{
+		Id: userCorporation.Id(),
+		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
+			CreatedAt: userCorporation.CreatedAt(),
+			UpdatedAt: userCorporation.UpdatedAt(),
+		},
+	}
+}
 
 type UserIndividualMapper struct {
 	UserId int    `db:"user_id"`
@@ -263,4 +263,26 @@ func (u *UserIndividualView) SetDataToEntity(entity interface{}) error {
 		return err
 	}
 	return nil
+}
+
+type UserCorporationMapper struct {
+	UserId            int    `db:"user_id"`
+	ContactParsonName string `db:"contact_person_name"`
+	PresidentName     string `db:"president_name"`
+	CorporationName   string `db:"corporation_name"`
+	CreatedAtUpdatedAtMapper
+}
+
+// UserIndividualEntity Entityからデータを読み込んでUserIndividual(DBマッピング用)を作成する
+func NewUserCorporationMapperFromUserCorporationEntity(entity *entities.UserCorporationEntity) *UserCorporationMapper {
+	return &UserCorporationMapper{
+		UserId:            entity.Id(),
+		CorporationName:   entity.CorporationName(),
+		ContactParsonName: entity.ContactPersonName(),
+		PresidentName:     entity.PresidentName(),
+		CreatedAtUpdatedAtMapper: CreatedAtUpdatedAtMapper{
+			CreatedAt: entity.CreatedAt(),
+			UpdatedAt: entity.UpdatedAt(),
+		},
+	}
 }

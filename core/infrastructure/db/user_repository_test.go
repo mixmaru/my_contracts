@@ -131,22 +131,22 @@ func TestUserRepository_GetUserIndividualById(t *testing.T) {
 //		assert.Nil(t, result)
 //	})
 //}
-//
-//func TestUserRepository_SaveUserCorporation(t *testing.T) {
-//	db, err := db_connection.GetConnection()
-//	assert.NoError(t, err)
-//	defer db.Db.Close()
-//
-//	// 保存するデータ作成
-//	user, err := entities.NewUserCorporationEntity("イケてる会社", "担当太郎", "社長次郎")
-//	assert.NoError(t, err)
-//
-//	// 保存実行
-//	repo := NewUserRepository()
-//	_, err = repo.SaveUserCorporation(user, db)
-//	assert.NoError(t, err)
-//}
-//
+
+func TestUserRepository_SaveUserCorporation(t *testing.T) {
+	db, err := GetConnection()
+	assert.NoError(t, err)
+	defer db.Db.Close()
+
+	// 保存するデータ作成
+	user, err := entities.NewUserCorporationEntity("イケてる会社", "担当太郎", "社長次郎")
+	assert.NoError(t, err)
+
+	// 保存実行
+	repo := NewUserRepository()
+	_, err = repo.SaveUserCorporation(user, db)
+	assert.NoError(t, err)
+}
+
 //func TestUserRepository_getUserCorporationViewById(t *testing.T) {
 //	// db接続
 //	dbMap, err := db_connection.GetConnection()
