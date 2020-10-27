@@ -131,7 +131,7 @@ func TestContractEntity_ArchiveRightToUseById(t *testing.T) {
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 		[]*RightToUseEntity{
-			newRightToUseEntityWithData(
+			NewRightToUseEntityWithData(
 				4,
 				utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 				utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
@@ -139,7 +139,7 @@ func TestContractEntity_ArchiveRightToUseById(t *testing.T) {
 				utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 				utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 			),
-			newRightToUseEntityWithData(
+			NewRightToUseEntityWithData(
 				5,
 				utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
 				utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0),
@@ -180,7 +180,7 @@ func TestContractEntity_ArchiveRightToUseByValidTo(t *testing.T) {
 			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 			[]*RightToUseEntity{
-				newRightToUseEntityWithData(
+				NewRightToUseEntityWithData(
 					4,
 					utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 					utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
@@ -188,7 +188,7 @@ func TestContractEntity_ArchiveRightToUseByValidTo(t *testing.T) {
 					utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 					utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 				),
-				newRightToUseEntityWithData(
+				NewRightToUseEntityWithData(
 					5,
 					utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
 					utils.CreateJstTime(2020, 3, 1, 0, 0, 0, 0),

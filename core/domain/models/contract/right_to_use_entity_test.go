@@ -25,7 +25,7 @@ func TestRightToUseEntity_NewRightToUseEntity(t *testing.T) {
 func TestRightToUseEntity_NewRightToUseEntityWithData(t *testing.T) {
 	t.Run("すべての要素データを読み込ませてインスタンス化する", func(t *testing.T) {
 		// 実行
-		entity := newRightToUseEntityWithData(
+		entity := NewRightToUseEntityWithData(
 			1,
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
@@ -72,7 +72,7 @@ func TestRightToUseEntity_LoadData(t *testing.T) {
 func TestRightToUseEntity_WasBilling(t *testing.T) {
 	t.Run("請求済ならtrueが返る", func(t *testing.T) {
 		////// 準備
-		entity := newRightToUseEntityWithData(
+		entity := NewRightToUseEntityWithData(
 			1,
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
@@ -87,7 +87,7 @@ func TestRightToUseEntity_WasBilling(t *testing.T) {
 
 	t.Run("未請求ならfalseが返る", func(t *testing.T) {
 		////// 準備
-		entity := newRightToUseEntityWithData(
+		entity := NewRightToUseEntityWithData(
 			1,
 			time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),

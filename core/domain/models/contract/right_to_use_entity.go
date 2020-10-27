@@ -51,7 +51,7 @@ func (r *RightToUseEntity) WasBilling() bool {
 	}
 }
 
-func newRightToUseEntityWithData(id int, validFrom, validTo time.Time, billDetailId int, createdAt, updatedAt time.Time) *RightToUseEntity {
+func NewRightToUseEntityWithData(id int, validFrom, validTo time.Time, billDetailId int, createdAt, updatedAt time.Time) *RightToUseEntity {
 	entity := &RightToUseEntity{}
 	entity.LoadData(id, validFrom, validTo, billDetailId, createdAt, updatedAt)
 	return entity
