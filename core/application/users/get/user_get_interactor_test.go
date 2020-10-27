@@ -11,18 +11,19 @@ import (
 func TestUserGetInteractor_GetUserById(t *testing.T) {
 	// 個人顧客と法人顧客データを登録
 	userRep := db.NewUserRepository()
-	createInteractor := create.NewUserIndividualCreateInteractor(userRep)
-	createResponse, err := createInteractor.Handle(create.NewUserIndividualCreateUseCaseRequest("個人顧客取得テスト"))
+	createIndividualInteractor := create.NewUserIndividualCreateInteractor(userRep)
+	createIndividualResponse, err := createIndividualInteractor.Handle(create.NewUserIndividualCreateUseCaseRequest("個人顧客取得テスト"))
 	assert.NoError(t, err)
-	assert.Len(t, createResponse.ValidationErrors, 0)
-	//corporationDto, validErrors, err := createInteractor.RegisterUserCorporation("法人顧客会社名", "法人顧客取得テスト担当", "法人顧客取得テスト社長")
-	//assert.NoError(t, err)
-	//assert.Len(t, validErrors, 0)
+	assert.Len(t, createIndividualResponse.ValidationErrors, 0)
+	createCorporationInteractor := create.NewUserCorporationCreateInteractor(userRep)
+	createCorporationResponse, err := createCorporationInteractor.Handle(create.NewUserCorporationCreateUseCaseRequest("法人顧客会社名", "法人顧客取得テスト担当", "法人顧客取得テスト社長"))
+	assert.NoError(t, err)
+	assert.Len(t, createCorporationResponse.ValidationErrors, 0)
 
 	t.Run("個人顧客", func(t *testing.T) {
 		getInteractor := NewUserGetInteractor(userRep)
 		t.Run("データがある時はidでデータ取得ができる", func(t *testing.T) {
-			response, err := getInteractor.Handle(NewUserGetUseCaseRequest(createResponse.UserDto.Id))
+			response, err := getInteractor.Handle(NewUserGetUseCaseRequest(createIndividualResponse.UserDto.Id))
 			assert.NoError(t, err)
 			userDto, ok := response.UserDto.(users.UserIndividualDto)
 			assert.True(t, ok)
@@ -39,24 +40,25 @@ func TestUserGetInteractor_GetUserById(t *testing.T) {
 		})
 	})
 
-	//t.Run("法人顧客", func(t *testing.T) {
-	//	t.Run("データがある時はidでデータが取得できる", func(t *testing.T) {
-	//		user, err := createInteractor.GetUserById(corporationDto.Id)
-	//		assert.NoError(t, err)
-	//		userDto, ok := user.(data_transfer_objects.UserCorporationDto)
-	//		assert.True(t, ok)
-	//		assert.NotZero(t, userDto.Id)
-	//		assert.Equal(t, "法人顧客会社名", userDto.CorporationName)
-	//		assert.Equal(t, "法人顧客取得テスト担当", userDto.ContactPersonName)
-	//		assert.Equal(t, "法人顧客取得テスト社長", userDto.PresidentName)
-	//		assert.NotZero(t, userDto.CreatedAt)
-	//		assert.NotZero(t, userDto.UpdatedAt)
-	//	})
-	//
-	//	t.Run("データが無いときはnilが返る", func(t *testing.T) {
-	//		user, err := createInteractor.GetUserById(-100)
-	//		assert.NoError(t, err)
-	//		assert.Nil(t, user)
-	//	})
-	//})
+	t.Run("法人顧客", func(t *testing.T) {
+		getInteractor := NewUserGetInteractor(userRep)
+		t.Run("データがある時はidでデータが取得できる", func(t *testing.T) {
+			response, err := getInteractor.Handle(NewUserGetUseCaseRequest(createCorporationResponse.UserDto.Id))
+			assert.NoError(t, err)
+			userDto, ok := response.UserDto.(users.UserCorporationDto)
+			assert.True(t, ok)
+			assert.NotZero(t, userDto.Id)
+			assert.Equal(t, "法人顧客会社名", userDto.CorporationName)
+			assert.Equal(t, "法人顧客取得テスト担当", userDto.ContactPersonName)
+			assert.Equal(t, "法人顧客取得テスト社長", userDto.PresidentName)
+			assert.NotZero(t, userDto.CreatedAt)
+			assert.NotZero(t, userDto.UpdatedAt)
+		})
+
+		t.Run("データが無いときはnilが返る", func(t *testing.T) {
+			response, err := getInteractor.Handle(NewUserGetUseCaseRequest(-100))
+			assert.NoError(t, err)
+			assert.Nil(t, response.UserDto)
+		})
+	})
 }

@@ -38,9 +38,9 @@ func (u *UserGetInteractor) Handle(request *UserGetUseCaseRequest) (*UserGetUseC
 	case *entities2.UserIndividualEntity:
 		response.UserDto = users.NewUserIndividualDtoFromEntity(gotUser.(*entities2.UserIndividualEntity))
 		return response, nil
-	//case *entities.UserCorporationEntity:
-	//	userDto := data_transfer_objects.NewUserCorporationDtoFromEntity(gotUser.(*entities.UserCorporationEntity))
-	//	return userDto, nil
+	case *entities2.UserCorporationEntity:
+		response.UserDto = users.NewUserCorporationDtoFromEntity(gotUser.(*entities2.UserCorporationEntity))
+		return response, nil
 	default:
 		return nil, errors.Errorf("考慮していないtypeが来た。type: %T, userId: %v", gotUser, request.UserId)
 	}
