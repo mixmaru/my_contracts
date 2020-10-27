@@ -2,7 +2,7 @@ package contract
 
 import "time"
 
-type rightToUseEntity struct {
+type RightToUseEntity struct {
 	id           int
 	validFrom    time.Time
 	validTo      time.Time
@@ -11,39 +11,39 @@ type rightToUseEntity struct {
 	updatedAt    time.Time
 }
 
-func newRightToUseEntity(validFrom, validTo time.Time) *rightToUseEntity {
-	return &rightToUseEntity{
+func NewRightToUseEntity(validFrom, validTo time.Time) *RightToUseEntity {
+	return &RightToUseEntity{
 		validFrom: validFrom,
 		validTo:   validTo,
 	}
 }
 
-func (r *rightToUseEntity) Id() int {
+func (r *RightToUseEntity) Id() int {
 	return r.id
 }
 
-func (r *rightToUseEntity) ValidFrom() time.Time {
+func (r *RightToUseEntity) ValidFrom() time.Time {
 	return r.validFrom
 }
 
-func (r *rightToUseEntity) ValidTo() time.Time {
+func (r *RightToUseEntity) ValidTo() time.Time {
 	return r.validTo
 }
 
-func (r *rightToUseEntity) BillDetailId() int {
+func (r *RightToUseEntity) BillDetailId() int {
 	return r.billDetailId
 }
 
-func (r *rightToUseEntity) CreatedAt() time.Time {
+func (r *RightToUseEntity) CreatedAt() time.Time {
 	return r.createdAt
 }
 
-func (r *rightToUseEntity) UpdatedAt() time.Time {
+func (r *RightToUseEntity) UpdatedAt() time.Time {
 	return r.updatedAt
 }
 
 // 請求済かどうかを返す
-func (r *rightToUseEntity) WasBilling() bool {
+func (r *RightToUseEntity) WasBilling() bool {
 	if r.billDetailId == 0 {
 		return false
 	} else {
@@ -51,13 +51,13 @@ func (r *rightToUseEntity) WasBilling() bool {
 	}
 }
 
-func newRightToUseEntityWithData(id int, validFrom, validTo time.Time, billDetailId int, createdAt, updatedAt time.Time) *rightToUseEntity {
-	entity := &rightToUseEntity{}
+func newRightToUseEntityWithData(id int, validFrom, validTo time.Time, billDetailId int, createdAt, updatedAt time.Time) *RightToUseEntity {
+	entity := &RightToUseEntity{}
 	entity.LoadData(id, validFrom, validTo, billDetailId, createdAt, updatedAt)
 	return entity
 }
 
-func (r *rightToUseEntity) LoadData(id int, validFrom, validTo time.Time, billDetailId int, createdAt, updatedAt time.Time) {
+func (r *RightToUseEntity) LoadData(id int, validFrom, validTo time.Time, billDetailId int, createdAt, updatedAt time.Time) {
 	r.id = id
 	r.validFrom = validFrom
 	r.validTo = validTo

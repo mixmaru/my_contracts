@@ -9,7 +9,7 @@ import (
 
 func TestRightToUseEntity_NewRightToUseEntity(t *testing.T) {
 	t.Run("契約Entityと利用権開始日時を渡すと利用権Entityがインスタンス化できる", func(t *testing.T) {
-		rightToUseEntity := newRightToUseEntity(
+		rightToUseEntity := NewRightToUseEntity(
 			utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0),
 			utils.CreateJstTime(2020, 2, 2, 0, 0, 0, 0),
 		)
@@ -47,7 +47,7 @@ func TestRightToUseEntity_NewRightToUseEntityWithData(t *testing.T) {
 func TestRightToUseEntity_LoadData(t *testing.T) {
 	t.Run("要素データを読み込ませて中身を上書きできる", func(t *testing.T) {
 		// 準備
-		entity := newRightToUseEntity(time.Time{}, time.Time{})
+		entity := NewRightToUseEntity(time.Time{}, time.Time{})
 
 		// 実行
 		entity.LoadData(

@@ -10,12 +10,12 @@ import (
 // UserIndividualのインスタンス化をテスト
 func TestContractEntity_NewContractEntity(t *testing.T) {
 	// インスタンス化
-	rightToUses := make([]*rightToUseEntity, 0, 2)
-	rightToUses = append(rightToUses, newRightToUseEntity(
+	rightToUses := make([]*RightToUseEntity, 0, 2)
+	rightToUses = append(rightToUses, NewRightToUseEntity(
 		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
 	))
-	rightToUses = append(rightToUses, newRightToUseEntity(
+	rightToUses = append(rightToUses, NewRightToUseEntity(
 		time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2020, 3, 1, 0, 0, 0, 0, time.UTC),
 	))
@@ -48,7 +48,7 @@ func TestContractEntity_NewContractEntityWithData(t *testing.T) {
 	billingStartDate := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	createdAt := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	updatedAt := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
-	entity, err := NewContractEntityWithData(1, 2, 3, contractDate, billingStartDate, createdAt, updatedAt, []*rightToUseEntity{})
+	entity, err := NewContractEntityWithData(1, 2, 3, contractDate, billingStartDate, createdAt, updatedAt, []*RightToUseEntity{})
 	assert.NoError(t, err)
 
 	assert.Equal(t, 1, entity.Id())
@@ -77,7 +77,7 @@ func TestContractEntity_LoadData(t *testing.T) {
 			billingStartDate,
 			createdAt,
 			updateAt,
-			[]*rightToUseEntity{},
+			[]*RightToUseEntity{},
 		)
 		assert.NoError(t, err)
 
@@ -101,7 +101,7 @@ func TestContractEntity_LastBillingStartDate(t *testing.T) {
 		utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0),
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
-		[]*rightToUseEntity{},
+		[]*RightToUseEntity{},
 	)
 	assert.NoError(t, err)
 
@@ -130,7 +130,7 @@ func TestContractEntity_ArchiveRightToUseById(t *testing.T) {
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 		utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
-		[]*rightToUseEntity{
+		[]*RightToUseEntity{
 			newRightToUseEntityWithData(
 				4,
 				utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
@@ -179,7 +179,7 @@ func TestContractEntity_ArchiveRightToUseByValidTo(t *testing.T) {
 			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
 			utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
-			[]*rightToUseEntity{
+			[]*RightToUseEntity{
 				newRightToUseEntityWithData(
 					4,
 					utils.CreateJstTime(2020, 1, 1, 0, 0, 0, 0),
