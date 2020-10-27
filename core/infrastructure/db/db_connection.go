@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"github.com/mixmaru/my_contracts/domains/contracts/repositories/data_mappers"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -40,13 +41,13 @@ func GetConnection() (*gorp.DbMap, error) {
 	dbmap.AddTableWithName(ProductMapper{}, "products").SetKeys(true, "Id")
 	dbmap.AddTableWithName(ProductPriceMonthlyMapper{}, "product_price_monthlies")
 
-	//dbmap.AddTableWithName(data_mappers.ContractMapper{}, "contracts").SetKeys(true, "Id")
-	//dbmap.AddTableWithName(data_mappers.RightToUseMapper{}, "right_to_use").SetKeys(true, "Id")
-	//dbmap.AddTableWithName(data_mappers.RightToUseActiveMapper{}, "right_to_use_active").SetKeys(false, "RightToUseId")
-	//dbmap.AddTableWithName(data_mappers.RightToUseHistoryMapper{}, "right_to_use_history").SetKeys(false, "RightToUseId")
-	//
-	//dbmap.AddTableWithName(data_mappers.BillMapper{}, "bills").SetKeys(true, "Id")
-	//dbmap.AddTableWithName(data_mappers.BillDetailMapper{}, "bill_details").SetKeys(true, "Id")
+	dbmap.AddTableWithName(ContractMapper{}, "contracts").SetKeys(true, "Id")
+	dbmap.AddTableWithName(RightToUseMapper{}, "right_to_use").SetKeys(true, "Id")
+	dbmap.AddTableWithName(RightToUseActiveMapper{}, "right_to_use_active").SetKeys(false, "RightToUseId")
+	dbmap.AddTableWithName(RightToUseHistoryMapper{}, "right_to_use_history").SetKeys(false, "RightToUseId")
+
+	dbmap.AddTableWithName(data_mappers.BillMapper{}, "bills").SetKeys(true, "Id")
+	dbmap.AddTableWithName(data_mappers.BillDetailMapper{}, "bill_details").SetKeys(true, "Id")
 	return dbmap, nil
 }
 
