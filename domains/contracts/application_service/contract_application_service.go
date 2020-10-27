@@ -98,7 +98,7 @@ func (c *ContractApplicationService) GetById(id int) (contractDto data_transfer_
 	case *entities.UserCorporationEntity:
 		userDto = data_transfer_objects.NewUserCorporationDtoFromEntity(userEntity.(*entities.UserCorporationEntity))
 	default:
-		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, errors.Errorf("意図しないUser型が来た。userEntity: %t", userEntity)
+		return data_transfer_objects.ContractDto{}, data_transfer_objects.ProductDto{}, nil, errors.Errorf("意図しないUser型が来た。userEntity: %T", userEntity)
 	}
 
 	// 返却

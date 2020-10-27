@@ -18,7 +18,7 @@ type ContractMapper struct {
 func (c *ContractMapper) SetDataToEntity(entity interface{}) error {
 	value, ok := entity.(*entities.ContractEntity)
 	if !ok {
-		return errors.Errorf("*entities.ContractEntityではないものが渡された。entity: %t", entity)
+		return errors.Errorf("*entities.ContractEntityではないものが渡された。entity: %T", entity)
 	}
 	err := value.LoadData(
 		c.Id,

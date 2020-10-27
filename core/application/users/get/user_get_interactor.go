@@ -42,6 +42,6 @@ func (u *UserGetInteractor) Handle(request *UserGetUseCaseRequest) (*UserGetUseC
 	//	userDto := data_transfer_objects.NewUserCorporationDtoFromEntity(gotUser.(*entities.UserCorporationEntity))
 	//	return userDto, nil
 	default:
-		return nil, errors.Errorf("考慮していないtypeが来た。type: %t, userId: %v", gotUser, request.UserId)
+		return nil, errors.Errorf("考慮していないtypeが来た。type: %T, userId: %v", gotUser, request.UserId)
 	}
 }

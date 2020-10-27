@@ -38,7 +38,7 @@ func (v *CorporationNameValue) Value() string {
 func (v CorporationNameValue) Validate(value interface{}) (validErrors []int, err error) {
 	name, ok := value.(string)
 	if !ok {
-		return nil, errors.Errorf("valueをstring型にできませんでした。value: %t", value)
+		return nil, errors.Errorf("valueをstring型にできませんでした。value: %T", value)
 	}
 	return v.corporationNameValidate(name), nil
 }

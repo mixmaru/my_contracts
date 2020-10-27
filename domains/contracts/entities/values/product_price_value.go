@@ -43,7 +43,7 @@ func (v *ProductPriceValue) Value() decimal.Decimal {
 func (v ProductPriceValue) Validate(value interface{}) (validErrors []int, err error) {
 	price, ok := value.(string)
 	if !ok {
-		return nil, errors.Errorf("valueをstring型にできませんでした。value: %t", value)
+		return nil, errors.Errorf("valueをstring型にできませんでした。value: %T", value)
 	}
 	return v.productPriceValidate(price)
 }

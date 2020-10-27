@@ -18,7 +18,7 @@ type BillDetailMapper struct {
 func (b *BillDetailMapper) SetDataToEntity(entity interface{}) error {
 	value, ok := entity.(*entities.BillDetailEntity)
 	if !ok {
-		return errors.Errorf("*entities.BillDetailEntityではないものが渡された。entity: %t", entity)
+		return errors.Errorf("*entities.BillDetailEntityではないものが渡された。entity: %T", entity)
 	}
 	value.LoadData(
 		b.Id,

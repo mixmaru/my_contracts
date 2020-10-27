@@ -40,7 +40,7 @@ func (v *ProductNameValue) Value() string {
 func (v ProductNameValue) Validate(value interface{}) (validErrors []int, err error) {
 	name, ok := value.(string)
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("valueがstring型にできませんでした。value: %t", value))
+		return nil, errors.New(fmt.Sprintf("valueがstring型にできませんでした。value: %T", value))
 	}
 
 	if validators.IsEmptyString(name) {

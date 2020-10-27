@@ -260,6 +260,6 @@ func (s *UserApplicationService) GetUserById(userId int) (usrDto interface{}, er
 		userDto := data_transfer_objects.NewUserCorporationDtoFromEntity(gotUser.(*entities.UserCorporationEntity))
 		return userDto, nil
 	default:
-		return nil, errors.Errorf("考慮していないtypeが来た。type: %t, userId: %v", gotUser, userId)
+		return nil, errors.Errorf("考慮していないtypeが来た。type: %T, userId: %v", gotUser, userId)
 	}
 }

@@ -39,7 +39,7 @@ func (v *ContactPersonNameValue) Value() string {
 func (v ContactPersonNameValue) Validate(value interface{}) (validErrors []int, err error) {
 	name, ok := value.(string)
 	if !ok {
-		return nil, errors.Errorf("valueをstring型にできませんでした。%t", value)
+		return nil, errors.Errorf("valueをstring型にできませんでした。%T", value)
 	}
 	return v.contactPersonNameValidate(name), nil
 }
