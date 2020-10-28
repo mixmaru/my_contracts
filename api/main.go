@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	create2 "github.com/mixmaru/my_contracts/core/application/contracts/create"
 	"github.com/mixmaru/my_contracts/core/application/products/create"
 	user_create "github.com/mixmaru/my_contracts/core/application/users/create"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
@@ -27,6 +28,10 @@ func newRouter() *echo.Echo {
 	// controller
 	productController := NewProductController(create.NewProductCreateInteractor(db.NewProductRepository()))
 	userController := NewUserController(user_create.NewUserIndividualCreateInteractor(db.NewUserRepository()))
+	contractController := NewContractController(
+		create2.NewContractCreateInteractor(
+			db.NewUserRepository(), db.NewProductRepository(), db.NewContractRepository()),
+	)
 
 	// 顧客新規登録
 	e.POST("/users/", userController.Save)
@@ -37,7 +42,7 @@ func newRouter() *echo.Echo {
 	// 商品情報取得
 	e.GET("/products/:id", productController.Get)
 	// 契約登録
-	e.POST("/contracts/", saveContract)
+	e.POST("/contracts/", contractController.CreateContract)
 	// 契約情報取得
 	e.GET("/contracts/:id", getContract)
 	// 請求実行バッチ

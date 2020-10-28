@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mixmaru/my_contracts/core/application/contracts"
 	"github.com/mixmaru/my_contracts/core/application/products/create"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -46,7 +46,7 @@ func TestMain_saveContract(t *testing.T) {
 		// 検証
 		assert.Equal(t, http.StatusCreated, rec.Code)
 		// jsonパース
-		var registeredContract data_transfer_objects.ContractDto
+		var registeredContract contracts.ContractDto
 		err := json.Unmarshal(rec.Body.Bytes(), &registeredContract)
 		assert.NoError(t, err)
 		assert.Equal(t, userDto.Id, registeredContract.UserId)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/mixmaru/my_contracts/core/application/contracts/create"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
@@ -10,12 +11,20 @@ import (
 	"time"
 )
 
+type ContractController struct {
+	createUseCase create.IContractCreateUseCase
+}
+
+func NewContractController(createUseCase create.IContractCreateUseCase) *ContractController {
+	return &ContractController{createUseCase: createUseCase}
+}
+
 // 契約新規登録
 // params:
 // user_id string
 // product_id string
 // curl -F "user_id=1" -F "product_id=2" http://localhost:1323/contracts
-func saveContract(c echo.Context) error {
+func (cont *ContractController) CreateContract(c echo.Context) error {
 	logger, err := my_logger.GetLogger()
 	if err != nil {
 		return err
@@ -40,18 +49,17 @@ func saveContract(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, validErrs)
 	}
 
-	app := application_service.NewContractApplicationService()
-	contract, validErrs, err := app.Register(userId, productId, time.Now())
+	response, err := cont.createUseCase.Handle(create.NewContractCreateUseCaseRequest(userId, productId, time.Now()))
 	if err != nil {
 		logger.Sugar().Errorw("契約データ登録に失敗。", "userId", userId, "productId", productId, "err", err)
 		c.Error(err)
 		return err
 	}
-	if len(validErrs) > 0 {
-		return c.JSON(http.StatusBadRequest, validErrs)
+	if len(response.ValidationErrors) > 0 {
+		return c.JSON(http.StatusBadRequest, response.ValidationErrors)
 	}
 
-	return c.JSON(http.StatusCreated, contract)
+	return c.JSON(http.StatusCreated, response.ContractDto)
 }
 
 // 商品情報取得
