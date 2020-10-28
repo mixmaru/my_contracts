@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	create2 "github.com/mixmaru/my_contracts/core/application/contracts/create"
+	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
 	"github.com/mixmaru/my_contracts/core/application/products/create"
 	user_create "github.com/mixmaru/my_contracts/core/application/users/create"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
@@ -26,11 +27,14 @@ func newRouter() *echo.Echo {
 	e.Use(middleware.Recover())
 
 	// controller
-	productController := NewProductController(create.NewProductCreateInteractor(db.NewProductRepository()))
-	userController := NewUserController(user_create.NewUserIndividualCreateInteractor(db.NewUserRepository()))
+	userRep := db.NewUserRepository()
+	productRep := db.NewProductRepository()
+	contractRep := db.NewContractRepository()
+	productController := NewProductController(create.NewProductCreateInteractor(productRep))
+	userController := NewUserController(user_create.NewUserIndividualCreateInteractor(userRep))
 	contractController := NewContractController(
-		create2.NewContractCreateInteractor(
-			db.NewUserRepository(), db.NewProductRepository(), db.NewContractRepository()),
+		create2.NewContractCreateInteractor(userRep, productRep, contractRep),
+		get_by_id.NewContractGetByIdInteractor(contractRep, productRep, userRep),
 	)
 
 	// 顧客新規登録
@@ -42,9 +46,9 @@ func newRouter() *echo.Echo {
 	// 商品情報取得
 	e.GET("/products/:id", productController.Get)
 	// 契約登録
-	e.POST("/contracts/", contractController.CreateContract)
+	e.POST("/contracts/", contractController.Create)
 	// 契約情報取得
-	e.GET("/contracts/:id", getContract)
+	e.GET("/contracts/:id", contractController.GetById)
 	// 請求実行バッチ
 	e.POST("/batches/bills/billing", executeBilling)
 	// 使用権継続処理実行バッチ

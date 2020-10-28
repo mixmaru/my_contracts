@@ -6,8 +6,6 @@ import (
 	"github.com/mixmaru/my_contracts/core/application/users"
 	"github.com/mixmaru/my_contracts/core/domain/models/user"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
-	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/pkg/errors"
 )
 
@@ -56,8 +54,8 @@ func (c ContractGetByIdInteractor) Handle(request *ContractGetByIdUseCaseRequest
 	switch userEntity.(type) {
 	case *user.UserIndividualEntity:
 		response.UserDto = users.NewUserIndividualDtoFromEntity(userEntity.(*user.UserIndividualEntity))
-	case *entities.UserCorporationEntity:
-		response.UserDto = data_transfer_objects.NewUserCorporationDtoFromEntity(userEntity.(*entities.UserCorporationEntity))
+	case *user.UserCorporationEntity:
+		response.UserDto = users.NewUserCorporationDtoFromEntity(userEntity.(*user.UserCorporationEntity))
 	default:
 		return response, errors.Errorf("意図しないUser型が来た。userEntity: %T", userEntity)
 	}

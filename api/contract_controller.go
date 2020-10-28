@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/mixmaru/my_contracts/core/application/contracts"
 	"github.com/mixmaru/my_contracts/core/application/contracts/create"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
+	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
+	"github.com/mixmaru/my_contracts/core/application/products"
+	"github.com/mixmaru/my_contracts/core/application/users"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
 	"strconv"
@@ -12,11 +14,15 @@ import (
 )
 
 type ContractController struct {
-	createUseCase create.IContractCreateUseCase
+	createUseCase  create.IContractCreateUseCase
+	getByIdUseCase get_by_id.IContractGetByIdUseCase
 }
 
-func NewContractController(createUseCase create.IContractCreateUseCase) *ContractController {
-	return &ContractController{createUseCase: createUseCase}
+func NewContractController(createUseCase create.IContractCreateUseCase, getByIdUseCase get_by_id.IContractGetByIdUseCase) *ContractController {
+	return &ContractController{
+		createUseCase:  createUseCase,
+		getByIdUseCase: getByIdUseCase,
+	}
 }
 
 // 契約新規登録
@@ -24,7 +30,7 @@ func NewContractController(createUseCase create.IContractCreateUseCase) *Contrac
 // user_id string
 // product_id string
 // curl -F "user_id=1" -F "product_id=2" http://localhost:1323/contracts
-func (cont *ContractController) CreateContract(c echo.Context) error {
+func (cont *ContractController) Create(c echo.Context) error {
 	logger, err := my_logger.GetLogger()
 	if err != nil {
 		return err
@@ -64,7 +70,7 @@ func (cont *ContractController) CreateContract(c echo.Context) error {
 
 // 商品情報取得
 // curl http://localhost:1323/contracts/1
-func getContract(c echo.Context) error {
+func (cont *ContractController) GetById(c echo.Context) error {
 	logger, err := my_logger.GetLogger()
 	if err != nil {
 		return err
@@ -76,10 +82,8 @@ func getContract(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
 	}
 
-	// サービスインスタンス化
-	contractAppService := application_service.NewContractApplicationService()
 	// データ取得
-	contract, product, user, err := contractAppService.GetById(contractId)
+	response, err := cont.getByIdUseCase.Handle(get_by_id.NewContractGetByIdUseCaseRequest(contractId))
 	if err != nil {
 		logger.Sugar().Errorw("商品データ取得に失敗。", "contractId", contractId, "err", err)
 		c.Error(err)
@@ -87,31 +91,32 @@ func getContract(c echo.Context) error {
 	}
 
 	// データがない
-	if contract.Id == 0 {
+	if response.ContractDto.Id == 0 {
 		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
 	}
 
 	// 返却データを用意
-	switch user.(type) {
-	case data_transfer_objects.UserIndividualDto:
-		retContract := newContractDataForUserIndividual(contract, product, user.(data_transfer_objects.UserIndividualDto), contract.CreatedAt, contract.UpdatedAt)
+	switch response.UserDto.(type) {
+	case users.UserIndividualDto:
+		retContract := newContractDataForUserIndividual(response.ContractDto, response.ProductDto, response.UserDto.(users.UserIndividualDto), response.ContractDto.CreatedAt, response.ContractDto.UpdatedAt)
 		return c.JSON(http.StatusOK, retContract)
-	case data_transfer_objects.UserCorporationDto:
-		retContract := newContractDataForUserCorporation(contract, product, user.(data_transfer_objects.UserCorporationDto), contract.CreatedAt, contract.UpdatedAt)
+	case users.UserCorporationDto:
+		retContract := newContractDataForUserCorporation(response.ContractDto, response.ProductDto, response.UserDto.(users.UserCorporationDto), response.ContractDto.CreatedAt, response.ContractDto.UpdatedAt)
 		return c.JSON(http.StatusOK, retContract)
 	default:
-		logger.Sugar().Errorw("商品データ取得に失敗。userDtoが想定の型ではない。", "user", user, "err", err)
+		logger.Sugar().Errorw("商品データ取得に失敗。userDtoが想定の型ではない。", "user", response.UserDto, "err", err)
 		c.Error(err)
 		return err
 	}
+
 }
 
 type contractDataForUserCorporation struct {
 	contractData
-	User data_transfer_objects.UserCorporationDto
+	User users.UserCorporationDto
 }
 
-func newContractDataForUserCorporation(contract data_transfer_objects.ContractDto, product data_transfer_objects.ProductDto, user data_transfer_objects.UserCorporationDto, createdAt time.Time, updatedAt time.Time) contractDataForUserCorporation {
+func newContractDataForUserCorporation(contract contracts.ContractDto, product products.ProductDto, user users.UserCorporationDto, createdAt time.Time, updatedAt time.Time) contractDataForUserCorporation {
 	c := contractDataForUserCorporation{}
 	c.Id = contract.Id
 	c.ContractDate = contract.ContractDate
@@ -125,10 +130,10 @@ func newContractDataForUserCorporation(contract data_transfer_objects.ContractDt
 
 type contractDataForUserIndividual struct {
 	contractData
-	User data_transfer_objects.UserIndividualDto
+	User users.UserIndividualDto
 }
 
-func newContractDataForUserIndividual(contract data_transfer_objects.ContractDto, product data_transfer_objects.ProductDto, user data_transfer_objects.UserIndividualDto, createdAt time.Time, updatedAt time.Time) contractDataForUserIndividual {
+func newContractDataForUserIndividual(contract contracts.ContractDto, product products.ProductDto, user users.UserIndividualDto, createdAt time.Time, updatedAt time.Time) contractDataForUserIndividual {
 	c := contractDataForUserIndividual{}
 	c.Id = contract.Id
 	c.ContractDate = contract.ContractDate
@@ -142,7 +147,7 @@ func newContractDataForUserIndividual(contract data_transfer_objects.ContractDto
 
 type contractData struct {
 	Id               int
-	Product          data_transfer_objects.ProductDto
+	Product          products.ProductDto
 	ContractDate     time.Time
 	BillingStartDate time.Time
 	CreatedAt        time.Time
