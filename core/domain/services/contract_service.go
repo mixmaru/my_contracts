@@ -97,7 +97,7 @@ func (c *ContractDomainService) calculateBillingStartDate(contractDate time.Time
 /*
 渡された契約集約の使用権を元に、次の期間の使用権を作成して返す（永続化はしない）
 */
-func CreateNextTermRightToUse(currentRightToUse *contract.RightToUseEntity, product *product.ProductEntity) (*entities.RightToUseEntity, error) {
+func CreateNextTermRightToUse(currentRightToUse *contract.RightToUseEntity, product *product.ProductEntity) (*contract.RightToUseEntity, error) {
 	// 商品の期間（年、月、カスタム期間）を取得する
 	termType, err := product.GetTermType()
 	if err != nil {
@@ -126,6 +126,6 @@ func CreateNextTermRightToUse(currentRightToUse *contract.RightToUseEntity, prod
 	}
 
 	// entityを作る
-	nextTermEntity := entities.NewRightToUseEntity(from, to)
+	nextTermEntity := contract.NewRightToUseEntity(from, to)
 	return nextTermEntity, err
 }
