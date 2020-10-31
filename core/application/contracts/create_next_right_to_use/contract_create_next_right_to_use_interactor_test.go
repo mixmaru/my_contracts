@@ -14,13 +14,18 @@ import (
 
 func TestContractCreateNextRightToUseInteractor_Handle(t *testing.T) {
 	t.Run("渡した実行日から5日以内に期間終了である使用権に対して、次の期間の使用権データを作成して永続化して返却する", func(t *testing.T) {
-		// 事前に影響のあるデータを削除しておく（ちょっと広めに削除）
+		// 事前に存在するデータを削除しておく
 		conn, err := db.GetConnection()
 		assert.NoError(t, err)
-		defer conn.Db.Close()
-		_, err = conn.Exec("DELETE FROM right_to_use_active WHERE right_to_use_id IN (SELECT id FROM right_to_use WHERE '2020-05-25' <= valid_to AND valid_to <= '2020-06-02')")
-		assert.NoError(t, err)
-		_, err = conn.Exec("DELETE FROM right_to_use WHERE '2020-05-25' <= valid_to AND valid_to <= '2020-06-02'")
+		deleteSql := `
+DELETE FROM discount_apply_contract_updates;
+DELETE FROM bill_details;
+DELETE FROM right_to_use_active;
+DELETE FROM right_to_use_history;
+DELETE FROM right_to_use;
+DELETE FROM contracts;
+`
+		_, err = conn.Exec(deleteSql)
 		assert.NoError(t, err)
 
 		////// 準備（2020-05-31が終了日である使用権と2020-05-29が終了日である使用権を作成する）

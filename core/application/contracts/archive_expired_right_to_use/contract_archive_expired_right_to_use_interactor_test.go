@@ -10,7 +10,6 @@ import (
 	"github.com/mixmaru/my_contracts/core/domain/models/contract"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	mock_contracts "github.com/mixmaru/my_contracts/core/infrastructure/mock"
-	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +26,7 @@ func TestContractArchiveExpiredRightToUseInteractor_Handle(t *testing.T) {
 	t.Run("渡した基準日に期限が切れている使用権をアーカイブ処理し、処理した使用権dtoを返す", func(t *testing.T) {
 		////// 準備
 		// 事前に存在するデータを削除しておく
-		conn, err := db_connection.GetConnection()
+		conn, err := db.GetConnection()
 		assert.NoError(t, err)
 		deleteSql := `
 DELETE FROM discount_apply_contract_updates;
