@@ -3,10 +3,8 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
-	"github.com/mixmaru/my_contracts/utils"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
-	"time"
 )
 
 /*
@@ -15,33 +13,33 @@ import (
 params:
 date string 実行日
 */
-func executeRecur(c echo.Context) error {
-	logger, err := my_logger.GetLogger()
-	if err != nil {
-		return err
-	}
-
-	validErrs := map[string][]string{}
-
-	// 実行日取得
-	executeDate, errMsg := getExecuteDate(c.FormValue("date"))
-	if errMsg != "" {
-		validErrs["date"] = []string{errMsg}
-	}
-
-	if len(validErrs) > 0 {
-		return c.JSON(http.StatusBadRequest, validErrs)
-	}
-
-	contractApp := application_service.NewContractApplicationService()
-	rightToUseDtos, err := contractApp.CreateNextRightToUse(executeDate)
-	if err != nil {
-		logger.Sugar().Errorw("使用権の時期更新に失敗。", "executeDate", executeDate, "err", err)
-		c.Error(err)
-		return err
-	}
-	return c.JSON(http.StatusCreated, rightToUseDtos)
-}
+//func executeRecur(c echo.Context) error {
+//	logger, err := my_logger.GetLogger()
+//	if err != nil {
+//		return err
+//	}
+//
+//	validErrs := map[string][]string{}
+//
+//	// 実行日取得
+//	executeDate, errMsg := getExecuteDate(c.FormValue("date"))
+//	if errMsg != "" {
+//		validErrs["date"] = []string{errMsg}
+//	}
+//
+//	if len(validErrs) > 0 {
+//		return c.JSON(http.StatusBadRequest, validErrs)
+//	}
+//
+//	contractApp := application_service.NewContractApplicationService()
+//	rightToUseDtos, err := contractApp.CreateNextRightToUse(executeDate)
+//	if err != nil {
+//		logger.Sugar().Errorw("使用権の時期更新に失敗。", "executeDate", executeDate, "err", err)
+//		c.Error(err)
+//		return err
+//	}
+//	return c.JSON(http.StatusCreated, rightToUseDtos)
+//}
 
 /*
 期限切れ使用権権のアーカイブ処理バッチ
@@ -77,22 +75,4 @@ func executeRightToUseArchive(c echo.Context) error {
 		})
 	}
 	return c.JSON(http.StatusCreated, rightToUseDtos)
-}
-
-func getExecuteDate(dateStr string) (executeDate time.Time, errMsg string) {
-	jst := utils.CreateJstLocation()
-
-	if dateStr == "" {
-		// 日付指定がなければ現在日時を実行日とする
-		executeDate = time.Now().In(jst)
-	} else {
-		// 日付指定があればそれをを実行日とする
-		var err error
-		executeDate, err = time.ParseInLocation("20060102", dateStr, jst)
-		if err != nil {
-			// dateに変な値が渡された
-			return time.Time{}, "YYYYMMDDの形式ではありません"
-		}
-	}
-	return executeDate, ""
 }

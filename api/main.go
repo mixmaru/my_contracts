@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	create2 "github.com/mixmaru/my_contracts/core/application/contracts/create"
+	"github.com/mixmaru/my_contracts/core/application/contracts/create_next_right_to_use"
 	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
 	"github.com/mixmaru/my_contracts/core/application/products/create"
 	user_create "github.com/mixmaru/my_contracts/core/application/users/create"
@@ -35,6 +36,7 @@ func newRouter() *echo.Echo {
 	contractController := NewContractController(
 		create2.NewContractCreateInteractor(userRep, productRep, contractRep),
 		get_by_id.NewContractGetByIdInteractor(contractRep, productRep, userRep),
+		create_next_right_to_use.NewContractCreateNextRightToUseInteractor(contractRep, productRep),
 	)
 
 	// 顧客新規登録
@@ -52,7 +54,7 @@ func newRouter() *echo.Echo {
 	// 請求実行バッチ
 	e.POST("/batches/bills/billing", executeBilling)
 	// 使用権継続処理実行バッチ
-	e.POST("/batches/right_to_uses/recur", executeRecur)
+	e.POST("/batches/right_to_uses/recur", contractController.CreateNextRightToUse)
 	// 有効期限切れ使用権のアーカイブ処理バッチ
 	e.POST("/batches/right_to_uses/archive", executeRightToUseArchive)
 

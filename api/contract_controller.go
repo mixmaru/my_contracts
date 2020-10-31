@@ -4,9 +4,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mixmaru/my_contracts/core/application/contracts"
 	"github.com/mixmaru/my_contracts/core/application/contracts/create"
+	"github.com/mixmaru/my_contracts/core/application/contracts/create_next_right_to_use"
 	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
 	"github.com/mixmaru/my_contracts/core/application/products"
 	"github.com/mixmaru/my_contracts/core/application/users"
+	"github.com/mixmaru/my_contracts/utils"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
 	"strconv"
@@ -14,15 +16,13 @@ import (
 )
 
 type ContractController struct {
-	createUseCase  create.IContractCreateUseCase
-	getByIdUseCase get_by_id.IContractGetByIdUseCase
+	createUseCase              create.IContractCreateUseCase
+	getByIdUseCase             get_by_id.IContractGetByIdUseCase
+	crateNextRightToUseUseCase create_next_right_to_use.IContractCreateNextRightToUseUseCase
 }
 
-func NewContractController(createUseCase create.IContractCreateUseCase, getByIdUseCase get_by_id.IContractGetByIdUseCase) *ContractController {
-	return &ContractController{
-		createUseCase:  createUseCase,
-		getByIdUseCase: getByIdUseCase,
-	}
+func NewContractController(createUseCase create.IContractCreateUseCase, getByIdUseCase get_by_id.IContractGetByIdUseCase, crateNextRightToUseUseCase create_next_right_to_use.IContractCreateNextRightToUseUseCase) *ContractController {
+	return &ContractController{createUseCase: createUseCase, getByIdUseCase: getByIdUseCase, crateNextRightToUseUseCase: crateNextRightToUseUseCase}
 }
 
 // 契約新規登録
@@ -152,4 +152,55 @@ type contractData struct {
 	BillingStartDate time.Time
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
+}
+
+/*
+次期使用権の作成バッチ
+
+params:
+date string 実行日
+*/
+func (cont *ContractController) CreateNextRightToUse(c echo.Context) error {
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	validErrs := map[string][]string{}
+
+	// 実行日取得
+	executeDate, errMsg := getExecuteDate(c.FormValue("date"))
+	if errMsg != "" {
+		validErrs["date"] = []string{errMsg}
+	}
+
+	if len(validErrs) > 0 {
+		return c.JSON(http.StatusBadRequest, validErrs)
+	}
+
+	response, err := cont.crateNextRightToUseUseCase.Handle(create_next_right_to_use.NewContractCreateNextRightToUseUseCaseRequest(executeDate))
+	if err != nil {
+		logger.Sugar().Errorw("使用権の時期更新に失敗。", "executeDate", executeDate, "err", err)
+		c.Error(err)
+		return err
+	}
+	return c.JSON(http.StatusCreated, response.NextTermContracts)
+}
+
+func getExecuteDate(dateStr string) (executeDate time.Time, errMsg string) {
+	jst := utils.CreateJstLocation()
+
+	if dateStr == "" {
+		// 日付指定がなければ現在日時を実行日とする
+		executeDate = time.Now().In(jst)
+	} else {
+		// 日付指定があればそれをを実行日とする
+		var err error
+		executeDate, err = time.ParseInLocation("20060102", dateStr, jst)
+		if err != nil {
+			// dateに変な値が渡された
+			return time.Time{}, "YYYYMMDDの形式ではありません"
+		}
+	}
+	return executeDate, ""
 }
