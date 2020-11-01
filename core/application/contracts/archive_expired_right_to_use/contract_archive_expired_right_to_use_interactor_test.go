@@ -75,7 +75,7 @@ DELETE FROM contracts;
 		assert.NoError(t, err)
 
 		////// 検証
-		dtos := response.ArchivedRightToUse
+		dtos := response.ArchivedRightToUses
 		assert.Len(t, dtos, 2)
 		assert.Equal(t, dtos[0], contractCreateResponse1.ContractDto.RightToUseDtos[0])
 		assert.Equal(t, dtos[1], contractCreateResponse2.ContractDto.RightToUseDtos[0])
@@ -166,8 +166,8 @@ DELETE FROM contracts;
 			assert.NoError(t, err)
 
 			////// 検証
-			assert.Len(t, response.ArchivedRightToUse, 1)
-			assert.Equal(t, response.ArchivedRightToUse[0], contractCrateResponse1.ContractDto.RightToUseDtos[0])
+			assert.Len(t, response.ArchivedRightToUses, 1)
+			assert.Equal(t, response.ArchivedRightToUses[0], contractCrateResponse1.ContractDto.RightToUseDtos[0])
 		})
 	})
 }

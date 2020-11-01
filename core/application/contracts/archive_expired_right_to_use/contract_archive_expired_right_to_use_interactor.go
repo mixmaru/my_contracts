@@ -25,7 +25,7 @@ func (c *ContractArchiveExpiredRightToUseInteractor) Handle(request *ContractArc
 	}
 	defer db.Db.Close()
 
-	response.ArchivedRightToUse = []contracts.RightToUseDto{}
+	response.ArchivedRightToUses = []contracts.RightToUseDto{}
 
 	// 対象取得
 	targetContractIds, err := c.contractRepository.GetHavingExpiredRightToUseContractIds(request.BaseDate, db)
@@ -51,7 +51,7 @@ func (c *ContractArchiveExpiredRightToUseInteractor) Handle(request *ContractArc
 
 			// アーカイブ実行
 			dtos, err := c.execArchive(contractId, request.BaseDate, tran)
-			response.ArchivedRightToUse = append(response.ArchivedRightToUse, dtos...)
+			response.ArchivedRightToUses = append(response.ArchivedRightToUses, dtos...)
 			if err != nil {
 				// 失敗してたら3回までリトライ
 				tran.Rollback()

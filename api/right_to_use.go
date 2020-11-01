@@ -1,12 +1,5 @@
 package main
 
-import (
-	"github.com/labstack/echo/v4"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
-	"github.com/mixmaru/my_contracts/utils/my_logger"
-	"net/http"
-)
-
 /*
 次期使用権の作成バッチ
 
@@ -48,31 +41,31 @@ date string 実行日
 params:
 date string 実行日
 */
-func executeRightToUseArchive(c echo.Context) error {
-	logger, err := my_logger.GetLogger()
-	if err != nil {
-		return err
-	}
-
-	validErrs := map[string][]string{}
-	// 実行日取得
-	executeDate, errMsg := getExecuteDate(c.FormValue("date"))
-	if errMsg != "" {
-		validErrs["date"] = []string{errMsg}
-	}
-
-	if len(validErrs) > 0 {
-		return c.JSON(http.StatusBadRequest, validErrs)
-	}
-
-	contractApp := application_service.NewContractApplicationService()
-	rightToUseDtos, err := contractApp.ArchiveExpiredRightToUse(executeDate)
-	if err != nil {
-		logger.Sugar().Errorw("期限切れ使用権のアーカイブに失敗。", "executeDate", executeDate, "アーカイブ処理された使用権", rightToUseDtos, "err", err)
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message":             "期限切れ使用権のアーカイブに失敗。",
-			"succeed_rightToUses": rightToUseDtos,
-		})
-	}
-	return c.JSON(http.StatusCreated, rightToUseDtos)
-}
+//func executeRightToUseArchive(c echo.Context) error {
+//	logger, err := my_logger.GetLogger()
+//	if err != nil {
+//		return err
+//	}
+//
+//	validErrs := map[string][]string{}
+//	// 実行日取得
+//	executeDate, errMsg := getExecuteDate(c.FormValue("date"))
+//	if errMsg != "" {
+//		validErrs["date"] = []string{errMsg}
+//	}
+//
+//	if len(validErrs) > 0 {
+//		return c.JSON(http.StatusBadRequest, validErrs)
+//	}
+//
+//	contractApp := application_service.NewContractApplicationService()
+//	rightToUseDtos, err := contractApp.ArchiveExpiredRightToUse(executeDate)
+//	if err != nil {
+//		logger.Sugar().Errorw("期限切れ使用権のアーカイブに失敗。", "executeDate", executeDate, "アーカイブ処理された使用権", rightToUseDtos, "err", err)
+//		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+//			"message":             "期限切れ使用権のアーカイブに失敗。",
+//			"succeed_rightToUses": rightToUseDtos,
+//		})
+//	}
+//	return c.JSON(http.StatusCreated, rightToUseDtos)
+//}

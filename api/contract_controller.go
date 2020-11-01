@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/mixmaru/my_contracts/core/application/contracts"
+	"github.com/mixmaru/my_contracts/core/application/contracts/archive_expired_right_to_use"
 	"github.com/mixmaru/my_contracts/core/application/contracts/create"
 	"github.com/mixmaru/my_contracts/core/application/contracts/create_next_right_to_use"
 	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
@@ -16,13 +17,14 @@ import (
 )
 
 type ContractController struct {
-	createUseCase              create.IContractCreateUseCase
-	getByIdUseCase             get_by_id.IContractGetByIdUseCase
-	crateNextRightToUseUseCase create_next_right_to_use.IContractCreateNextRightToUseUseCase
+	createUseCase                   create.IContractCreateUseCase
+	getByIdUseCase                  get_by_id.IContractGetByIdUseCase
+	crateNextRightToUseUseCase      create_next_right_to_use.IContractCreateNextRightToUseUseCase
+	archiveExpiredRightToUseUseCase archive_expired_right_to_use.IContractArchiveExpiredRightToUseUseCase
 }
 
-func NewContractController(createUseCase create.IContractCreateUseCase, getByIdUseCase get_by_id.IContractGetByIdUseCase, crateNextRightToUseUseCase create_next_right_to_use.IContractCreateNextRightToUseUseCase) *ContractController {
-	return &ContractController{createUseCase: createUseCase, getByIdUseCase: getByIdUseCase, crateNextRightToUseUseCase: crateNextRightToUseUseCase}
+func NewContractController(createUseCase create.IContractCreateUseCase, getByIdUseCase get_by_id.IContractGetByIdUseCase, crateNextRightToUseUseCase create_next_right_to_use.IContractCreateNextRightToUseUseCase, archiveExpiredRightToUseUseCase archive_expired_right_to_use.IContractArchiveExpiredRightToUseUseCase) *ContractController {
+	return &ContractController{createUseCase: createUseCase, getByIdUseCase: getByIdUseCase, crateNextRightToUseUseCase: crateNextRightToUseUseCase, archiveExpiredRightToUseUseCase: archiveExpiredRightToUseUseCase}
 }
 
 // 契約新規登録
@@ -203,4 +205,40 @@ func getExecuteDate(dateStr string) (executeDate time.Time, errMsg string) {
 		}
 	}
 	return executeDate, ""
+}
+
+/*
+期限切れ使用権権のアーカイブ処理バッチ
+実行日以前に使用期限の切れた使用権データをアーカイブする
+
+params:
+date string 実行日
+*/
+func (cont *ContractController) ArchiveExpiredRightToUse(c echo.Context) error {
+
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	validErrs := map[string][]string{}
+	// 実行日取得
+	executeDate, errMsg := getExecuteDate(c.FormValue("date"))
+	if errMsg != "" {
+		validErrs["date"] = []string{errMsg}
+	}
+
+	if len(validErrs) > 0 {
+		return c.JSON(http.StatusBadRequest, validErrs)
+	}
+
+	response, err := cont.archiveExpiredRightToUseUseCase.Handle(archive_expired_right_to_use.NewContractArchiveExpiredRightToUseUseCaseRequest(executeDate))
+	if err != nil {
+		logger.Sugar().Errorw("期限切れ使用権のアーカイブに失敗。", "executeDate", executeDate, "アーカイブ処理された使用権", response, "err", err)
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message":             "期限切れ使用権のアーカイブに失敗。",
+			"succeed_rightToUses": response.ArchivedRightToUses,
+		})
+	}
+	return c.JSON(http.StatusCreated, response.ArchivedRightToUses)
 }

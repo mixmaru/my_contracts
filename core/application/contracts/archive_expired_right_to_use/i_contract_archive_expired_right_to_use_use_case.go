@@ -18,9 +18,9 @@ func NewContractArchiveExpiredRightToUseUseCaseRequest(baseDate time.Time) *Cont
 }
 
 type ContractArchiveExpiredRightToUseUseCaseResponse struct {
-	ArchivedRightToUse []contracts.RightToUseDto
+	ArchivedRightToUses []contracts.RightToUseDto
 }
 
-func NewContractArchiveExpiredRightToUseUseCaseResponse(archivedRightToUse []contracts.RightToUseDto) *ContractArchiveExpiredRightToUseUseCaseResponse {
-	return &ContractArchiveExpiredRightToUseUseCaseResponse{ArchivedRightToUse: archivedRightToUse}
+func NewContractArchiveExpiredRightToUseUseCaseResponse(archivedRightToUses []contracts.RightToUseDto) *ContractArchiveExpiredRightToUseUseCaseResponse {
+	return &ContractArchiveExpiredRightToUseUseCaseResponse{ArchivedRightToUses: archivedRightToUses}
 }
