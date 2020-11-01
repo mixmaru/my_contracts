@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"github.com/mixmaru/my_contracts/domains/contracts/repositories/data_mappers"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -46,8 +45,8 @@ func GetConnection() (*gorp.DbMap, error) {
 	dbmap.AddTableWithName(RightToUseActiveMapper{}, "right_to_use_active").SetKeys(false, "RightToUseId")
 	dbmap.AddTableWithName(RightToUseHistoryMapper{}, "right_to_use_history").SetKeys(false, "RightToUseId")
 
-	dbmap.AddTableWithName(data_mappers.BillMapper{}, "bills").SetKeys(true, "Id")
-	dbmap.AddTableWithName(data_mappers.BillDetailMapper{}, "bill_details").SetKeys(true, "Id")
+	dbmap.AddTableWithName(BillMapper{}, "bills").SetKeys(true, "Id")
+	dbmap.AddTableWithName(BillDetailMapper{}, "bill_details").SetKeys(true, "Id")
 	return dbmap, nil
 }
 

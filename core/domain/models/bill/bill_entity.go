@@ -17,14 +17,14 @@ type BillEntity struct {
 	updatedAt          time.Time
 }
 
-func NewBillingAggregation(billingDate time.Time, userId int) *BillEntity {
+func NewBillEntity(billingDate time.Time, userId int) *BillEntity {
 	return &BillEntity{
 		billingDate: billingDate,
 		userId:      userId,
 	}
 }
 
-func NewBillingAggregationWithData(
+func NewBillEntityWithData(
 	id int,
 	billingDate time.Time,
 	userId int,
@@ -42,6 +42,10 @@ func NewBillingAggregationWithData(
 	retBill.createdAt = createdAt
 	retBill.updatedAt = updatedAt
 	return retBill
+}
+
+func (b *BillEntity) Id() int {
+	return b.id
 }
 
 func (b *BillEntity) BillingDate() time.Time {
@@ -72,6 +76,14 @@ func (b *BillEntity) SetPaymentConfirmedAt(confirmedAt time.Time) error {
 		return errors.Wrapf(err, "confirmedAtのセットに失敗しました。billingAggregation: %+v, confirmedAt: %v", b, confirmedAt)
 	}
 	return nil
+}
+
+func (b *BillEntity) CreatedAt() time.Time {
+	return b.createdAt
+}
+
+func (b *BillEntity) UpdatedAt() time.Time {
+	return b.updatedAt
 }
 
 func (b *BillEntity) AddBillDetail(billDetailEntity *BillDetailEntity) error {

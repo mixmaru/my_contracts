@@ -1,11 +1,10 @@
 package db
 
 import (
+	bill2 "github.com/mixmaru/my_contracts/core/domain/models/bill"
 	"github.com/mixmaru/my_contracts/core/domain/models/contract"
 	"github.com/mixmaru/my_contracts/core/domain/models/product"
 	"github.com/mixmaru/my_contracts/core/domain/models/user"
-	"github.com/mixmaru/my_contracts/domains/contracts/entities"
-	"github.com/mixmaru/my_contracts/domains/contracts/repositories"
 	"github.com/mixmaru/my_contracts/lib/decimal"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
@@ -142,10 +141,10 @@ func TestContractRepository_GetById(t *testing.T) {
 		loadedContract, err := r.GetById(savedId, db)
 		assert.NoError(t, err)
 		// 1つめの使用権は請求済にしておく
-		bill := entities.NewBillingAggregation(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0), savedUserId)
-		err = bill.AddBillDetail(entities.NewBillingDetailEntity(loadedContract.RightToUses()[0].Id(), decimal.NewFromInt(10000)))
+		bill := bill2.NewBillEntity(utils.CreateJstTime(2020, 1, 2, 0, 0, 0, 0), savedUserId)
+		err = bill.AddBillDetail(bill2.NewBillDetailEntity(loadedContract.RightToUses()[0].Id(), decimal.NewFromInt(10000)))
 		assert.NoError(t, err)
-		billRep := repositories.NewBillRepository()
+		billRep := NewBillRepository()
 		_, err = billRep.Create(bill, db)
 		assert.NoError(t, err)
 		// データ取得（請求済データを反映するため）
@@ -407,14 +406,14 @@ func createBillTestData(db gorp.SqlExecutor) (rightToUseIds []int, billId int) {
 
 	// rightToUse1bに対して請求情報を登録しておく（請求済にしておく）
 	rightToUses := savedContract.RightToUses()
-	billDetailEntity := entities.NewBillingDetailEntity(rightToUses[1].Id(), decimal.NewFromInt(1000))
-	billAgg := entities.NewBillingAggregation(utils.CreateJstTime(2020, 7, 1, 12, 0, 0, 0), userId)
+	billDetailEntity := bill2.NewBillDetailEntity(rightToUses[1].Id(), decimal.NewFromInt(1000))
+	billAgg := bill2.NewBillEntity(utils.CreateJstTime(2020, 7, 1, 12, 0, 0, 0), userId)
 	err := billAgg.AddBillDetail(billDetailEntity)
 	if err != nil {
 		panic("billデータ作成失敗")
 	}
 
-	billRep := repositories.NewBillRepository()
+	billRep := NewBillRepository()
 	billId, err = billRep.Create(billAgg, db)
 	if err != nil {
 		panic("billデータ保存失敗")

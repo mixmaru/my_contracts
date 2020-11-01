@@ -13,14 +13,14 @@ type BillDetailEntity struct {
 	updatedAt     time.Time
 }
 
-func NewBillingDetailEntity(rightToUseId int, billingAmount decimal.Decimal) *BillDetailEntity {
+func NewBillDetailEntity(rightToUseId int, billingAmount decimal.Decimal) *BillDetailEntity {
 	return &BillDetailEntity{
 		rightToUseId:  rightToUseId,
 		billingAmount: billingAmount,
 	}
 }
 
-func NewBillingDetailsEntityWithData(
+func NewBillDetailsEntityWithData(
 	id int,
 	rightToUseId int,
 	billingAmount decimal.Decimal,
@@ -36,12 +36,24 @@ func NewBillingDetailsEntityWithData(
 	return retEntity
 }
 
+func (b *BillDetailEntity) Id() int {
+	return b.id
+}
+
 func (b *BillDetailEntity) RightToUseId() int {
 	return b.rightToUseId
 }
 
 func (b *BillDetailEntity) BillingAmount() decimal.Decimal {
 	return b.billingAmount
+}
+
+func (b *BillDetailEntity) CreatedAt() time.Time {
+	return b.createdAt
+}
+
+func (b *BillDetailEntity) UpdatedAt() time.Time {
+	return b.updatedAt
 }
 
 func (b *BillDetailEntity) LoadData(id, rightToUseId int, billingAmount decimal.Decimal, createdAt, updatedAt time.Time) {
