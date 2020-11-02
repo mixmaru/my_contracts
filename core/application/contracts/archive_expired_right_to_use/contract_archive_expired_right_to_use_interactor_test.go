@@ -9,7 +9,7 @@ import (
 	user_create "github.com/mixmaru/my_contracts/core/application/users/create"
 	"github.com/mixmaru/my_contracts/core/domain/models/contract"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
-	mock_contracts "github.com/mixmaru/my_contracts/core/infrastructure/mock"
+	"github.com/mixmaru/my_contracts/core/infrastructure/mock/mock_contract"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -131,7 +131,7 @@ DELETE FROM contracts;
 			// モックリポジトリ
 			contractRep := db.NewContractRepository()
 			ctrl := gomock.NewController(t)
-			contractRepMock := mock_contracts.NewMockIContractRepository(ctrl)
+			contractRepMock := mock_contract.NewMockIContractRepository(ctrl)
 			contractRepMock.EXPECT().GetHavingExpiredRightToUseContractIds(gomock.Any(), gomock.Any()).DoAndReturn(
 				func(baseDate time.Time, executor gorp.SqlExecutor) ([]int, error) {
 					return contractRep.GetHavingExpiredRightToUseContractIds(baseDate, executor)

@@ -2,7 +2,7 @@
 // Source: core/application/contracts/i_contract_repository.go
 
 // Package mock_contracts is a generated GoMock package.
-package mock_contracts
+package mock_contract
 
 import (
 	gomock "github.com/golang/mock/gomock"
