@@ -13,6 +13,14 @@ type BillBillingUseCaseRequest struct {
 	ExecuteDate time.Time
 }
 
+func NewBillBillingUseCaseRequest(executeDate time.Time) *BillBillingUseCaseRequest {
+	return &BillBillingUseCaseRequest{ExecuteDate: executeDate}
+}
+
 type BillBillingUseCaseResponse struct {
 	BillDto bill.BillDto
+}
+
+func NewBillBillingUseCaseResponse(billDto bill.BillDto) *BillBillingUseCaseResponse {
+	return &BillBillingUseCaseResponse{BillDto: billDto}
 }
