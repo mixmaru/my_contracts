@@ -18,9 +18,9 @@ func NewBillBillingUseCaseRequest(executeDate time.Time) *BillBillingUseCaseRequ
 }
 
 type BillBillingUseCaseResponse struct {
-	BillDto bill.BillDto
+	BillDtos []bill.BillDto
 }
 
-func NewBillBillingUseCaseResponse(billDto bill.BillDto) *BillBillingUseCaseResponse {
-	return &BillBillingUseCaseResponse{BillDto: billDto}
+func NewBillBillingUseCaseResponse(billDtos []bill.BillDto) *BillBillingUseCaseResponse {
+	return &BillBillingUseCaseResponse{BillDtos: billDtos}
 }

@@ -1,7 +1,7 @@
 package bill
 
 import (
-	"github.com/mixmaru/my_contracts/domains/contracts/entities"
+	"github.com/mixmaru/my_contracts/core/domain/models/bill"
 	"time"
 )
 
@@ -25,7 +25,7 @@ type BillDetailDto struct {
 	UpdatedAt     time.Time
 }
 
-func NewBillDtoFromEntity(entity *entities.BillAggregation) (BillDto, error) {
+func NewBillDtoFromEntity(entity *bill.BillEntity) (BillDto, error) {
 	paymentConfirmedAt, isNil, err := entity.PaymentConfirmedAt()
 	if err != nil {
 		return BillDto{}, err
