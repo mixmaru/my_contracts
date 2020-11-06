@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/mixmaru/my_contracts/core/application/bill/billing"
 	"github.com/mixmaru/my_contracts/core/application/contracts/archive_expired_right_to_use"
 	create2 "github.com/mixmaru/my_contracts/core/application/contracts/create"
 	"github.com/mixmaru/my_contracts/core/application/contracts/create_next_right_to_use"
@@ -28,10 +29,12 @@ func newRouter() *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	// controller
 	userRep := db.NewUserRepository()
 	productRep := db.NewProductRepository()
 	contractRep := db.NewContractRepository()
+	billRep := db.NewBillRepository()
+
+	// controller
 	productController := NewProductController(create.NewProductCreateInteractor(productRep))
 	userController := NewUserController(user_create.NewUserIndividualCreateInteractor(userRep))
 	contractController := NewContractController(
@@ -40,6 +43,7 @@ func newRouter() *echo.Echo {
 		create_next_right_to_use.NewContractCreateNextRightToUseInteractor(contractRep, productRep),
 		archive_expired_right_to_use.NewContractArchiveExpiredRightToUseInteractor(contractRep),
 	)
+	billController := NewBillController(billing.NewBillBillingInteractor(productRep, contractRep, billRep))
 
 	// 顧客新規登録
 	e.POST("/users/", userController.Save)
@@ -54,7 +58,7 @@ func newRouter() *echo.Echo {
 	// 契約情報取得
 	e.GET("/contracts/:id", contractController.GetById)
 	// 請求実行バッチ
-	e.POST("/batches/bills/billing", executeBilling)
+	e.POST("/batches/bills/billing", billController.Billing)
 	// 使用権継続処理実行バッチ
 	e.POST("/batches/right_to_uses/recur", contractController.CreateNextRightToUse)
 	// 有効期限切れ使用権のアーカイブ処理バッチ

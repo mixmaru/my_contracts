@@ -2,18 +2,26 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
+	"github.com/mixmaru/my_contracts/core/application/bill/billing"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
 	"time"
 )
 
+type BillController struct {
+	billingUseCase billing.IBillBillingUseCase
+}
+
+func NewBillController(billingUseCase billing.IBillBillingUseCase) *BillController {
+	return &BillController{billingUseCase: billingUseCase}
+}
+
 // 請求実行バッチ
 // params:
 // date string 請求実行日。未指定なら当日指定となる
 // curl http://localhost:1323/batches/bills/billing?date=20200601
-func executeBilling(c echo.Context) error {
+func (b *BillController) Billing(c echo.Context) error {
 	logger, err := my_logger.GetLogger()
 	if err != nil {
 		return err
@@ -43,12 +51,11 @@ func executeBilling(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, validErrs)
 	}
 
-	billApp := application_service.NewBillApplicationService()
-	billDtos, err := billApp.ExecuteBilling(executeDate)
+	response, err := b.billingUseCase.Handle(billing.NewBillBillingUseCaseRequest(executeDate))
 	if err != nil {
-		logger.Sugar().Errorw("請求実行に失敗。", "executeDate", executeDate, "err", err, "完了したbill", billDtos)
+		logger.Sugar().Errorw("請求実行に失敗。", "executeDate", executeDate, "err", err, "完了したbill", response.BillDtos)
 		c.Error(err)
 		return err
 	}
-	return c.JSON(http.StatusCreated, billDtos)
+	return c.JSON(http.StatusCreated, response.BillDtos)
 }
