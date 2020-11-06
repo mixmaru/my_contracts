@@ -1,8 +1,8 @@
-package values
+package user
 
 import (
 	"fmt"
-	"github.com/mixmaru/my_contracts/domains/contracts/entities/values/validators"
+	"github.com/mixmaru/my_contracts/core/domain/validators"
 	"github.com/pkg/errors"
 	"strings"
 )

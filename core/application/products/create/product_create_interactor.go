@@ -6,7 +6,6 @@ import (
 	"github.com/mixmaru/my_contracts/core/domain/models/product"
 	"github.com/mixmaru/my_contracts/core/domain/validators"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
-	"github.com/mixmaru/my_contracts/domains/contracts/entities/values"
 	"github.com/pkg/errors"
 )
 
@@ -90,7 +89,7 @@ func createValidation(name string, price string) (validationErrors map[string][]
 		case validators.EmptyStringValidError:
 			errorMessage = "空です"
 		case validators.OverLengthStringValidError:
-			errorMessage = fmt.Sprintf("%v文字より多いです", values.ProductNameMaxLength)
+			errorMessage = fmt.Sprintf("%v文字より多いです", product.ProductNameMaxLength)
 		default:
 			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorText(validError)))
 		}
@@ -98,7 +97,7 @@ func createValidation(name string, price string) (validationErrors map[string][]
 	}
 
 	// 価格バリデーション
-	productPriceValidErrors, err := values.ProductPriceValue{}.Validate(price)
+	productPriceValidErrors, err := product.ProductPriceValue{}.Validate(price)
 	if err != nil {
 		return validationErrors, err
 	}

@@ -6,7 +6,6 @@ import (
 	entities "github.com/mixmaru/my_contracts/core/domain/models/user"
 	"github.com/mixmaru/my_contracts/core/domain/validators"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
-	"github.com/mixmaru/my_contracts/domains/contracts/entities/values"
 	"github.com/pkg/errors"
 )
 
@@ -71,7 +70,7 @@ func userIndividualValidation(name string) (validationErrors map[string][]string
 	validationErrors = map[string][]string{}
 
 	// 個人顧客名バリデーション
-	nameValidErrors := values.NameValidate(name)
+	nameValidErrors := entities.NameValidate(name)
 	if len(nameValidErrors) > 0 {
 		validationErrors["name"] = []string{}
 	}
@@ -81,7 +80,7 @@ func userIndividualValidation(name string) (validationErrors map[string][]string
 		case validators.EmptyStringValidError:
 			errorMessage = "空です"
 		case validators.OverLengthStringValidError:
-			errorMessage = fmt.Sprintf("%v文字より多いです", values.NameMaxLength)
+			errorMessage = fmt.Sprintf("%v文字より多いです", entities.NameMaxLength)
 		default:
 			return validationErrors, errors.New(fmt.Sprintf("想定外エラー。name: %v, validErrorText: %v", name, validators.ValidErrorText(validErr)))
 		}
@@ -187,7 +186,7 @@ func registerUserCorporationValidation(request *UserCorporationCreateUseCaseRequ
 }
 
 func corporationNameValidation(corporationName string) (validErrors []string, err error) {
-	corporationNameValidErrors, err := values.CorporationNameValue{}.Validate(corporationName)
+	corporationNameValidErrors, err := entities.CorporationNameValue{}.Validate(corporationName)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +196,7 @@ func corporationNameValidation(corporationName string) (validErrors []string, er
 		case validators.EmptyStringValidError:
 			errorMessage = "空です"
 		case validators.OverLengthStringValidError:
-			errorMessage = fmt.Sprintf("%v文字より多いです", values.MaxCorporationNameNum)
+			errorMessage = fmt.Sprintf("%v文字より多いです", entities.MaxCorporationNameNum)
 		default:
 			return nil, errors.New(fmt.Sprintf("想定外エラー。corporation_name: %v, validErrorText: %v", corporationName, validators.ValidErrorText(validError)))
 		}
@@ -207,7 +206,7 @@ func corporationNameValidation(corporationName string) (validErrors []string, er
 }
 
 func contactPersonValidation(contactPersonName string) (validErrors []string, err error) {
-	contactPersonNameValidErrors, err := values.ContactPersonNameValue{}.Validate(contactPersonName)
+	contactPersonNameValidErrors, err := entities.ContactPersonNameValue{}.Validate(contactPersonName)
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +217,7 @@ func contactPersonValidation(contactPersonName string) (validErrors []string, er
 		case validators.EmptyStringValidError:
 			errorMessage = "空です"
 		case validators.OverLengthStringValidError:
-			errorMessage = fmt.Sprintf("%v文字より多いです", values.MaxContactPersonNameNum)
+			errorMessage = fmt.Sprintf("%v文字より多いです", entities.MaxContactPersonNameNum)
 		default:
 			return nil, errors.New(fmt.Sprintf("想定外エラー。contact_person_name: %v, validErrorText: %v", contactPersonName, validators.ValidErrorText(validError)))
 		}
@@ -228,7 +227,7 @@ func contactPersonValidation(contactPersonName string) (validErrors []string, er
 }
 
 func presidentNameValidation(presidentName string) (validErrors []string, err error) {
-	presidentNameValidErrors, err := values.PresidentNameValue{}.Validate(presidentName)
+	presidentNameValidErrors, err := entities.PresidentNameValue{}.Validate(presidentName)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +238,7 @@ func presidentNameValidation(presidentName string) (validErrors []string, err er
 		case validators.EmptyStringValidError:
 			errorMessage = "空です"
 		case validators.OverLengthStringValidError:
-			errorMessage = fmt.Sprintf("%v文字より多いです", values.MaxPresidentNameNum)
+			errorMessage = fmt.Sprintf("%v文字より多いです", entities.MaxPresidentNameNum)
 		default:
 			return nil, errors.New(fmt.Sprintf("想定外エラー。president_name: %v, validErrorText: %v", presidentName, validators.ValidErrorText(validError)))
 		}

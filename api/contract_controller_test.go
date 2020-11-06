@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mixmaru/my_contracts/core/application/contracts"
+	create3 "github.com/mixmaru/my_contracts/core/application/contracts/create"
 	"github.com/mixmaru/my_contracts/core/application/products/create"
+	create2 "github.com/mixmaru/my_contracts/core/application/users/create"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -25,10 +26,11 @@ func TestMain_saveContract(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, productResponse.ValidationError, 0)
 	// ユーザー登録
-	userApp := application_service.NewUserApplicationService()
-	userDto, validErrs, err := userApp.RegisterUserIndividual("太郎くん")
+	userCreateInteractor := create2.NewUserIndividualCreateInteractor(db.NewUserRepository())
+	response, err := userCreateInteractor.Handle(create2.NewUserIndividualCreateUseCaseRequest("太郎くん"))
 	assert.NoError(t, err)
-	assert.Len(t, validErrs, 0)
+	assert.Len(t, response.ValidationErrors, 0)
+	userDto := response.UserDto
 
 	router := newRouter()
 
@@ -148,23 +150,29 @@ func TestMain_saveContract(t *testing.T) {
 }
 
 func TestMain_getContract(t *testing.T) {
+	productRep := db.NewProductRepository()
+	userRep := db.NewUserRepository()
+	contractRep := db.NewContractRepository()
+
 	// 検証用データ(商品)登録
-	productApp := create.NewProductCreateInteractor(db.NewProductRepository())
+	productApp := create.NewProductCreateInteractor(productRep)
 	productResponse, err := productApp.Handle(create.NewProductCreateUseCaseRequest("商品", "100"))
 	assert.NoError(t, err)
 	assert.Len(t, productResponse.ValidationError, 0)
 
 	// 検証用データ(user)登録
-	userAppService := application_service.NewUserApplicationService()
-	user, validErrs, err := userAppService.RegisterUserCorporation("イケイケ池株式会社", "契約取得用顧客担当", "契約取得用社長")
+	userCreateInteractor := create2.NewUserCorporationCreateInteractor(userRep)
+	userCreateResponse, err := userCreateInteractor.Handle(create2.NewUserCorporationCreateUseCaseRequest("イケイケ池株式会社", "契約取得用顧客担当", "契約取得用社長"))
 	assert.NoError(t, err)
-	assert.Len(t, validErrs, 0)
+	assert.Len(t, userCreateResponse.ValidationErrors, 0)
+	user := userCreateResponse.UserDto
 
 	// 検証用データ(契約)登録
-	contractAppService := application_service.NewContractApplicationService()
-	contract, validErrs, err := contractAppService.Register(user.Id, productResponse.ProductDto.Id, time.Now())
+	contractCreateInteractor := create3.NewContractCreateInteractor(userRep, productRep, contractRep)
+	contractCreateResponse, err := contractCreateInteractor.Handle(create3.NewContractCreateUseCaseRequest(user.Id, productResponse.ProductDto.Id, time.Now()))
 	assert.NoError(t, err)
-	assert.Len(t, validErrs, 0)
+	assert.Len(t, contractCreateResponse.ValidationErrors, 0)
+	contract := contractCreateResponse.ContractDto
 
 	router := newRouter()
 

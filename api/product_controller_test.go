@@ -12,12 +12,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain_CreateProduct(t *testing.T) {
-	conn, err := db_connection.GetConnection()
+	conn, err := db.GetConnection()
 	assert.NoError(t, err)
 	defer conn.Db.Close()
 

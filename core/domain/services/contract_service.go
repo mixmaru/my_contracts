@@ -5,7 +5,6 @@ import (
 	"github.com/mixmaru/my_contracts/core/application/users"
 	"github.com/mixmaru/my_contracts/core/domain/models/contract"
 	"github.com/mixmaru/my_contracts/core/domain/models/product"
-	"github.com/mixmaru/my_contracts/domains/contracts/entities"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
@@ -97,9 +96,9 @@ func (c *ContractDomainService) calculateBillingStartDate(contractDate time.Time
 /*
 渡された契約集約の使用権を元に、次の期間の使用権を作成して返す（永続化はしない）
 */
-func CreateNextTermRightToUse(currentRightToUse *contract.RightToUseEntity, product *product.ProductEntity) (*contract.RightToUseEntity, error) {
+func CreateNextTermRightToUse(currentRightToUse *contract.RightToUseEntity, productEntity *product.ProductEntity) (*contract.RightToUseEntity, error) {
 	// 商品の期間（年、月、カスタム期間）を取得する
-	termType, err := product.GetTermType()
+	termType, err := productEntity.GetTermType()
 	if err != nil {
 		return nil, err
 	}
@@ -109,20 +108,20 @@ func CreateNextTermRightToUse(currentRightToUse *contract.RightToUseEntity, prod
 	from := currentRightToUse.ValidTo().In(jst)
 	var to time.Time
 	switch termType {
-	case entities.TermMonthly:
+	case product.TermMonthly:
 		to = from.AddDate(0, 1, 0)
-	case entities.TermYearly:
+	case product.TermYearly:
 		to = from.AddDate(1, 0, 0)
-	case entities.TermCustom:
-		term, err := product.GetCustomTerm()
+	case product.TermCustom:
+		term, err := productEntity.GetCustomTerm()
 		if err != nil {
 			return nil, err
 		}
 		to = from.AddDate(0, 0, term)
-	case entities.TermLump:
-		return nil, errors.Errorf("一括購入タイプの商品は継続処理できません。termType: %v, product: %+v", termType, product)
+	case product.TermLump:
+		return nil, errors.Errorf("一括購入タイプの商品は継続処理できません。termType: %v, productEntity: %+v", termType, productEntity)
 	default:
-		return nil, errors.Errorf("考慮外のtermType。termType: %v, product: %+v", termType, product)
+		return nil, errors.Errorf("考慮外のtermType。termType: %v, productEntity: %+v", termType, productEntity)
 	}
 
 	// entityを作る

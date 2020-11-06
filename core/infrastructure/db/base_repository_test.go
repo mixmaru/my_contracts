@@ -2,7 +2,7 @@ package db
 
 import (
 	"github.com/mixmaru/my_contracts/core/domain/models/product"
-	"github.com/mixmaru/my_contracts/domains/contracts/entities"
+	"github.com/mixmaru/my_contracts/core/domain/models/user"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -43,7 +43,7 @@ SELECT
 
 	t.Run("データがない時_noRowがtrueで返る", func(t *testing.T) {
 		productRecord := productGetMapper{}
-		productEntity := entities.ProductEntity{}
+		productEntity := product.ProductEntity{}
 		noRow, err := baseRepository.selectOne(db, &productRecord, &productEntity, "select * from products where 1 = 2")
 		assert.NoError(t, err)
 		assert.True(t, noRow)
@@ -51,7 +51,7 @@ SELECT
 
 	t.Run("渡すrecordとentityがアベコベだったときはエラーが返る_noRowもTrueで返る", func(t *testing.T) {
 		productRecord := productGetMapper{}
-		userCorporationEntity := entities.UserCorporationEntity{}
+		userCorporationEntity := user.UserCorporationEntity{}
 		query := `
 SELECT
        1 AS id,

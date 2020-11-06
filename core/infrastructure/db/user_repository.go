@@ -5,7 +5,6 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	entities "github.com/mixmaru/my_contracts/core/domain/models/user"
-	"github.com/mixmaru/my_contracts/domains/contracts/repositories/data_mappers"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
 	"reflect"
@@ -46,7 +45,7 @@ func (r *UserRepository) SaveUserIndividual(userEntity *entities.UserIndividualE
 
 // Idで顧客情報を取得する。データがなければnilを返す
 func (r *UserRepository) GetUserById(id int, executor gorp.SqlExecutor) (interface{}, error) {
-	var mapper data_mappers.UserView
+	var mapper UserView
 	query := `
 select
    u.id as user_id,

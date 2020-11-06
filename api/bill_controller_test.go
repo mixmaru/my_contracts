@@ -2,8 +2,14 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service"
-	"github.com/mixmaru/my_contracts/domains/contracts/application_service/data_transfer_objects"
+	"github.com/mixmaru/my_contracts/core/application/bill"
+	"github.com/mixmaru/my_contracts/core/application/contracts"
+	create3 "github.com/mixmaru/my_contracts/core/application/contracts/create"
+	"github.com/mixmaru/my_contracts/core/application/products"
+	create2 "github.com/mixmaru/my_contracts/core/application/products/create"
+	"github.com/mixmaru/my_contracts/core/application/users"
+	"github.com/mixmaru/my_contracts/core/application/users/create"
+	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -12,22 +18,25 @@ import (
 	"time"
 )
 
-func createTestDate(t *testing.T) (data_transfer_objects.UserIndividualDto, data_transfer_objects.ProductDto, data_transfer_objects.ContractDto) {
+func createTestDate(t *testing.T) (users.UserIndividualDto, products.ProductDto, contracts.ContractDto) {
 	// user作成
-	userApp := application_service.NewUserApplicationService()
-	user, validErrors, err := userApp.RegisterUserIndividual("請求実行バッチapiテスト用顧客")
+	userCreateInteractor := create.NewUserIndividualCreateInteractor(db.NewUserRepository())
+	userCreateResponse, err := userCreateInteractor.Handle(create.NewUserIndividualCreateUseCaseRequest("請求実行バッチapiテスト用顧客"))
 	assert.NoError(t, err)
-	assert.Len(t, validErrors, 0)
+	assert.Len(t, userCreateResponse.ValidationErrors, 0)
+	user := userCreateResponse.UserDto
 	// 商品作成
-	productApp := application_service.NewProductApplicationService()
-	product, validErrors, err := productApp.Register("商品", "10000")
+	productCreateInteractor := create2.NewProductCreateInteractor(db.NewProductRepository())
+	productCreateResponse, err := productCreateInteractor.Handle(create2.NewProductCreateUseCaseRequest("商品", "10000"))
 	assert.NoError(t, err)
-	assert.Len(t, validErrors, 0)
+	assert.Len(t, productCreateResponse.ValidationError, 0)
+	product := productCreateResponse.ProductDto
 	// 契約作成（使用権も内部で作成されている）
-	contractApp := application_service.NewContractApplicationService()
-	contract, validErrors, err := contractApp.Register(user.Id, product.Id, utils.CreateJstTime(2020, 6, 1, 12, 30, 26, 111111000))
+	contractCreateInteractor := create3.NewContractCreateInteractor(db.NewUserRepository(), db.NewProductRepository(), db.NewContractRepository())
+	contractCreateResponse, err := contractCreateInteractor.Handle(create3.NewContractCreateUseCaseRequest(user.Id, product.Id, utils.CreateJstTime(2020, 6, 1, 12, 30, 26, 111111000)))
 	assert.NoError(t, err)
-	assert.Len(t, validErrors, 0)
+	assert.Len(t, contractCreateResponse.ValidationErrors, 0)
+	contract := contractCreateResponse.ContractDto
 	return user, product, contract
 }
 
@@ -51,19 +60,19 @@ func TestMain_executeBilling(t *testing.T) {
 		////// 検証
 		assert.Equal(t, http.StatusCreated, rec.Code)
 		// jsonパース
-		var registeredBills []*data_transfer_objects.BillDto
+		var registeredBills []*bill.BillDto
 		err := json.Unmarshal(rec.Body.Bytes(), &registeredBills)
 		assert.NoError(t, err)
 
-		expectBills := []data_transfer_objects.BillDto{
+		expectBills := []bill.BillDto{
 			{
 				BillingDate:             utils.CreateJstTime(2020, 6, 2, 0, 0, 0, 0),
 				UserId:                  user.Id,
 				PaymentConfirmed:        false,
 				PaymentConfirmedAt:      time.Time{},
 				TotalAmountExcludingTax: "10000",
-				BillDetails: []data_transfer_objects.BillDetailDto{
-					data_transfer_objects.BillDetailDto{
+				BillDetails: []bill.BillDetailDto{
+					bill.BillDetailDto{
 						BillingAmount: "10000",
 					},
 				},
@@ -105,19 +114,19 @@ func TestMain_executeBilling(t *testing.T) {
 		////// 検証
 		assert.Equal(t, http.StatusCreated, rec.Code)
 		// jsonパース
-		var registeredBills []*data_transfer_objects.BillDto
+		var registeredBills []*bill.BillDto
 		err := json.Unmarshal(rec.Body.Bytes(), &registeredBills)
 		assert.NoError(t, err)
 
-		expectBills := []data_transfer_objects.BillDto{
+		expectBills := []bill.BillDto{
 			{
 				BillingDate:             utils.CreateJstTime(2020, 6, 2, 0, 0, 0, 0),
 				UserId:                  user.Id,
 				PaymentConfirmed:        false,
 				PaymentConfirmedAt:      time.Time{},
 				TotalAmountExcludingTax: "10000",
-				BillDetails: []data_transfer_objects.BillDetailDto{
-					data_transfer_objects.BillDetailDto{
+				BillDetails: []bill.BillDetailDto{
+					bill.BillDetailDto{
 						BillingAmount: "10000",
 					},
 				},
@@ -156,7 +165,7 @@ func TestMain_executeBilling(t *testing.T) {
 		////// 検証
 		assert.Equal(t, http.StatusCreated, rec.Code)
 		// jsonパース
-		var registeredBills []*data_transfer_objects.BillDto
+		var registeredBills []*bill.BillDto
 		err := json.Unmarshal(rec.Body.Bytes(), &registeredBills)
 		assert.NoError(t, err)
 		assert.Len(t, registeredBills, 0)

@@ -1,10 +1,9 @@
 package db
 
 import (
+	"github.com/mixmaru/my_contracts/core/domain/models/contract"
 	"github.com/mixmaru/my_contracts/core/domain/models/product"
-	"github.com/mixmaru/my_contracts/domains/contracts/entities"
-	"github.com/mixmaru/my_contracts/domains/contracts/repositories"
-	"github.com/mixmaru/my_contracts/domains/contracts/repositories/db_connection"
+	"github.com/mixmaru/my_contracts/core/domain/models/user"
 	"github.com/mixmaru/my_contracts/lib/decimal"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
@@ -135,12 +134,12 @@ func TestProductRepository_GetByRightToUseId(t *testing.T) {
 
 	t.Run("RightToUseIdを渡すと関連づいている商品データを返す", func(t *testing.T) {
 		////// 準備
-		test_db, err := db_connection.GetConnection()
+		test_db, err := GetConnection()
 		assert.NoError(t, err)
 		// テスト用userの登録
-		userEntity, err := entities.NewUserIndividualEntity("請求計算用顧客")
+		userEntity, err := user.NewUserIndividualEntity("請求計算用顧客")
 		assert.NoError(t, err)
-		userRep := repositories.NewUserRepository()
+		userRep := NewUserRepository()
 		savedUserId, err := userRep.SaveUserIndividual(userEntity, test_db)
 
 		// 事前に31000円の商品を登録
@@ -151,21 +150,21 @@ func TestProductRepository_GetByRightToUseId(t *testing.T) {
 		assert.NoError(t, err)
 
 		// 使用権を作成
-		rightToUse := entities.NewRightToUseEntity(
+		rightToUse := contract.NewRightToUseEntity(
 			utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
 			utils.CreateJstTime(2020, 2, 1, 0, 0, 0, 0),
 		)
 		// 契約を作成
-		contractEntity := entities.NewContractEntity(
+		contractEntity := contract.NewContractEntity(
 			savedUserId,
 			savedProductId,
 			utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
 			utils.CreateJstTime(2020, 1, 1, 15, 11, 36, 123456),
-			[]*entities.RightToUseEntity{
+			[]*contract.RightToUseEntity{
 				rightToUse,
 			},
 		)
-		contractRep := repositories.NewContractRepository()
+		contractRep := NewContractRepository()
 		savedContractId, err := contractRep.Create(contractEntity, test_db)
 		assert.NoError(t, err)
 		// 登録した契約データを再読込
