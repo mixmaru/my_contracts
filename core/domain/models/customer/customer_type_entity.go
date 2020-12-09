@@ -29,13 +29,13 @@ func (c *CustomerTypeEntity) CustomerParamTypes() map[int]*CustomerPropertyTypeE
 }
 
 const (
-	PARAM_TYPE_STRING  string = "string"
-	PARAM_TYPE_NUMERIC string = "numeric"
+	PROPERTY_TYPE_STRING  string = "string"
+	PROPERTY_TYPE_NUMERIC string = "numeric"
 )
 
 /*
 自由に設定できるカスタマーの属性。
-name = "性別", paramType = PARAM_TYPE_STRING で、"女"とかを設定できるようになる
+name = "性別", paramType = PROPERTY_TYPE_STRING で、"女"とかを設定できるようになる
 */
 type CustomerPropertyTypeEntity struct {
 	id        int

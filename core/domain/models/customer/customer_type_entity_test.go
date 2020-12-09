@@ -15,7 +15,7 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 				1: {
 					id:        1,
 					name:      "性別",
-					paramType: PARAM_TYPE_STRING,
+					paramType: PROPERTY_TYPE_STRING,
 				},
 			},
 		}
@@ -24,7 +24,7 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 			1: {
 				id:        1,
 				name:      "性別",
-				paramType: PARAM_TYPE_STRING,
+				paramType: PROPERTY_TYPE_STRING,
 			},
 		}
 		assert.True(t, reflect.DeepEqual(expected, actual))
@@ -38,7 +38,7 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 				1: {
 					id:        1,
 					name:      "性別",
-					paramType: PARAM_TYPE_STRING,
+					paramType: PROPERTY_TYPE_STRING,
 				},
 			},
 		}
@@ -53,7 +53,7 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 			1: {
 				id:        1,
 				name:      "性別",
-				paramType: PARAM_TYPE_STRING,
+				paramType: PROPERTY_TYPE_STRING,
 			},
 		}
 		assert.True(t, reflect.DeepEqual(expected, actual))
