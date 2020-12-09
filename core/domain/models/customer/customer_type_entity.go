@@ -19,7 +19,7 @@ func (c *CustomerTypeEntity) Name() string {
 }
 
 //// 外部からいじられないようにデータコピーして渡す
-func (c *CustomerTypeEntity) CustomerParamTypes() []*CustomerPropertyTypeEntity {
+func (c *CustomerTypeEntity) CustomerPropertyTypes() []*CustomerPropertyTypeEntity {
 	retParamTypes := make([]*CustomerPropertyTypeEntity, 0, len(c.customerParamTypes))
 	for _, paramType := range c.customerParamTypes {
 		entity := *paramType

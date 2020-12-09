@@ -19,7 +19,7 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 				},
 			},
 		}
-		actual := c.CustomerParamTypes()
+		actual := c.CustomerPropertyTypes()
 		expected := []*CustomerPropertyTypeEntity{
 			{
 				id:        1,
@@ -44,11 +44,11 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 		}
 
 		// 取得した値を変更する
-		temp := c.CustomerParamTypes()
+		temp := c.CustomerPropertyTypes()
 		temp[0].name = "変更した"
 
 		// 再取得したものに影響しないか確認する
-		actual := c.CustomerParamTypes()
+		actual := c.CustomerPropertyTypes()
 		expected := []*CustomerPropertyTypeEntity{
 			{
 				id:        1,
