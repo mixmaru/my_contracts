@@ -1,15 +1,9 @@
 package customer
 
-import (
-	"time"
-)
-
 type CustomerType struct {
 	id                 int
 	name               string
 	customerParamTypes map[int]*CustomerParamType
-	createdAt          time.Time
-	updatedAt          time.Time
 }
 
 func NewCustomerType(id int, name string, customerParamTypes map[int]*CustomerParamType) *CustomerType {
@@ -47,8 +41,6 @@ type CustomerParamType struct {
 	id        int
 	name      string
 	paramType string
-	createdAt time.Time
-	updatedAt time.Time
 }
 
 func NewCustomerParamType(id int, name string, paramType string) *CustomerParamType {

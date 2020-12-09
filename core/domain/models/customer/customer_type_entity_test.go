@@ -4,7 +4,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestCustomerType_CustomerParamTypes(t *testing.T) {
@@ -17,12 +16,8 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 					id:        1,
 					name:      "性別",
 					paramType: PARAM_TYPE_STRING,
-					createdAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					updatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 				},
 			},
-			createdAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-			updatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		}
 		actual := c.CustomerParamTypes()
 		expected := map[int]*CustomerParamType{
@@ -30,8 +25,6 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 				id:        1,
 				name:      "性別",
 				paramType: PARAM_TYPE_STRING,
-				createdAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				updatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			},
 		}
 		assert.True(t, reflect.DeepEqual(expected, actual))
@@ -46,12 +39,8 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 					id:        1,
 					name:      "性別",
 					paramType: PARAM_TYPE_STRING,
-					createdAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					updatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 				},
 			},
-			createdAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-			updatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 		}
 
 		// 取得した値を変更する
@@ -65,8 +54,6 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 				id:        1,
 				name:      "性別",
 				paramType: PARAM_TYPE_STRING,
-				createdAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				updatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 			},
 		}
 		assert.True(t, reflect.DeepEqual(expected, actual))
