@@ -6,8 +6,8 @@ type CustomerTypeEntity struct {
 	customerParamTypes map[int]*CustomerParamTypeEntity
 }
 
-func NewCustomerTypeEntity(id int, name string, customerParamTypes map[int]*CustomerParamTypeEntity) *CustomerTypeEntity {
-	return &CustomerTypeEntity{id: id, name: name, customerParamTypes: customerParamTypes}
+func NewCustomerTypeEntity(name string, customerParamTypes map[int]*CustomerParamTypeEntity) *CustomerTypeEntity {
+	return &CustomerTypeEntity{name: name, customerParamTypes: customerParamTypes}
 }
 
 func (c *CustomerTypeEntity) Id() int {
@@ -43,8 +43,8 @@ type CustomerParamTypeEntity struct {
 	paramType string
 }
 
-func NewCustomerParamTypeEntity(id int, name string, paramType string) *CustomerParamTypeEntity {
-	return &CustomerParamTypeEntity{id: id, name: name, paramType: paramType}
+func NewCustomerParamTypeEntity(name string, paramType string) *CustomerParamTypeEntity {
+	return &CustomerParamTypeEntity{name: name, paramType: paramType}
 }
 
 func (c CustomerParamTypeEntity) Id() int {
