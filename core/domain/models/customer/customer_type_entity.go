@@ -3,10 +3,10 @@ package customer
 type CustomerTypeEntity struct {
 	id                 int
 	name               string
-	customerParamTypes map[int]*CustomerParamTypeEntity
+	customerParamTypes map[int]*CustomerPropertyTypeEntity
 }
 
-func NewCustomerTypeEntity(name string, customerParamTypes map[int]*CustomerParamTypeEntity) *CustomerTypeEntity {
+func NewCustomerTypeEntity(name string, customerParamTypes map[int]*CustomerPropertyTypeEntity) *CustomerTypeEntity {
 	return &CustomerTypeEntity{name: name, customerParamTypes: customerParamTypes}
 }
 
@@ -19,8 +19,8 @@ func (c *CustomerTypeEntity) Name() string {
 }
 
 //// 外部からいじられないようにデータコピーして渡す
-func (c *CustomerTypeEntity) CustomerParamTypes() map[int]*CustomerParamTypeEntity {
-	retParamTypes := make(map[int]*CustomerParamTypeEntity, len(c.customerParamTypes))
+func (c *CustomerTypeEntity) CustomerParamTypes() map[int]*CustomerPropertyTypeEntity {
+	retParamTypes := make(map[int]*CustomerPropertyTypeEntity, len(c.customerParamTypes))
 	for _, paramType := range c.customerParamTypes {
 		entity := *paramType
 		retParamTypes[entity.id] = &entity
@@ -37,24 +37,24 @@ const (
 自由に設定できるカスタマーの属性。
 name = "性別", paramType = PARAM_TYPE_STRING で、"女"とかを設定できるようになる
 */
-type CustomerParamTypeEntity struct {
+type CustomerPropertyTypeEntity struct {
 	id        int
 	name      string
 	paramType string
 }
 
-func NewCustomerParamTypeEntity(name string, paramType string) *CustomerParamTypeEntity {
-	return &CustomerParamTypeEntity{name: name, paramType: paramType}
+func NewCustomerParamTypeEntity(name string, paramType string) *CustomerPropertyTypeEntity {
+	return &CustomerPropertyTypeEntity{name: name, paramType: paramType}
 }
 
-func (c CustomerParamTypeEntity) Id() int {
+func (c CustomerPropertyTypeEntity) Id() int {
 	return c.id
 }
 
-func (c CustomerParamTypeEntity) Name() string {
+func (c CustomerPropertyTypeEntity) Name() string {
 	return c.name
 }
 
-func (c CustomerParamTypeEntity) ParamType() string {
+func (c CustomerPropertyTypeEntity) ParamType() string {
 	return c.paramType
 }
