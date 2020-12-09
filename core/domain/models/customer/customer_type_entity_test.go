@@ -8,10 +8,10 @@ import (
 
 func TestCustomerType_CustomerParamTypes(t *testing.T) {
 	t.Run("すべてのCustomerParamTypeが返ってくる", func(t *testing.T) {
-		c := &CustomerType{
+		c := &CustomerTypeEntity{
 			id:   1,
 			name: "優良顧客",
-			customerParamTypes: map[int]*CustomerParamType{
+			customerParamTypes: map[int]*CustomerParamTypeEntity{
 				1: {
 					id:        1,
 					name:      "性別",
@@ -20,7 +20,7 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 			},
 		}
 		actual := c.CustomerParamTypes()
-		expected := map[int]*CustomerParamType{
+		expected := map[int]*CustomerParamTypeEntity{
 			1: {
 				id:        1,
 				name:      "性別",
@@ -31,10 +31,10 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 	})
 
 	t.Run("返っt北CustomerParamTypeを変更しても本体に影響しない", func(t *testing.T) {
-		c := &CustomerType{
+		c := &CustomerTypeEntity{
 			id:   1,
 			name: "優良顧客",
-			customerParamTypes: map[int]*CustomerParamType{
+			customerParamTypes: map[int]*CustomerParamTypeEntity{
 				1: {
 					id:        1,
 					name:      "性別",
@@ -49,7 +49,7 @@ func TestCustomerType_CustomerParamTypes(t *testing.T) {
 
 		// 再取得したものに影響しないか確認する
 		actual := c.CustomerParamTypes()
-		expected := map[int]*CustomerParamType{
+		expected := map[int]*CustomerParamTypeEntity{
 			1: {
 				id:        1,
 				name:      "性別",
