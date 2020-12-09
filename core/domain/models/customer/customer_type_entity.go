@@ -3,10 +3,10 @@ package customer
 type CustomerTypeEntity struct {
 	id                 int
 	name               string
-	customerParamTypes map[int]*CustomerPropertyTypeEntity
+	customerParamTypes []*CustomerPropertyTypeEntity
 }
 
-func NewCustomerTypeEntity(name string, customerParamTypes map[int]*CustomerPropertyTypeEntity) *CustomerTypeEntity {
+func NewCustomerTypeEntity(name string, customerParamTypes []*CustomerPropertyTypeEntity) *CustomerTypeEntity {
 	return &CustomerTypeEntity{name: name, customerParamTypes: customerParamTypes}
 }
 
@@ -19,11 +19,11 @@ func (c *CustomerTypeEntity) Name() string {
 }
 
 //// 外部からいじられないようにデータコピーして渡す
-func (c *CustomerTypeEntity) CustomerParamTypes() map[int]*CustomerPropertyTypeEntity {
-	retParamTypes := make(map[int]*CustomerPropertyTypeEntity, len(c.customerParamTypes))
+func (c *CustomerTypeEntity) CustomerParamTypes() []*CustomerPropertyTypeEntity {
+	retParamTypes := make([]*CustomerPropertyTypeEntity, 0, len(c.customerParamTypes))
 	for _, paramType := range c.customerParamTypes {
 		entity := *paramType
-		retParamTypes[entity.id] = &entity
+		retParamTypes = append(retParamTypes, &entity)
 	}
 	return retParamTypes
 }
