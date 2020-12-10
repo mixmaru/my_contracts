@@ -1,22 +1,24 @@
 package customer
 
+type PropertyType int8
+
 const (
-	PROPERTY_TYPE_STRING  string = "string"
-	PROPERTY_TYPE_NUMERIC string = "numeric"
+	PROPERTY_TYPE_STRING  PropertyType = 0
+	PROPERTY_TYPE_NUMERIC PropertyType = 1
 )
 
 /*
 自由に設定できるカスタマーの属性。
-name = "性別", paramType = PROPERTY_TYPE_STRING で、"女"とかを設定できるようになる
+name = "性別", propertyType = PROPERTY_TYPE_STRING で、"女"とかを設定できるようになる
 */
 type CustomerPropertyTypeEntity struct {
-	id        int
-	name      string
-	paramType string
+	id           int
+	name         string
+	propertyType PropertyType
 }
 
-func NewCustomerParamTypeEntity(name string, paramType string) *CustomerPropertyTypeEntity {
-	return &CustomerPropertyTypeEntity{name: name, paramType: paramType}
+func NewCustomerParamTypeEntity(name string, propertyType PropertyType) *CustomerPropertyTypeEntity {
+	return &CustomerPropertyTypeEntity{name: name, propertyType: propertyType}
 }
 
 func (c CustomerPropertyTypeEntity) Id() int {
@@ -27,6 +29,6 @@ func (c CustomerPropertyTypeEntity) Name() string {
 	return c.name
 }
 
-func (c CustomerPropertyTypeEntity) ParamType() string {
-	return c.paramType
+func (c CustomerPropertyTypeEntity) PropertyType() PropertyType {
+	return c.propertyType
 }
