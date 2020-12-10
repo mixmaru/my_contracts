@@ -46,9 +46,25 @@ func (r *CustomerTypeRepository) Create(customerTypeEntity *customer.CustomerTyp
 
 	////// customer_types_customer_propertiesの保存
 	// mappperに詰める
+	relations := make([]interface{}, 0, len(customerPropertyMappers))
+	for index, propertyMapperInterface := range customerPropertyMappers {
+		propertyMapper, ok := propertyMapperInterface.(*CustomerPropertyMapper)
+		if !ok {
+			return 0, errors.Wrapf(err, "*CustomerPropertyMapperへのキャストに失敗しました。%v", propertyMapperInterface)
+		}
+		ralationMapper := CustomerTypeCustomerPropertyMapper{
+			CustomerTypeId:     customerTypeMapper.Id,
+			CustomerPropertyId: propertyMapper.Id,
+			Order:              index + 1,
+		}
+		relations = append(relations, &ralationMapper)
+	}
 	// 保存実行
+	if err := executor.Insert(relations...); err != nil {
+		return 0, errors.Wrapf(err, "customer_types_customer_propertiesテーブルへの保存に失敗しました。%v", customerTypeEntity)
+	}
 
-	return 1, nil
+	return customerTypeMapper.Id, nil
 }
 
 const (
