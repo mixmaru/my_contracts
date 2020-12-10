@@ -1,11 +1,5 @@
 package db
 
-import (
-	"github.com/mixmaru/my_contracts/core/domain/models/customer"
-	"github.com/pkg/errors"
-	"gopkg.in/gorp.v2"
-)
-
 type CustomerTypeRepository struct{}
 
 func NewCustomerTypeRepository() *CustomerTypeRepository {
@@ -13,86 +7,63 @@ func NewCustomerTypeRepository() *CustomerTypeRepository {
 }
 
 // カスタマータイプを新規保存する
-func (r *CustomerTypeRepository) Create(customerTypeEntity *customer.CustomerTypeEntity, executor gorp.SqlExecutor) (savedId int, err error) {
-	////// customer_typeの保存
-	// mappperに詰める
-	customerTypeMapper := CustomerTypeMapper{
-		Name: customerTypeEntity.Name(),
-	}
-	// 保存実行
-	if err := executor.Insert(&customerTypeMapper); err != nil {
-		return 0, errors.Wrapf(err, "customer_typeテーブルへの保存に失敗しました。%v", customerTypeEntity)
-	}
-
-	////// costomer_propertiesの保存
-	// mappperに詰める
-	customerPropertyTypeEntities := customerTypeEntity.CustomerPropertyTypes()
-	customerPropertyMappers := make([]interface{}, 0, len(customerPropertyTypeEntities))
-	for _, entity := range customerPropertyTypeEntities {
-		tmpType, err := propertyTypeStringToInt(entity.ParamType())
-		if err != nil {
-			return 0, err
-		}
-		mapper := CustomerPropertyMapper{
-			Name: entity.Name(),
-			Type: tmpType,
-		}
-		customerPropertyMappers = append(customerPropertyMappers, &mapper)
-	}
-	// 保存実行
-	if err := executor.Insert(customerPropertyMappers...); err != nil {
-		return 0, errors.Wrapf(err, "customer_propertyテーブルへの保存に失敗しました。%v", customerTypeEntity)
-	}
-
-	////// customer_types_customer_propertiesの保存
-	// mappperに詰める
-	relations := make([]interface{}, 0, len(customerPropertyMappers))
-	for index, propertyMapperInterface := range customerPropertyMappers {
-		propertyMapper, ok := propertyMapperInterface.(*CustomerPropertyMapper)
-		if !ok {
-			return 0, errors.Wrapf(err, "*CustomerPropertyMapperへのキャストに失敗しました。%v", propertyMapperInterface)
-		}
-		ralationMapper := CustomerTypeCustomerPropertyMapper{
-			CustomerTypeId:     customerTypeMapper.Id,
-			CustomerPropertyId: propertyMapper.Id,
-			Order:              index + 1,
-		}
-		relations = append(relations, &ralationMapper)
-	}
-	// 保存実行
-	if err := executor.Insert(relations...); err != nil {
-		return 0, errors.Wrapf(err, "customer_types_customer_propertiesテーブルへの保存に失敗しました。%v", customerTypeEntity)
-	}
-
-	return customerTypeMapper.Id, nil
-}
-
-const (
-	PROPERTY_TYPE_STRING  = 0
-	PROPERTY_TYPE_NUMERIC = 1
-)
-
-func propertyTypeStringToInt(strType string) (int, error) {
-	switch strType {
-	case customer.PROPERTY_TYPE_STRING:
-		return PROPERTY_TYPE_STRING, nil
-	case customer.PROPERTY_TYPE_NUMERIC:
-		return PROPERTY_TYPE_NUMERIC, nil
-	default:
-		return -1, errors.Errorf("想定外の値が渡されました。strType: %v", strType)
-	}
-}
+//func (r *CustomerTypeRepository) Create(customerTypeEntity *customer.CustomerTypeEntity, executor gorp.SqlExecutor) (savedId int, err error) {
+//	////// customer_typeの保存
+//	// mappperに詰める
+//	customerTypeMapper := CustomerTypeMapper{
+//		Name: customerTypeEntity.Name(),
+//	}
+//	// 保存実行
+//	if err := executor.Insert(&customerTypeMapper); err != nil {
+//		return 0, errors.Wrapf(err, "customer_typeテーブルへの保存に失敗しました。%v", customerTypeEntity)
+//	}
+//
+//	////// costomer_propertiesの保存
+//	// mappperに詰める
+//	customerPropertyTypeEntities := customerTypeEntity.CustomerPropertyTypeIds()
+//	customerPropertyMappers := make([]interface{}, 0, len(customerPropertyTypeEntities))
+//	for _, entity := range customerPropertyTypeEntities {
+//		tmpType, err := propertyTypeStringToInt(entity.ParamType())
+//		if err != nil {
+//			return 0, err
+//		}
+//		mapper := CustomerPropertyMapper{
+//			Name: entity.Name(),
+//			Type: tmpType,
+//		}
+//		customerPropertyMappers = append(customerPropertyMappers, &mapper)
+//	}
+//	// 保存実行
+//	if err := executor.Insert(customerPropertyMappers...); err != nil {
+//		return 0, errors.Wrapf(err, "customer_propertyテーブルへの保存に失敗しました。%v", customerTypeEntity)
+//	}
+//
+//	////// customer_types_customer_propertiesの保存
+//	// mappperに詰める
+//	relations := make([]interface{}, 0, len(customerPropertyMappers))
+//	for index, propertyMapperInterface := range customerPropertyMappers {
+//		propertyMapper, ok := propertyMapperInterface.(*CustomerPropertyMapper)
+//		if !ok {
+//			return 0, errors.Wrapf(err, "*CustomerPropertyMapperへのキャストに失敗しました。%v", propertyMapperInterface)
+//		}
+//		ralationMapper := CustomerTypeCustomerPropertyMapper{
+//			CustomerTypeId:     customerTypeMapper.Id,
+//			CustomerPropertyId: propertyMapper.Id,
+//			Order:              index + 1,
+//		}
+//		relations = append(relations, &ralationMapper)
+//	}
+//	// 保存実行
+//	if err := executor.Insert(relations...); err != nil {
+//		return 0, errors.Wrapf(err, "customer_types_customer_propertiesテーブルへの保存に失敗しました。%v", customerTypeEntity)
+//	}
+//
+//	return customerTypeMapper.Id, nil
+//}
 
 type CustomerTypeMapper struct {
 	Id   int    `db:"id"`
 	Name string `db:"name"`
-	CreatedAtUpdatedAtMapper
-}
-
-type CustomerPropertyMapper struct {
-	Id   int    `db:"id"`
-	Name string `db:"name"`
-	Type int    `db:"type""`
 	CreatedAtUpdatedAtMapper
 }
 
