@@ -1,9 +1,12 @@
 package db
 
 import (
+	"fmt"
 	"github.com/mixmaru/my_contracts/core/domain/models/customer"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
+	"strconv"
+	"strings"
 )
 
 type CustomerPropertyTypeRepository struct{}
@@ -37,6 +40,34 @@ func (r *CustomerPropertyTypeRepository) Create(entities []*customer.CustomerPro
 	}
 
 	return savedIds, nil
+}
+
+// カスタマープロパティタイプIdを取得する
+func (r *CustomerPropertyTypeRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (propertyTypes []*customer.CustomerPropertyTypeEntity, err error) {
+	idsInterfaceType := make([]interface{}, 0, len(ids))
+	preparedStatement := make([]string, 0, len(ids))
+	for i, id := range ids {
+		idsInterfaceType = append(idsInterfaceType, id)
+		preparedStatement = append(preparedStatement, "$"+strconv.Itoa(int(i)+1))
+	}
+
+	query := "SELECT id, name, type FROM customer_properties WHERE id IN (%v) ORDER BY id;"
+	query = fmt.Sprintf(query, strings.Join(preparedStatement, ", "))
+
+	// データ取得実行
+	propertyTypeMappers := []*CustomerPropertyMapper{}
+	_, err = executor.Select(&propertyTypeMappers, query, idsInterfaceType...)
+	if err != nil {
+		return nil, errors.Wrapf(err, "DBからデータ取得に失敗しました。query: %v, idsInterfaceType: %v", query, idsInterfaceType)
+	}
+
+	// エンティティに詰める
+	for _, mapper := range propertyTypeMappers {
+		entity := customer.NewCustomerParamTypeEntityWithData(mapper.Id, mapper.Name, customer.PropertyType(mapper.Type))
+		propertyTypes = append(propertyTypes, entity)
+	}
+
+	return propertyTypes, nil
 }
 
 type CustomerPropertyMapper struct {

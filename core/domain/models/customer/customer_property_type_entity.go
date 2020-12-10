@@ -21,14 +21,26 @@ func NewCustomerParamTypeEntity(name string, propertyType PropertyType) *Custome
 	return &CustomerPropertyTypeEntity{name: name, propertyType: propertyType}
 }
 
-func (c CustomerPropertyTypeEntity) Id() int {
+func NewCustomerParamTypeEntityWithData(id int, name string, propertyType PropertyType) *CustomerPropertyTypeEntity {
+	entity := CustomerPropertyTypeEntity{}
+	entity.LoadData(id, name, propertyType)
+	return &entity
+}
+
+func (c *CustomerPropertyTypeEntity) Id() int {
 	return c.id
 }
 
-func (c CustomerPropertyTypeEntity) Name() string {
+func (c *CustomerPropertyTypeEntity) Name() string {
 	return c.name
 }
 
-func (c CustomerPropertyTypeEntity) PropertyType() PropertyType {
+func (c *CustomerPropertyTypeEntity) PropertyType() PropertyType {
 	return c.propertyType
+}
+
+func (c *CustomerPropertyTypeEntity) LoadData(id int, name string, propertyType PropertyType) {
+	c.id = id
+	c.name = name
+	c.propertyType = propertyType
 }
