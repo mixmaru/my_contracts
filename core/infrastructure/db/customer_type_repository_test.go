@@ -3,12 +3,13 @@ package db
 import (
 	"github.com/mixmaru/my_contracts/core/domain/models/customer"
 	"github.com/stretchr/testify/assert"
+	"reflect"
 	"strconv"
 	"testing"
 	"time"
 )
 
-func TestCustomerTypeRepository_Create(t *testing.T) {
+func TestCustomerTypeRepository_Create_And_Get(t *testing.T) {
 	t.Run("CustomerTypeエンティティを渡すとDBへ保存される", func(t *testing.T) {
 		conn, err := GetConnection()
 		assert.NoError(t, err)
@@ -39,5 +40,13 @@ func TestCustomerTypeRepository_Create(t *testing.T) {
 
 		////// 検証 todo: あとで再取得してデータが取れるか確認する
 		assert.NotZero(t, savedId)
+
+		////// データの再取得
+		reloadedEntity, err := r.GetById(savedId, conn)
+		assert.NoError(t, err)
+
+		////// 検証
+		expected := customer.NewCustomerTypeEntityWithData(savedId, "顧客名"+timestampstr, savedPropertyIds)
+		assert.True(t, reflect.DeepEqual(expected, reloadedEntity))
 	})
 }
