@@ -1,12 +1,9 @@
 package db
 
 import (
-	"fmt"
 	"github.com/mixmaru/my_contracts/core/domain/models/customer"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
-	"strconv"
-	"strings"
 )
 
 type CustomerPropertyTypeRepository struct{}
@@ -45,14 +42,11 @@ func (r *CustomerPropertyTypeRepository) Create(entities []*customer.CustomerPro
 // カスタマープロパティタイプIdを取得する
 func (r *CustomerPropertyTypeRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (propertyTypes []*customer.CustomerPropertyTypeEntity, err error) {
 	idsInterfaceType := make([]interface{}, 0, len(ids))
-	preparedStatement := make([]string, 0, len(ids))
-	for i, id := range ids {
+	for _, id := range ids {
 		idsInterfaceType = append(idsInterfaceType, id)
-		preparedStatement = append(preparedStatement, "$"+strconv.Itoa(int(i)+1))
 	}
 
-	query := "SELECT id, name, type FROM customer_properties WHERE id IN (%v) ORDER BY id;"
-	query = fmt.Sprintf(query, strings.Join(preparedStatement, ", "))
+	query := "SELECT id, name, type FROM customer_properties WHERE id IN (" + CrateInStatement(len(ids)) + ") ORDER BY id;"
 
 	// データ取得実行
 	propertyTypeMappers := []*CustomerPropertyMapper{}
