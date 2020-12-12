@@ -75,11 +75,6 @@ func (r *ContractRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (con
 	// contracts取得
 	// データマッパー用意
 	var contractMappers []*ContractMapper
-	// idsをインターフェース型に変更
-	idsInterfaceType := make([]interface{}, 0, len(ids))
-	for _, id := range ids {
-		idsInterfaceType = append(idsInterfaceType, id)
-	}
 	// sql作成
 	contractQuery := `
 select
@@ -95,7 +90,7 @@ where c.id IN (` + CrateInStatement(len(ids)) + `)
 order by c.id
 `
 	// sqlとデータマッパーでクエリ実行
-	_, err = executor.Select(&contractMappers, contractQuery, idsInterfaceType...)
+	_, err = executor.Select(&contractMappers, contractQuery, ConvertSliceTypeIntToInterface(ids)...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

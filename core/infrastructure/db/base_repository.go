@@ -41,3 +41,14 @@ func CrateInStatement(num int) string {
 	}
 	return strings.Join(tmpSlice, ", ")
 }
+
+/*
+与えられたスライス[]int型を[]interface{}型に変換する（gorpのSELECTの引数に渡せる型にする）
+*/
+func ConvertSliceTypeIntToInterface(slice []int) []interface{} {
+	retSlice := make([]interface{}, 0, len(slice))
+	for _, c := range slice {
+		retSlice = append(retSlice, c)
+	}
+	return retSlice
+}

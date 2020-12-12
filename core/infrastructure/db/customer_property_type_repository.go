@@ -41,18 +41,13 @@ func (r *CustomerPropertyTypeRepository) Create(entities []*customer.CustomerPro
 
 // カスタマープロパティタイプIdを取得する
 func (r *CustomerPropertyTypeRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (propertyTypes []*customer.CustomerPropertyTypeEntity, err error) {
-	idsInterfaceType := make([]interface{}, 0, len(ids))
-	for _, id := range ids {
-		idsInterfaceType = append(idsInterfaceType, id)
-	}
-
 	query := "SELECT id, name, type FROM customer_properties WHERE id IN (" + CrateInStatement(len(ids)) + ") ORDER BY id;"
 
 	// データ取得実行
 	propertyTypeMappers := []*CustomerPropertyMapper{}
-	_, err = executor.Select(&propertyTypeMappers, query, idsInterfaceType...)
+	_, err = executor.Select(&propertyTypeMappers, query, ConvertSliceTypeIntToInterface(ids)...)
 	if err != nil {
-		return nil, errors.Wrapf(err, "DBからデータ取得に失敗しました。query: %v, idsInterfaceType: %v", query, idsInterfaceType)
+		return nil, errors.Wrapf(err, "DBからデータ取得に失敗しました。query: %v, ids: %v", query, ids)
 	}
 
 	// エンティティに詰める
