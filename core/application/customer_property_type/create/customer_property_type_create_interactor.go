@@ -23,6 +23,12 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 	request *CustomerPropertyTypeCreateUseCaseRequest,
 ) (*CustomerPropertyTypeCreateUseCaseResponse, error) {
 	response := CustomerPropertyTypeCreateUseCaseResponse{}
+	// バリデーション
+	response.ValidationError = validation(request)
+
+	if len(response.ValidationError) > 0 {
+		return &response, nil
+	}
 
 	// エンティティを作る
 	var propertyType customer.PropertyType
@@ -32,7 +38,7 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 	case "numeric":
 		propertyType = customer.PROPERTY_TYPE_NUMERIC
 	default:
-		return nil, nil
+		return nil, errors.Errorf("想定外")
 	}
 	entity := customer.NewCustomerPropertyTypeEntity(request.Name, propertyType)
 
@@ -69,6 +75,18 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 	}
 
 	return &response, nil
+}
+
+func validation(request *CustomerPropertyTypeCreateUseCaseRequest) map[string][]string {
+	validationErrors := map[string][]string{}
+
+	// 同名チェック
+
+	// タイプチェック
+	if request.Type != "string" && request.Type != "numeric" {
+		validationErrors["type"] = []string{"stringでもnumericでもありません"}
+	}
+	return validationErrors
 }
 
 //
