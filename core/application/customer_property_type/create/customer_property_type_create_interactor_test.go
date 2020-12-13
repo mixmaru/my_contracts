@@ -22,7 +22,18 @@ func TestCustomerPropertyTypeCreateInteractor_Register(t *testing.T) {
 		assert.Equal(t, "string", response.CustomerPropertyTypeDto.Type)
 
 		t.Run("既に登録されているプロパティ名だった場合はバリデーションエラーになる", func(t *testing.T) {
+			request := NewCustomerPropertyTypeCreateUseCaseRequest("性別"+timestampstr, "string")
+			response, err := interactor.Handle(request)
+			assert.NoError(t, err)
+			expect := map[string][]string{
+				"name": []string{
+					"既に存在する名前です",
+				},
+			}
 
+			assert.Len(t, response.ValidationError, 1)
+			assert.Equal(t, expect, response.ValidationError)
+			assert.Zero(t, response.CustomerPropertyTypeDto.Id)
 		})
 	})
 

@@ -5,6 +5,7 @@ import (
 	"github.com/mixmaru/my_contracts/core/domain/models/customer"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/pkg/errors"
+	"gopkg.in/gorp.v2"
 )
 
 type CustomerPropertyTypeCreateInteractor struct {
@@ -23,8 +24,24 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 	request *CustomerPropertyTypeCreateUseCaseRequest,
 ) (*CustomerPropertyTypeCreateUseCaseResponse, error) {
 	response := CustomerPropertyTypeCreateUseCaseResponse{}
+
+	var err error
+	// db接続
+	conn, err := db.GetConnection()
+	if err != nil {
+		return nil, errors.Wrapf(err, "db接続に失敗しました")
+	}
+	defer conn.Db.Close()
+	tran, err := conn.Begin()
+	if err != nil {
+		return nil, errors.Wrapf(err, "トランザクション開始に失敗しました")
+	}
+
 	// バリデーション
-	response.ValidationError = validation(request)
+	response.ValidationError, err = i.validation(request, tran)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(response.ValidationError) > 0 {
 		return &response, nil
@@ -43,15 +60,7 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 	entity := customer.NewCustomerPropertyTypeEntity(request.Name, propertyType)
 
 	// 登録実行する
-	conn, err := db.GetConnection()
-	if err != nil {
-		return nil, errors.Wrapf(err, "db接続に失敗しました")
-	}
-	defer conn.Db.Close()
-	tran, err := conn.Begin()
-	if err != nil {
-		return nil, errors.Wrapf(err, "トランザクション開始に失敗しました")
-	}
+
 	savedIds, err := i.customerPropertyTypeRepository.Create([]*customer.CustomerPropertyTypeEntity{entity}, tran)
 	if err != nil {
 		tran.Rollback()
@@ -77,16 +86,23 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 	return &response, nil
 }
 
-func validation(request *CustomerPropertyTypeCreateUseCaseRequest) map[string][]string {
+func (i *CustomerPropertyTypeCreateInteractor) validation(request *CustomerPropertyTypeCreateUseCaseRequest, executor gorp.SqlExecutor) (map[string][]string, error) {
 	validationErrors := map[string][]string{}
 
 	// 同名チェック
+	entity, err := i.customerPropertyTypeRepository.GetByName(request.Name, executor)
+	if err != nil {
+		return nil, err
+	}
+	if entity != nil {
+		validationErrors["name"] = []string{"既に存在する名前です"}
+	}
 
 	// タイプチェック
 	if request.Type != "string" && request.Type != "numeric" {
 		validationErrors["type"] = []string{"stringでもnumericでもありません"}
 	}
-	return validationErrors
+	return validationErrors, nil
 }
 
 //

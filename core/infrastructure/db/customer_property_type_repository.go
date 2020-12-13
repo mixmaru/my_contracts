@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"github.com/mixmaru/my_contracts/core/domain/models/customer"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
@@ -65,6 +66,10 @@ func (r *CustomerPropertyTypeRepository) GetByName(name string, executor gorp.Sq
 	// データ取得実行
 	var mapper CustomerPropertyMapper
 	if err := executor.SelectOne(&mapper, query, name); err != nil {
+		if err == sql.ErrNoRows {
+			// データがなかった場合
+			return nil, nil
+		}
 		return nil, errors.Wrapf(err, "DBからデータ取得に失敗しました。query: %v, name: %v", query, name)
 	}
 
