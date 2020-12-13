@@ -20,6 +20,8 @@ func NewCustomerPropertyTypeCreateInteractor(
 	}
 }
 
+const MAX_RETRY_NUM int = 1
+
 func (i *CustomerPropertyTypeCreateInteractor) Handle(
 	request *CustomerPropertyTypeCreateUseCaseRequest,
 ) (*CustomerPropertyTypeCreateUseCaseResponse, error) {
@@ -36,39 +38,57 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 	if err != nil {
 		return nil, errors.Wrapf(err, "トランザクション開始に失敗しました")
 	}
-
-	// バリデーション
-	response.ValidationError, err = i.validation(request, tran)
+	// 重複チェック後にデータ挿入されてファントムリードが起こることを防ぐためリピータブルリードにする
+	_, err = tran.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;")
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "トランザクション分離レベルの変更に失敗しました")
 	}
 
-	if len(response.ValidationError) > 0 {
-		return &response, nil
-	}
+	// ファントムリードが起こったら1回まで再実行する
+	execCount := 0
+	var savedIds []int
+	for {
+		execCount++
+		if execCount > MAX_RETRY_NUM {
+			return nil, errors.Errorf("実行回数がMAX_RETRY_NUMを超えました。execCount: %v, MAX_RETRY_NUM: %v, request: %+v", execCount, MAX_RETRY_NUM, request)
+		}
 
-	// エンティティを作る
-	var propertyType customer.PropertyType
-	switch request.Type {
-	case "string":
-		propertyType = customer.PROPERTY_TYPE_STRING
-	case "numeric":
-		propertyType = customer.PROPERTY_TYPE_NUMERIC
-	default:
-		return nil, errors.Errorf("想定外")
-	}
-	entity := customer.NewCustomerPropertyTypeEntity(request.Name, propertyType)
+		// バリデーション
+		response.ValidationError, err = i.validation(request, tran)
+		if err != nil {
+			return nil, err
+		}
 
-	// 登録実行する
+		if len(response.ValidationError) > 0 {
+			return &response, nil
+		}
 
-	savedIds, err := i.customerPropertyTypeRepository.Create([]*customer.CustomerPropertyTypeEntity{entity}, tran)
-	if err != nil {
-		tran.Rollback()
-		return nil, errors.Wrapf(err, "保存実行に失敗しました。entity: %v", entity)
-	}
-	if err := tran.Commit(); err != nil {
-		tran.Rollback()
-		return nil, errors.Wrapf(err, "コミットに失敗しました")
+		// エンティティを作る
+		var propertyType customer.PropertyType
+		switch request.Type {
+		case "string":
+			propertyType = customer.PROPERTY_TYPE_STRING
+		case "numeric":
+			propertyType = customer.PROPERTY_TYPE_NUMERIC
+		default:
+			return nil, errors.Errorf("想定外")
+		}
+		entity := customer.NewCustomerPropertyTypeEntity(request.Name, propertyType)
+
+		// 登録実行する
+		savedIds, err = i.customerPropertyTypeRepository.Create([]*customer.CustomerPropertyTypeEntity{entity}, tran)
+		if err != nil {
+			if !(execCount > MAX_RETRY_NUM) {
+				continue
+			}
+			tran.Rollback()
+			return nil, errors.Wrapf(err, "保存実行に失敗しました。entity: %v", entity)
+		}
+		if err := tran.Commit(); err != nil {
+			tran.Rollback()
+			return nil, errors.Wrapf(err, "コミットに失敗しました")
+		}
+		break
 	}
 
 	// 再読込する

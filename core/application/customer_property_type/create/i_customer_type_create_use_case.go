@@ -14,9 +14,6 @@ type CustomerPropertyTypeCreateUseCaseRequest struct {
 }
 
 func NewCustomerPropertyTypeCreateUseCaseRequest(name string, propertyType string) *CustomerPropertyTypeCreateUseCaseRequest {
-	//if propertyType != "string" && propertyType != "numeric" {
-	//	return nil, errors.Errorf("propertyTypeがstringでもnumericでもありません。propertyType: %v", propertyType)
-	//} todo: Handleでバリデーションを実行するからこの時点での確認は不要
 	return &CustomerPropertyTypeCreateUseCaseRequest{Name: name, Type: propertyType}
 }
 
