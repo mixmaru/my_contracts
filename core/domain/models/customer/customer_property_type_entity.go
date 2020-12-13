@@ -17,11 +17,11 @@ type CustomerPropertyTypeEntity struct {
 	propertyType PropertyType
 }
 
-func NewCustomerParamTypeEntity(name string, propertyType PropertyType) *CustomerPropertyTypeEntity {
+func NewCustomerPropertyTypeEntity(name string, propertyType PropertyType) *CustomerPropertyTypeEntity {
 	return &CustomerPropertyTypeEntity{name: name, propertyType: propertyType}
 }
 
-func NewCustomerParamTypeEntityWithData(id int, name string, propertyType PropertyType) *CustomerPropertyTypeEntity {
+func NewCustomerPropertyTypeEntityWithData(id int, name string, propertyType PropertyType) *CustomerPropertyTypeEntity {
 	entity := CustomerPropertyTypeEntity{}
 	entity.LoadData(id, name, propertyType)
 	return &entity

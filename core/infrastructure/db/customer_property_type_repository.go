@@ -52,7 +52,7 @@ func (r *CustomerPropertyTypeRepository) GetByIds(ids []int, executor gorp.SqlEx
 
 	// エンティティに詰める
 	for _, mapper := range propertyTypeMappers {
-		entity := customer.NewCustomerParamTypeEntityWithData(mapper.Id, mapper.Name, customer.PropertyType(mapper.Type))
+		entity := customer.NewCustomerPropertyTypeEntityWithData(mapper.Id, mapper.Name, customer.PropertyType(mapper.Type))
 		propertyTypes = append(propertyTypes, entity)
 	}
 

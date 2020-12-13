@@ -21,9 +21,9 @@ func TestCustomerTypeRepository_Create_And_Get(t *testing.T) {
 		timestamp := time.Now().UnixNano()
 		timestampstr := strconv.Itoa(int(timestamp))
 		customerProperties := []*customer.CustomerPropertyTypeEntity{
-			customer.NewCustomerParamTypeEntity("性別"+timestampstr, customer.PROPERTY_TYPE_STRING),
-			customer.NewCustomerParamTypeEntity("年齢"+timestampstr, customer.PROPERTY_TYPE_NUMERIC),
-			customer.NewCustomerParamTypeEntity("住所"+timestampstr, customer.PROPERTY_TYPE_STRING),
+			customer.NewCustomerPropertyTypeEntity("性別"+timestampstr, customer.PROPERTY_TYPE_STRING),
+			customer.NewCustomerPropertyTypeEntity("年齢"+timestampstr, customer.PROPERTY_TYPE_NUMERIC),
+			customer.NewCustomerPropertyTypeEntity("住所"+timestampstr, customer.PROPERTY_TYPE_STRING),
 		}
 		propertyTypeRep := NewCustomerPropertyTypeRepository()
 		savedPropertyIds, err := propertyTypeRep.Create(customerProperties, tran)

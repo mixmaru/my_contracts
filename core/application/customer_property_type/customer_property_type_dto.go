@@ -1,4 +1,4 @@
-package products
+package customer_property_type
 
 import (
 	"github.com/mixmaru/my_contracts/core/domain/models/customer"

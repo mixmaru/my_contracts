@@ -1,13 +1,18 @@
 package create
 
-import products "github.com/mixmaru/my_contracts/core/application/customer_property_type"
+import (
+	"github.com/mixmaru/my_contracts/core/application/customer_property_type"
+	"github.com/mixmaru/my_contracts/core/domain/models/customer"
+	"github.com/mixmaru/my_contracts/core/infrastructure/db"
+	"github.com/pkg/errors"
+)
 
 type CustomerPropertyTypeCreateInteractor struct {
-	customerPropertyTypeRepository products.ICustomerPropertyTypeRepository
+	customerPropertyTypeRepository customer_property_type.ICustomerPropertyTypeRepository
 }
 
 func NewCustomerPropertyTypeCreateInteractor(
-	customerPropertyTypeRepository products.ICustomerPropertyTypeRepository,
+	customerPropertyTypeRepository customer_property_type.ICustomerPropertyTypeRepository,
 ) *CustomerPropertyTypeCreateInteractor {
 	return &CustomerPropertyTypeCreateInteractor{
 		customerPropertyTypeRepository: customerPropertyTypeRepository,
@@ -17,7 +22,53 @@ func NewCustomerPropertyTypeCreateInteractor(
 func (i *CustomerPropertyTypeCreateInteractor) Handle(
 	request *CustomerPropertyTypeCreateUseCaseRequest,
 ) (*CustomerPropertyTypeCreateUseCaseResponse, error) {
-	return nil, nil
+	response := CustomerPropertyTypeCreateUseCaseResponse{}
+
+	// エンティティを作る
+	var propertyType customer.PropertyType
+	switch request.Type {
+	case "string":
+		propertyType = customer.PROPERTY_TYPE_STRING
+	case "numeric":
+		propertyType = customer.PROPERTY_TYPE_NUMERIC
+	default:
+		return nil, nil
+	}
+	entity := customer.NewCustomerPropertyTypeEntity(request.Name, propertyType)
+
+	// 登録実行する
+	conn, err := db.GetConnection()
+	if err != nil {
+		return nil, errors.Wrapf(err, "db接続に失敗しました")
+	}
+	defer conn.Db.Close()
+	tran, err := conn.Begin()
+	if err != nil {
+		return nil, errors.Wrapf(err, "トランザクション開始に失敗しました")
+	}
+	savedIds, err := i.customerPropertyTypeRepository.Create([]*customer.CustomerPropertyTypeEntity{entity}, tran)
+	if err != nil {
+		tran.Rollback()
+		return nil, errors.Wrapf(err, "保存実行に失敗しました。entity: %v", entity)
+	}
+	if err := tran.Commit(); err != nil {
+		tran.Rollback()
+		return nil, errors.Wrapf(err, "コミットに失敗しました")
+	}
+
+	// 再読込する
+	reloadedEntities, err := i.customerPropertyTypeRepository.GetByIds(savedIds, conn)
+	if err != nil {
+		return nil, errors.Wrapf(err, "再読込に失敗しました。savedIds: %v", savedIds)
+	}
+
+	// dtoに詰める
+	response.CustomerPropertyTypeDto, err = customer_property_type.NewCustomerPropertyTypeDtoFromEntity(reloadedEntities[0])
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
 }
 
 //
