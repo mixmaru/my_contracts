@@ -42,3 +42,31 @@ func TestCustomerPropertyTypeRepository_Create_And_GetByIds(t *testing.T) {
 		assert.True(t, reflect.DeepEqual(actual, expected))
 	})
 }
+
+func TestCustomerPropertyTypeRepository_GetByName(t *testing.T) {
+	t.Run("Nameでデータを取得できる", func(t *testing.T) {
+		////// 準備
+		// 事前データ登録
+		timestampstr := utils.CreateTimestampString()
+		customerProperties := []*customer.CustomerPropertyTypeEntity{
+			customer.NewCustomerPropertyTypeEntity("重複テスト"+timestampstr, customer.PROPERTY_TYPE_STRING),
+		}
+		conn, err := GetConnection()
+		assert.NoError(t, err)
+		tran, err := conn.Begin()
+		assert.NoError(t, err)
+		r := NewCustomerPropertyTypeRepository()
+		savedIds, err := r.Create(customerProperties, tran)
+		assert.NoError(t, err)
+		err = tran.Commit()
+		assert.NoError(t, err)
+
+		////// 実行
+		entity, err := r.GetByName("重複テスト"+timestampstr, conn)
+		assert.NoError(t, err)
+
+		////// 検証
+		assert.Equal(t, savedIds[0], entity.Id())
+
+	})
+}

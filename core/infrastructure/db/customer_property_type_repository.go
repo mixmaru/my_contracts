@@ -59,6 +59,21 @@ func (r *CustomerPropertyTypeRepository) GetByIds(ids []int, executor gorp.SqlEx
 	return propertyTypes, nil
 }
 
+func (r *CustomerPropertyTypeRepository) GetByName(name string, executor gorp.SqlExecutor) (propertyType *customer.CustomerPropertyTypeEntity, err error) {
+	query := "SELECT id, name, type FROM customer_properties WHERE name = $1 ORDER BY id;"
+
+	// データ取得実行
+	var mapper CustomerPropertyMapper
+	if err := executor.SelectOne(&mapper, query, name); err != nil {
+		return nil, errors.Wrapf(err, "DBからデータ取得に失敗しました。query: %v, name: %v", query, name)
+	}
+
+	// エンティティに詰める
+	entity := customer.NewCustomerPropertyTypeEntityWithData(mapper.Id, mapper.Name, customer.PropertyType(mapper.Type))
+
+	return entity, nil
+}
+
 type CustomerPropertyMapper struct {
 	Id   int    `db:"id"`
 	Name string `db:"name"`
