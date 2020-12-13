@@ -53,6 +53,48 @@ func TestCustomerPropertyTypeCreateInteractor_Register(t *testing.T) {
 		assert.Equal(t, expect, response.ValidationError)
 		assert.Zero(t, response.CustomerPropertyTypeDto.Id)
 	})
+
+	t.Run("同時に同じ名前で登録処理が走っても重複エラーが起きない（ファントムリードでのエラーが起きない）", func(t *testing.T) {
+		timestampstr := utils.CreateTimestampString()
+		request := NewCustomerPropertyTypeCreateUseCaseRequest("同時実行テスト"+timestampstr, "string")
+
+		type ret struct {
+			response *CustomerPropertyTypeCreateUseCaseResponse
+			error    error
+		}
+		retCh := make(chan ret)
+		for i := 0; i < 50; i++ {
+			go func() {
+				response, err := interactor.Handle(request)
+				retCh <- ret{
+					response: response,
+					error:    err,
+				}
+			}()
+		}
+
+		// ゴルーチンで並列でたくさん実行してエラーがでないかテストしてる
+		var savedResponse *CustomerPropertyTypeCreateUseCaseResponse
+		for i := 0; i < 50; i++ {
+			select {
+			case retVal := <-retCh:
+				if retVal.error != nil {
+					assert.Failf(t, "エラーが発生した。", retVal.error.Error())
+				}
+				if savedResponse == nil {
+					// 登録実行されてもOK
+					if len(retVal.response.ValidationError) == 0 {
+						savedResponse = retVal.response
+					} else {
+						assert.Failf(t, "なぜかバリデーションに失敗してる。", "%v", retVal.response)
+					}
+				} else {
+					// バリデーションエラーになってればOK
+					assert.Len(t, retVal.response.ValidationError, 1)
+				}
+			}
+		}
+	})
 }
 
 //func TestProductApplicationService_registerValidation(t *testing.T) {

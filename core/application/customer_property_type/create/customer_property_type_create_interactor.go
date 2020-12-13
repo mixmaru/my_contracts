@@ -20,7 +20,7 @@ func NewCustomerPropertyTypeCreateInteractor(
 	}
 }
 
-const MAX_RETRY_NUM int = 1
+const MAX_RETRY_NUM int = 2
 
 func (i *CustomerPropertyTypeCreateInteractor) Handle(
 	request *CustomerPropertyTypeCreateUseCaseRequest,
@@ -34,15 +34,6 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 		return nil, errors.Wrapf(err, "db接続に失敗しました")
 	}
 	defer conn.Db.Close()
-	tran, err := conn.Begin()
-	if err != nil {
-		return nil, errors.Wrapf(err, "トランザクション開始に失敗しました")
-	}
-	// 重複チェック後にデータ挿入されてファントムリードが起こることを防ぐためリピータブルリードにする
-	_, err = tran.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;")
-	if err != nil {
-		return nil, errors.Wrapf(err, "トランザクション分離レベルの変更に失敗しました")
-	}
 
 	// ファントムリードが起こったら1回まで再実行する
 	execCount := 0
@@ -51,6 +42,16 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 		execCount++
 		if execCount > MAX_RETRY_NUM {
 			return nil, errors.Errorf("実行回数がMAX_RETRY_NUMを超えました。execCount: %v, MAX_RETRY_NUM: %v, request: %+v", execCount, MAX_RETRY_NUM, request)
+		}
+
+		tran, err := conn.Begin()
+		if err != nil {
+			return nil, errors.Wrapf(err, "トランザクション開始に失敗しました")
+		}
+		// 重複チェック後にデータ挿入されてファントムリードが起こることを防ぐためリピータブルリードにする
+		_, err = tran.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;")
+		if err != nil {
+			return nil, errors.Wrapf(err, "トランザクション分離レベルの変更に失敗しました")
 		}
 
 		// バリデーション
@@ -78,7 +79,7 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 		// 登録実行する
 		savedIds, err = i.customerPropertyTypeRepository.Create([]*customer.CustomerPropertyTypeEntity{entity}, tran)
 		if err != nil {
-			if !(execCount > MAX_RETRY_NUM) {
+			if execCount < MAX_RETRY_NUM {
 				continue
 			}
 			tran.Rollback()
