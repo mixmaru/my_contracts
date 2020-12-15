@@ -46,22 +46,3 @@ func (i *CustomerPropertyTypeGetByIdsInteractor) Handle(
 	// 返却
 	return &response, nil
 }
-
-//func (i *CustomerPropertyTypeGetByIdsInteractor) validation(request *CustomerPropertyTypeGetByIdsUseCaseRequest, executor gorp.SqlExecutor) (map[string][]string, error) {
-//	validationErrors := map[string][]string{}
-//
-//	// 同名チェック
-//	entity, err := i.customerPropertyTypeRepository.GetByName(request.Name, executor)
-//	if err != nil {
-//		return nil, err
-//	}
-//	if entity != nil {
-//		validationErrors["name"] = []string{"既に存在する名前です"}
-//	}
-//
-//	// タイプチェック
-//	if request.Type != "string" && request.Type != "numeric" {
-//		validationErrors["type"] = []string{"stringでもnumericでもありません"}
-//	}
-//	return validationErrors, nil
-//}

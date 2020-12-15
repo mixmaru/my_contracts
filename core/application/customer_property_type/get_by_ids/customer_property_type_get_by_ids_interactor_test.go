@@ -30,6 +30,17 @@ func TestCustomerPropertyTypeGetByIdsInteractor_Register(t *testing.T) {
 		assert.Equal(t, ids[0], response.CustomerPropertyTypeDtos[0].Id)
 		assert.Equal(t, ids[1], response.CustomerPropertyTypeDtos[1].Id)
 	})
+
+	t.Run("存在しないidのリストを渡すと空スライスで返ってくる", func(t *testing.T) {
+		////// 実行
+		request := NewCustomerPropertyTypeGetByIdsUseCaseRequest([]int{-100, -200})
+		response, err := interactor.Handle(request)
+		assert.NoError(t, err)
+
+		////// 検証
+		assert.Len(t, response.ValidationError, 0)
+		assert.Len(t, response.CustomerPropertyTypeDtos, 0)
+	})
 }
 
 func preCreate() ([]int, error) {
