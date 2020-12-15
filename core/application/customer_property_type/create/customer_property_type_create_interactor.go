@@ -35,7 +35,8 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 	}
 	defer conn.Db.Close()
 
-	// ファントムリードが起こったら1回まで再実行する
+	// 事前にnameの重複チェックを行っても別トランザクションから先に挿入されると重複する可能性がある
+	// nameの重複が起こったら1回まで再実行する
 	execCount := 0
 	var savedIds []int
 	for {
@@ -47,11 +48,6 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 		tran, err := conn.Begin()
 		if err != nil {
 			return nil, errors.Wrapf(err, "トランザクション開始に失敗しました")
-		}
-		// 重複チェック後にデータ挿入されてファントムリードが起こることを防ぐためリピータブルリードにする
-		_, err = tran.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;")
-		if err != nil {
-			return nil, errors.Wrapf(err, "トランザクション分離レベルの変更に失敗しました")
 		}
 
 		// バリデーション
