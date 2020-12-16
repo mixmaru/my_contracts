@@ -50,3 +50,18 @@ func TestCustomerTypeRepository_Create_And_Get(t *testing.T) {
 		assert.True(t, reflect.DeepEqual(expected, reloadedEntity))
 	})
 }
+
+func TestCustomerTypeRepository_GetById(t *testing.T) {
+	t.Run("存在しないidを渡されるとnilを返す", func(t *testing.T) {
+		conn, err := GetConnection()
+		assert.NoError(t, err)
+
+		////// 実行
+		r := NewCustomerTypeRepository()
+		reloadedEntity, err := r.GetById(-10000, conn)
+		assert.NoError(t, err)
+
+		////// 検証
+		assert.Nil(t, reloadedEntity)
+	})
+}

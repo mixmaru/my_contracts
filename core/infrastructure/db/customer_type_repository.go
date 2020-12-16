@@ -58,6 +58,10 @@ ORDER BY ctcp.order;
 	if _, err := executor.Select(&mappers, query, id); err != nil {
 		return nil, errors.Wrapf(err, "dbからデータの取得に失敗しました。query: %v, id: %v, mappers: %+v", query, id, mappers)
 	}
+	if len(mappers) == 0 {
+		// データが存在しない
+		return nil, nil
+	}
 	// entityに詰める
 	customerPropertyIds := make([]int, 0, len(mappers))
 	for _, mapper := range mappers {
