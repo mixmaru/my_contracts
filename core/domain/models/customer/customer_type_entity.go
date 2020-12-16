@@ -1,13 +1,13 @@
 package customer
 
 type CustomerTypeEntity struct {
-	id                     int
-	name                   string
-	customePropertyTypeIds []int
+	id                      int
+	name                    string
+	customerPropertyTypeIds []int
 }
 
 func NewCustomerTypeEntity(name string, customerPropertyTypeIds []int) *CustomerTypeEntity {
-	return &CustomerTypeEntity{name: name, customePropertyTypeIds: customerPropertyTypeIds}
+	return &CustomerTypeEntity{name: name, customerPropertyTypeIds: customerPropertyTypeIds}
 }
 
 func NewCustomerTypeEntityWithData(id int, name string, customerParamTypeIds []int) *CustomerTypeEntity {
@@ -25,11 +25,11 @@ func (c *CustomerTypeEntity) Name() string {
 }
 
 func (c *CustomerTypeEntity) CustomerPropertyTypeIds() []int {
-	return c.customePropertyTypeIds
+	return c.customerPropertyTypeIds
 }
 
 func (c *CustomerTypeEntity) LoadData(id int, name string, customerParamTypeIds []int) {
 	c.id = id
 	c.name = name
-	c.customePropertyTypeIds = customerParamTypeIds
+	c.customerPropertyTypeIds = customerParamTypeIds
 }
