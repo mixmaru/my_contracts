@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"github.com/mixmaru/my_contracts/core/domain/models/customer"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
@@ -44,16 +45,7 @@ func (r *CustomerTypeRepository) Create(customerTypeEntity *customer.CustomerTyp
 }
 
 func (r *CustomerTypeRepository) GetById(id int, executor gorp.SqlExecutor) (entity *customer.CustomerTypeEntity, err error) {
-	query := `
-SELECT
-	id,
-	name,
-    ctcp.customer_property_id
-FROM customer_types ct
-INNER JOIN customer_types_customer_properties ctcp on ct.id = ctcp.customer_type_id
-WHERE ct.id = $1
-ORDER BY ctcp.order;
-`
+	query := createGettingQuery("customer_types.id = $1")
 	mappers := []*CustomerTypeForLoadMapper{}
 	if _, err := executor.Select(&mappers, query, id); err != nil {
 		return nil, errors.Wrapf(err, "dbからデータの取得に失敗しました。query: %v, id: %v, mappers: %+v", query, id, mappers)
@@ -62,12 +54,47 @@ ORDER BY ctcp.order;
 		// データが存在しない
 		return nil, nil
 	}
-	// entityに詰める
+	retEntity := convertToEntity(mappers)
+	return retEntity, nil
+}
+
+func createGettingQuery(whereQuery string) string {
+	baseQuery := `
+SELECT
+    id,
+    name,
+    customer_types_customer_properties.customer_property_id
+FROM customer_types
+INNER JOIN customer_types_customer_properties on customer_types.id = customer_types_customer_properties.customer_type_id
+WHERE %s
+ORDER BY customer_types_customer_properties.order;
+`
+	query := fmt.Sprintf(baseQuery, whereQuery)
+	return query
+}
+
+func convertToEntity(mappers []*CustomerTypeForLoadMapper) *customer.CustomerTypeEntity {
+	//entityに詰める
 	customerPropertyIds := make([]int, 0, len(mappers))
 	for _, mapper := range mappers {
 		customerPropertyIds = append(customerPropertyIds, mapper.CustomerPropertyId)
 	}
 	retEntity := customer.NewCustomerTypeEntityWithData(mappers[0].Id, mappers[0].Name, customerPropertyIds)
+	return retEntity
+}
+
+func (r *CustomerTypeRepository) GetByName(name string, executor gorp.SqlExecutor) (entity *customer.CustomerTypeEntity, err error) {
+	query := createGettingQuery("customer_types.name = $1")
+
+	var mappers []*CustomerTypeForLoadMapper
+	if _, err := executor.Select(&mappers, query, name); err != nil {
+		return nil, errors.Wrapf(err, "dbからデータの取得に失敗しました。query: %v, name: %v", query, name)
+	}
+	if len(mappers) == 0 {
+		return nil, nil
+	}
+
+	retEntity := convertToEntity(mappers)
 	return retEntity, nil
 }
 
