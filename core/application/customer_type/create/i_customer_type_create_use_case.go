@@ -9,12 +9,12 @@ type ICustomerTypeCreateUseCase interface {
 }
 
 type CustomerTypeCreateUseCaseRequest struct {
-	Name                 string
-	CustomerParamTypeIds []int
+	Name                    string
+	CustomerPropertyTypeIds []int
 }
 
 func NewCustomerTypeCreateUseCaseRequest(name string, customerPropertyTypeIds []int) *CustomerTypeCreateUseCaseRequest {
-	return &CustomerTypeCreateUseCaseRequest{Name: name, CustomerParamTypeIds: customerPropertyTypeIds}
+	return &CustomerTypeCreateUseCaseRequest{Name: name, CustomerPropertyTypeIds: customerPropertyTypeIds}
 }
 
 type CustomerTypeCreateUseCaseResponse struct {
