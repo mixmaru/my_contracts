@@ -74,26 +74,24 @@ func TestCustomerPropertyTypeCreateInteractor_Register(t *testing.T) {
 		}
 
 		// ゴルーチンで並列でたくさん実行してエラーがでないかテストしてる
-		var savedResponse *CustomerPropertyTypeCreateUseCaseResponse
+		errorCount := 0
+		validationErrorCount := 0
+		successCount := 0
 		for i := 0; i < 50; i++ {
 			select {
 			case retVal := <-retCh:
 				if retVal.error != nil {
-					assert.Failf(t, "エラーが発生した。", retVal.error.Error())
-				}
-				if savedResponse == nil {
-					// 登録実行されてもOK
-					if len(retVal.response.ValidationError) == 0 {
-						savedResponse = retVal.response
-					} else {
-						assert.Failf(t, "なぜかバリデーションに失敗してる。", "%v", retVal.response)
-					}
-				} else {
-					// バリデーションエラーになってればOK
-					assert.Len(t, retVal.response.ValidationError, 1)
+					errorCount++
+				} else if len(retVal.response.ValidationError) > 0 {
+					validationErrorCount++
+				} else if retVal.response.CustomerPropertyTypeDto.Id != 0 {
+					successCount++
 				}
 			}
 		}
+		assert.Equal(t, 0, errorCount)
+		assert.Equal(t, 49, validationErrorCount)
+		assert.Equal(t, 1, successCount)
 	})
 }
 

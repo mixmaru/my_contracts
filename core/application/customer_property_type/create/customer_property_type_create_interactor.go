@@ -75,10 +75,10 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 		// 登録実行する
 		savedIds, err = i.customerPropertyTypeRepository.Create([]*customer.CustomerPropertyTypeEntity{entity}, tran)
 		if err != nil {
+			tran.Rollback()
 			if execCount < MAX_RETRY_NUM {
 				continue
 			}
-			tran.Rollback()
 			return nil, errors.Wrapf(err, "保存実行に失敗しました。entity: %v", entity)
 		}
 		if err := tran.Commit(); err != nil {
