@@ -1,4 +1,4 @@
-package create
+package get_by_ids
 
 import (
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type"

@@ -8,6 +8,9 @@ import (
 	create2 "github.com/mixmaru/my_contracts/core/application/contracts/create"
 	"github.com/mixmaru/my_contracts/core/application/contracts/create_next_right_to_use"
 	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
+	create3 "github.com/mixmaru/my_contracts/core/application/customer_property_type/create"
+	get_by_id2 "github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_id"
+	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_ids"
 	"github.com/mixmaru/my_contracts/core/application/products/create"
 	user_create "github.com/mixmaru/my_contracts/core/application/users/create"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
@@ -33,6 +36,7 @@ func newRouter() *echo.Echo {
 	productRep := db.NewProductRepository()
 	contractRep := db.NewContractRepository()
 	billRep := db.NewBillRepository()
+	customerPropertyTypeRep := db.NewCustomerPropertyTypeRepository()
 
 	// controller
 	productController := NewProductController(create.NewProductCreateInteractor(productRep))
@@ -44,11 +48,18 @@ func newRouter() *echo.Echo {
 		archive_expired_right_to_use.NewContractArchiveExpiredRightToUseInteractor(contractRep),
 	)
 	billController := NewBillController(billing.NewBillBillingInteractor(productRep, contractRep, billRep))
+	customerPropertyTypeController := NewCustomerPropertyTypeController(
+		create3.NewCustomerPropertyTypeCreateInteractor(customerPropertyTypeRep),
+		get_by_ids.NewCustomerPropertyTypeGetByIdsInteractor(customerPropertyTypeRep),
+		get_by_id2.NewCustomerPropertyTypeGetByIdInteractor(customerPropertyTypeRep),
+	)
 
 	// 顧客新規登録
 	e.POST("/users/", userController.Save)
 	// 顧客情報取得
 	e.GET("/users/:id", userController.Get)
+	// カスタマープロパティタイプ新規登録
+	e.POST("/customer_property_types/", customerPropertyTypeController.Create)
 	// 商品登録
 	e.POST("/products/", productController.Crate)
 	// 商品情報取得
