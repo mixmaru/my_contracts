@@ -16,6 +16,8 @@ func NewCustomerTypeGetByIdInteractor(customerTypeRepository customer_type.ICust
 }
 
 func (i *CustomerTypeGetByIdInteractor) Handle(request *CustomerTypeGetByIdUseCaseRequest) (*CustomerTypeGetByIdUseCaseResponse, error) {
+	response := CustomerTypeGetByIdUseCaseResponse{}
+
 	conn, err := db.GetConnection()
 	if err != nil {
 		return nil, err
@@ -27,6 +29,10 @@ func (i *CustomerTypeGetByIdInteractor) Handle(request *CustomerTypeGetByIdUseCa
 	if err != nil {
 		return nil, err
 	}
+	if entity == nil {
+		// データがない
+		return &response, nil
+	}
 
 	// カスタマープロパティタイプデータ取得
 	propertyTypeEntities, err := i.customerPropertyTypeRepository.GetByIds(entity.CustomerPropertyTypeIds(), conn)
@@ -35,7 +41,6 @@ func (i *CustomerTypeGetByIdInteractor) Handle(request *CustomerTypeGetByIdUseCa
 	}
 
 	// 返却用dtoに詰める
-	response := CustomerTypeGetByIdUseCaseResponse{}
 	response.CustomerTypeDto, err = customer_type.NewCustomerTypeDtoFromEntity(entity, propertyTypeEntities)
 	if err != nil {
 		return nil, err

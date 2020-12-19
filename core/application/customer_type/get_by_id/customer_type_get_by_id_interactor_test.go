@@ -32,7 +32,15 @@ func TestCustomerTypeGetByIdInteractor_Handle(t *testing.T) {
 		})
 
 		t.Run("存在しないIdを渡すとゼロ値が返ってくる", func(t *testing.T) {
-			assert.Failf(t, "テストしてない", "テストしてない")
+			////// 実行
+			interactor := NewCustomerTypeGetByIdInteractor(db.NewCustomerTypeRepository(), db.NewCustomerPropertyTypeRepository())
+			request := NewCustomerTypeGetByIdUseCaseRequest(-1000)
+			response, err := interactor.Handle(request)
+			assert.NoError(t, err)
+
+			////// 検証
+			assert.Len(t, response.ValidationError, 0)
+			assert.Zero(t, response.CustomerTypeDto)
 		})
 	})
 }
