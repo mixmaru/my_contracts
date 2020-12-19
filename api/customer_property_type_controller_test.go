@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -65,6 +66,64 @@ func TestCustomerPropertyTypeController_Create(t *testing.T) {
 				},
 			}
 			assert.Equal(t, expected, validMessages)
+		})
+
+		t.Run("登録されたカスタマープロパティタイプを取得する", func(t *testing.T) {
+			t.Run("idを渡すと取得できる", func(t *testing.T) {
+				// 準備
+				body := url.Values{}
+
+				// リクエスト実行
+				req := httptest.NewRequest("GET", "/customer_property_types/"+strconv.Itoa(registeredCustomerPropertyType.Id), strings.NewReader(body.Encode()))
+				rec := httptest.NewRecorder()
+				router.ServeHTTP(rec, req)
+
+				// 検証
+				assert.Equal(t, http.StatusOK, rec.Code)
+				// jsonパース
+				var registeredCustomerPropertyType customer_property_type.CustomerPropertyTypeDto
+				err := json.Unmarshal(rec.Body.Bytes(), &registeredCustomerPropertyType)
+				assert.NoError(t, err)
+				assert.NotZero(t, registeredCustomerPropertyType.Id)
+				assert.Equal(t, "好きなアイドル"+timestampstr, registeredCustomerPropertyType.Name)
+				assert.Equal(t, "string", registeredCustomerPropertyType.Type)
+			})
+
+			t.Run("存在しないidを渡すと404 notfoundになる", func(t *testing.T) {
+				// 準備
+				body := url.Values{}
+
+				// リクエスト実行
+				req := httptest.NewRequest("GET", "/customer_property_types/-2000", strings.NewReader(body.Encode()))
+				rec := httptest.NewRecorder()
+				router.ServeHTTP(rec, req)
+
+				// 検証
+				assert.Equal(t, http.StatusNotFound, rec.Code)
+			})
+
+			t.Run("idに数値以外の文字列を渡すとバリデーションエラー", func(t *testing.T) {
+				// 準備
+				body := url.Values{}
+
+				// リクエスト実行
+				req := httptest.NewRequest("GET", "/customer_property_types/20a", strings.NewReader(body.Encode()))
+				rec := httptest.NewRecorder()
+				router.ServeHTTP(rec, req)
+
+				// 検証
+				assert.Equal(t, http.StatusBadRequest, rec.Code)
+				// jsonパース
+				var validMessages map[string][]string
+				err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
+				assert.NoError(t, err)
+				expected := map[string][]string{
+					"id": {
+						"数値ではありません",
+					},
+				}
+				assert.Equal(t, expected, validMessages)
+			})
 		})
 	})
 }
