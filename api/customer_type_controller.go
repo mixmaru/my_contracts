@@ -6,6 +6,7 @@ import (
 	"github.com/mixmaru/my_contracts/core/application/customer_type/get_by_id"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
@@ -38,31 +39,12 @@ func (cont *CustomerTypeController) Create(c echo.Context) error {
 		return err
 	}
 
-	validErrors := map[string][]string{}
-	name, ok := params["name"]
-	if !ok {
-		validErrors["name"] = []string{"入力されていません"}
-	}
-
-	propertyIds, ok := params["customer_property_ids"]
-	if !ok {
-		validErrors["customer_property_ids"] = []string{"入力されていません"}
-	}
+	name, propertyTypeIds, validErrors := getParamsAndValidation(params)
 	if len(validErrors) > 0 {
 		return c.JSON(http.StatusBadRequest, validErrors)
 	}
 
-	propertyTypeIds := make([]int, 0, len(params["customer_property_ids"]))
-	for _, idStr := range propertyIds {
-		idStr, err := strconv.Atoi(idStr)
-		if err != nil {
-			validErrors["customer_property_ids"] = []string{"数値ではありません"}
-			return c.JSON(http.StatusBadRequest, validErrors)
-		}
-		propertyTypeIds = append(propertyTypeIds, idStr)
-	}
-
-	request := create.NewCustomerTypeCreateUseCaseRequest(name[0], propertyTypeIds)
+	request := create.NewCustomerTypeCreateUseCaseRequest(name, propertyTypeIds)
 	response, err := cont.createUseCase.Handle(request)
 
 	if err != nil {
@@ -76,26 +58,32 @@ func (cont *CustomerTypeController) Create(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, response.CustomerTypeDto)
-	//func (cont *CustomerPropertyTypeController) Create(c echo.Context) error {
-	//	logger, err := my_logger.GetLogger()
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//	name := c.FormValue("name")
-	//	propertyType := c.FormValue("type")
-	//	request := create.NewCustomerPropertyTypeCreateUseCaseRequest(name, propertyType)
-	//	response, err := cont.createCustomerPropertyTypeUseCase.Handle(request)
-	//	if err != nil {
-	//		logger.Sugar().Errorw("カスタマープロパティタイプデータ登録に失敗。", "name", name, "type", propertyType, "err", err)
-	//		c.Error(err)
-	//		return err
-	//	}
-	//
-	//	if len(response.ValidationError) > 0 {
-	//		return c.JSON(http.StatusBadRequest, response.ValidationError)
-	//	}
-	//
-	//	return c.JSON(http.StatusCreated, response.CustomerPropertyTypeDto)
-	//}
+}
+
+func getParamsAndValidation(params url.Values) (name string, propertyTypeIds []int, validErrors map[string][]string) {
+	validErrors = map[string][]string{}
+	nameParam, ok := params["name"]
+	if !ok {
+		validErrors["name"] = []string{"入力されていません"}
+	}
+
+	propertyIdsParam, ok := params["customer_property_ids"]
+	if !ok {
+		validErrors["customer_property_ids"] = []string{"入力されていません"}
+	}
+	if len(validErrors) > 0 {
+		return "", nil, validErrors
+	}
+
+	propertyTypeIds = make([]int, 0, len(propertyIdsParam))
+	for _, idStr := range propertyIdsParam {
+		idStr, err := strconv.Atoi(idStr)
+		if err != nil {
+			validErrors["customer_property_ids"] = []string{"数値ではありません"}
+			return "", nil, validErrors
+		}
+		propertyTypeIds = append(propertyTypeIds, idStr)
+	}
+
+	return nameParam[0], propertyTypeIds, validErrors
 }
