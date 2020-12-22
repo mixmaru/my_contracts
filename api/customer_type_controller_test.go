@@ -19,19 +19,19 @@ import (
 
 func TestCustomerTypeController_Create(t *testing.T) {
 	router := newRouter()
+	// カスタマープロパティ登録
+	preCreateCustomerProperties, err := preCreateCustomerProperties()
+	assert.NoError(t, err)
 
 	t.Run("名前とプロパティIDを渡すとデータが作成される", func(t *testing.T) {
 		timestampstr := utils.CreateTimestampString()
 		// 準備
-		// カスタマープロパティ登録
-		preCreateCustomerProperties, err := preCreateCustomerProperties()
-		assert.NoError(t, err)
 
 		// カスタマータイプ登録
 		body := url.Values{}
 		body.Set("name", "法人"+timestampstr)
-		body.Set("property_id", strconv.Itoa(preCreateCustomerProperties[0].Id))
-		body.Add("property_id", strconv.Itoa(preCreateCustomerProperties[1].Id))
+		body.Set("customer_property_ids", strconv.Itoa(preCreateCustomerProperties[0].Id))
+		body.Add("customer_property_ids", strconv.Itoa(preCreateCustomerProperties[1].Id))
 
 		//// リクエスト実行
 		req := httptest.NewRequest("POST", "/customer_types/", strings.NewReader(body.Encode()))
@@ -49,92 +49,116 @@ func TestCustomerTypeController_Create(t *testing.T) {
 		assert.Equal(t, "法人"+timestampstr, registeredCustomerType.Name)
 		assert.Equal(t, preCreateCustomerProperties, registeredCustomerType.CustomerPropertyTypes)
 
-		//t.Run("既に存在する名前を登録しようとするとバリデーションエラー。存在しないtypeを入力するとバリデーションエラー", func(t *testing.T) {
-		//	// 準備
-		//	body := url.Values{}
-		//	body.Set("name", "好きなアイドル"+timestampstr) // 上部で既に登録済
-		//	body.Set("type", "aaaa")                 // 適当な値
-		//
-		//	// リクエスト実行
-		//	req := httptest.NewRequest("POST", "/customer_property_types/", strings.NewReader(body.Encode()))
-		//	req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
-		//	rec := httptest.NewRecorder()
-		//	router.ServeHTTP(rec, req)
-		//
-		//	// 検証
-		//	assert.Equal(t, http.StatusBadRequest, rec.Code)
-		//	// jsonパース
-		//	var validMessages map[string][]string
-		//	err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
-		//	assert.NoError(t, err)
-		//	expected := map[string][]string{
-		//		"name": {
-		//			"既に存在する名前です",
-		//		},
-		//		"type": {
-		//			"stringでもnumericでもありません",
-		//		},
-		//	}
-		//	assert.Equal(t, expected, validMessages)
-		//})
-		//
-		//t.Run("登録されたカスタマープロパティタイプを取得する", func(t *testing.T) {
-		//	t.Run("idを渡すと取得できる", func(t *testing.T) {
-		//		// 準備
-		//		body := url.Values{}
-		//
-		//		// リクエスト実行
-		//		req := httptest.NewRequest("GET", "/customer_property_types/"+strconv.Itoa(registeredCustomerPropertyType.Id), strings.NewReader(body.Encode()))
-		//		rec := httptest.NewRecorder()
-		//		router.ServeHTTP(rec, req)
-		//
-		//		// 検証
-		//		assert.Equal(t, http.StatusOK, rec.Code)
-		//		// jsonパース
-		//		var registeredCustomerPropertyType customer_property_type.CustomerPropertyTypeDto
-		//		err := json.Unmarshal(rec.Body.Bytes(), &registeredCustomerPropertyType)
-		//		assert.NoError(t, err)
-		//		assert.NotZero(t, registeredCustomerPropertyType.Id)
-		//		assert.Equal(t, "好きなアイドル"+timestampstr, registeredCustomerPropertyType.Name)
-		//		assert.Equal(t, "string", registeredCustomerPropertyType.Type)
-		//	})
-		//
-		//	t.Run("存在しないidを渡すと404 notfoundになる", func(t *testing.T) {
-		//		// 準備
-		//		body := url.Values{}
-		//
-		//		// リクエスト実行
-		//		req := httptest.NewRequest("GET", "/customer_property_types/-2000", strings.NewReader(body.Encode()))
-		//		rec := httptest.NewRecorder()
-		//		router.ServeHTTP(rec, req)
-		//
-		//		// 検証
-		//		assert.Equal(t, http.StatusNotFound, rec.Code)
-		//	})
-		//
-		//	t.Run("idに数値以外の文字列を渡すとバリデーションエラー", func(t *testing.T) {
-		//		// 準備
-		//		body := url.Values{}
-		//
-		//		// リクエスト実行
-		//		req := httptest.NewRequest("GET", "/customer_property_types/20a", strings.NewReader(body.Encode()))
-		//		rec := httptest.NewRecorder()
-		//		router.ServeHTTP(rec, req)
-		//
-		//		// 検証
-		//		assert.Equal(t, http.StatusBadRequest, rec.Code)
-		//		// jsonパース
-		//		var validMessages map[string][]string
-		//		err := json.Unmarshal(rec.Body.Bytes(), &validMessages)
-		//		assert.NoError(t, err)
-		//		expected := map[string][]string{
-		//			"id": {
-		//				"数値ではありません",
-		//			},
-		//		}
-		//		assert.Equal(t, expected, validMessages)
-		//	})
-		//})
+		t.Run("既に存在する名前を登録しようとするとバリデーションエラー。", func(t *testing.T) {
+			////// 準備
+			body := url.Values{}
+			body.Set("name", "法人"+timestampstr) // 上部で既に登録すみ
+			body.Set("customer_property_ids", strconv.Itoa(preCreateCustomerProperties[0].Id))
+			body.Add("customer_property_ids", strconv.Itoa(preCreateCustomerProperties[1].Id))
+
+			////// 実行
+			req := httptest.NewRequest("POST", "/customer_types/", strings.NewReader(body.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			////// 検証
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+			// jsonパース
+			var validErrors map[string][]string
+
+			err = json.Unmarshal(rec.Body.Bytes(), &validErrors)
+			assert.NoError(t, err)
+			expected := map[string][]string{
+				"name": []string{
+					"既に存在する名前です",
+				},
+			}
+			assert.Equal(t, expected, validErrors)
+		})
+	})
+
+	t.Run("名前とプロパティIDを渡さないとバリデーションエラー", func(t *testing.T) {
+		////// 実行
+		body := url.Values{}
+		req := httptest.NewRequest("POST", "/customer_types/", strings.NewReader(body.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		////// 検証
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		// jsonパース
+		var validErrors map[string][]string
+
+		err = json.Unmarshal(rec.Body.Bytes(), &validErrors)
+		assert.NoError(t, err)
+		expected := map[string][]string{
+			"name": []string{
+				"入力されていません",
+			},
+			"customer_property_ids": []string{
+				"入力されていません",
+			},
+		}
+		assert.Equal(t, expected, validErrors)
+
+	})
+
+	t.Run("プロパティIDに数値以外を入れるとバリデーションエラー", func(t *testing.T) {
+		////// 準備
+		timestampstr := utils.CreateTimestampString()
+		body := url.Values{}
+		body.Set("name", "プロパティIDに変な値"+timestampstr) // 上部で既に登録すみ
+		body.Set("customer_property_ids", "1a")
+
+		////// 実行
+		req := httptest.NewRequest("POST", "/customer_types/", strings.NewReader(body.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		////// 検証
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		// jsonパース
+		var validErrors map[string][]string
+
+		err = json.Unmarshal(rec.Body.Bytes(), &validErrors)
+		assert.NoError(t, err)
+		expected := map[string][]string{
+			"customer_property_ids": []string{
+				"数値ではありません",
+			},
+		}
+		assert.Equal(t, expected, validErrors)
+	})
+
+	t.Run("プロパティIDに存在しないIDを入れるとバリデーションエラー", func(t *testing.T) {
+		////// 準備
+		timestampstr := utils.CreateTimestampString()
+		body := url.Values{}
+		body.Set("name", "プロパティIDに存在しないID"+timestampstr) // 上部で既に登録すみ
+		body.Set("customer_property_ids", "-10000")
+
+		////// 実行
+		req := httptest.NewRequest("POST", "/customer_types/", strings.NewReader(body.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded") //formからの入力ということを指定してるっぽい
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+
+		////// 検証
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		// jsonパース
+		var validErrors map[string][]string
+
+		err = json.Unmarshal(rec.Body.Bytes(), &validErrors)
+		assert.NoError(t, err)
+		expected := map[string][]string{
+			"customer_property_ids": []string{
+				"-10000 は存在しないidです",
+			},
+		}
+		assert.Equal(t, expected, validErrors)
 	})
 }
 

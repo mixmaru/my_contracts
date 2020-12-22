@@ -31,25 +31,38 @@ func (cont *CustomerTypeController) Create(c echo.Context) error {
 		return err
 	}
 
-	//name := c.FormValue("name")
-	//propertyTypeIds := c.FormValue("property_id")
 	params, err := c.FormParams()
 	if err != nil {
 		logger.Sugar().Errorw("パラメータ取得に失敗。", "echo", c, "err", err)
 		c.Error(err)
 		return err
 	}
-	name := params["name"][0]
-	propertyTypeIds := make([]int, 0, len(params["property_id"]))
-	for _, idStr := range params["property_id"] {
+
+	validErrors := map[string][]string{}
+	name, ok := params["name"]
+	if !ok {
+		validErrors["name"] = []string{"入力されていません"}
+	}
+
+	propertyIds, ok := params["customer_property_ids"]
+	if !ok {
+		validErrors["customer_property_ids"] = []string{"入力されていません"}
+	}
+	if len(validErrors) > 0 {
+		return c.JSON(http.StatusBadRequest, validErrors)
+	}
+
+	propertyTypeIds := make([]int, 0, len(params["customer_property_ids"]))
+	for _, idStr := range propertyIds {
 		idStr, err := strconv.Atoi(idStr)
 		if err != nil {
-			return err
+			validErrors["customer_property_ids"] = []string{"数値ではありません"}
+			return c.JSON(http.StatusBadRequest, validErrors)
 		}
 		propertyTypeIds = append(propertyTypeIds, idStr)
 	}
 
-	request := create.NewCustomerTypeCreateUseCaseRequest(name, propertyTypeIds)
+	request := create.NewCustomerTypeCreateUseCaseRequest(name[0], propertyTypeIds)
 	response, err := cont.createUseCase.Handle(request)
 
 	if err != nil {
