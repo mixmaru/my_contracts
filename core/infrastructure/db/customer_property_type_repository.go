@@ -40,6 +40,23 @@ func (r *CustomerPropertyTypeRepository) Create(entities []*customer.CustomerPro
 	return savedIds, nil
 }
 
+// 全カスタマープロパティタイプをid順で取得する
+func (r *CustomerPropertyTypeRepository) GetAll(executor gorp.SqlExecutor) (propertyTypes []*customer.CustomerPropertyTypeEntity, err error) {
+	query := "SELECT id, name, type FROM customer_properties ORDER BY id;"
+	// データ取得実行
+	propertyTypeMappers := []*CustomerPropertyMapper{}
+	_, err = executor.Select(&propertyTypeMappers, query)
+	if err != nil {
+		return nil, errors.Wrapf(err, "DBからデータ取得に失敗しました。query: %v", query)
+	}
+	// エンティティに詰める
+	for _, mapper := range propertyTypeMappers {
+		entity := customer.NewCustomerPropertyTypeEntityWithData(mapper.Id, mapper.Name, customer.PropertyType(mapper.Type))
+		propertyTypes = append(propertyTypes, entity)
+	}
+	return propertyTypes, nil
+}
+
 // カスタマープロパティタイプIdを取得する
 func (r *CustomerPropertyTypeRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (propertyTypes []*customer.CustomerPropertyTypeEntity, err error) {
 	query := "SELECT id, name, type FROM customer_properties WHERE id IN (" + CrateInStatement(len(ids)) + ") ORDER BY id;"

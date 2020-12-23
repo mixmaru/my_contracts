@@ -43,6 +43,71 @@ func TestCustomerPropertyTypeRepository_Create_And_GetByIds(t *testing.T) {
 	})
 }
 
+func TestCustomerPropertyTypeRepository_GetAll(t *testing.T) {
+	rep := NewCustomerPropertyTypeRepository()
+
+	conn, err := GetConnection()
+	assert.NoError(t, err)
+	defer conn.Db.Close()
+
+	execCounter := 0
+	maxRetryNum := 2
+	for {
+		execCounter++
+		if execCounter > maxRetryNum {
+			assert.Fail(t, "同時実行エラー", "最大リトライ回数を超えました")
+			break
+		}
+
+		// トランザクション開始
+		tran, err := conn.Begin()
+		assert.NoError(t, err)
+
+		////// 準備
+		// 予め全データ削除
+		_, err = tran.Exec("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;")
+		assert.NoError(t, err)
+		_, err = tran.Exec("DELETE FROM customer_types_customer_properties;")
+		assert.NoError(t, err)
+		_, err = tran.Exec("DELETE FROM customer_properties;")
+		assert.NoError(t, err)
+		// データ新規登録
+		timestampstr := utils.CreateTimestampString()
+		customerProperties := []*customer.CustomerPropertyTypeEntity{
+			customer.NewCustomerPropertyTypeEntity("性別"+timestampstr, customer.PROPERTY_TYPE_STRING),
+			customer.NewCustomerPropertyTypeEntity("年齢"+timestampstr, customer.PROPERTY_TYPE_NUMERIC),
+			customer.NewCustomerPropertyTypeEntity("住所"+timestampstr, customer.PROPERTY_TYPE_STRING),
+		}
+		// 事前データ保存実行
+		savedIds, err := rep.Create(customerProperties, tran)
+		assert.NoError(t, err)
+
+		////// 実行
+		loadedEntities, err := rep.GetAll(tran)
+		assert.NoError(t, err)
+		// トランザクションコミット
+		err = tran.Commit()
+		if err != nil {
+			tran.Rollback()
+			if execCounter <= maxRetryNum {
+				continue
+			} else {
+				assert.Failf(t, "同時実行が影響してテストできなかった。err: %+v", err.Error())
+				break
+			}
+		}
+
+		////// 検証
+		assert.Len(t, loadedEntities, len(customerProperties))
+		for i, loadedEntity := range loadedEntities {
+			assert.Equal(t, savedIds[i], loadedEntity.Id())
+			assert.Equal(t, customerProperties[i].Name(), loadedEntity.Name())
+			assert.Equal(t, customerProperties[i].PropertyType(), loadedEntity.PropertyType())
+		}
+		break
+	}
+}
+
 func TestCustomerPropertyTypeRepository_GetByName(t *testing.T) {
 	t.Run("Nameでデータを取得できる", func(t *testing.T) {
 		////// 準備
