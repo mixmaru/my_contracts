@@ -49,6 +49,49 @@ func TestCustomerTypeController_Create(t *testing.T) {
 		assert.Equal(t, "法人"+timestampstr, registeredCustomerType.Name)
 		assert.Equal(t, preCreateCustomerProperties, registeredCustomerType.CustomerPropertyTypes)
 
+		t.Run("idを渡すとデータが取得できる", func(t *testing.T) {
+			////// 準備
+			body := url.Values{}
+			id := strconv.Itoa(registeredCustomerType.Id)
+			////// 実行
+			req := httptest.NewRequest("GET", "/customer_types/"+id, strings.NewReader(body.Encode()))
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+			////// 検証
+			assert.Equal(t, http.StatusOK, rec.Code)
+			// jsonパース
+			var loadedCustomerType customer_type.CustomerTypeDto
+			err = json.Unmarshal(rec.Body.Bytes(), &loadedCustomerType)
+			assert.NoError(t, err)
+			assert.Equal(t, registeredCustomerType.Id, loadedCustomerType.Id)
+			assert.Equal(t, "法人"+timestampstr, loadedCustomerType.Name)
+			assert.Equal(t, preCreateCustomerProperties, loadedCustomerType.CustomerPropertyTypes)
+		})
+
+		t.Run("idに存在しないidを渡すとnot found", func(t *testing.T) {
+			////// 準備
+			body := url.Values{}
+			id := "-10000"
+			////// 実行
+			req := httptest.NewRequest("GET", "/customer_types/"+id, strings.NewReader(body.Encode()))
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+			////// 検証
+			assert.Equal(t, http.StatusNotFound, rec.Code)
+		})
+
+		t.Run("idに数値以外を渡すとnot found", func(t *testing.T) {
+			////// 準備
+			body := url.Values{}
+			id := "aaa"
+			////// 実行
+			req := httptest.NewRequest("GET", "/customer_types/"+id, strings.NewReader(body.Encode()))
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+			////// 検証
+			assert.Equal(t, http.StatusNotFound, rec.Code)
+		})
+
 		t.Run("既に存在する名前を登録しようとするとバリデーションエラー。", func(t *testing.T) {
 			////// 準備
 			body := url.Values{}

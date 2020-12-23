@@ -67,6 +67,8 @@ func newRouter() *echo.Echo {
 	e.GET("/users/:id", userController.Get)
 	// カスタマータイプ新規登録
 	e.POST("/customer_types/", customerTypeController.Create)
+	// カスタマータイプ取得
+	e.GET("/customer_types/:id", customerTypeController.GetById)
 	// カスタマープロパティタイプ新規登録
 	e.POST("/customer_property_types/", customerPropertyTypeController.Create)
 	// カスタマープロパティタイプ取得

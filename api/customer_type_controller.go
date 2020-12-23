@@ -87,3 +87,37 @@ func getParamsAndValidation(params url.Values) (name string, propertyTypeIds []i
 
 	return nameParam[0], propertyTypeIds, validErrors
 }
+
+// カスタマータイプ取得
+// params:
+// id int カスタマータイプId
+func (cont *CustomerTypeController) GetById(c echo.Context) error {
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		// 数値出なかった場合not found
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+	}
+
+	request := get_by_id.NewCustomerTypeGetByIdUseCaseRequest(id)
+	response, err := cont.getByIdUseCase.Handle(request)
+	if err != nil {
+		logger.Sugar().Errorw("カスタマータイプデータ取得に失敗。", "request", request, "err", err)
+		c.Error(err)
+		return err
+	}
+
+	if len(response.ValidationError) > 0 {
+		return c.JSON(http.StatusBadRequest, response.ValidationError)
+	}
+	if response.CustomerTypeDto.Id == 0 {
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+	}
+
+	return c.JSON(http.StatusOK, response.CustomerTypeDto)
+}
