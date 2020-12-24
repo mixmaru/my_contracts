@@ -5,30 +5,26 @@ import (
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type/create"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_all"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_id"
-	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_ids"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
 	"strconv"
 )
 
 type CustomerPropertyTypeController struct {
-	createUseCase   create.ICustomerPropertyTypeCreateUseCase
-	getByIdsUseCase get_by_ids.ICustomerPropertyTypeGetByIdsUseCase
-	getByIdUseCase  get_by_id.ICustomerPropertyTypeGetByIdUseCase
-	getAllUseCase   get_all.ICustomerPropertyTypeGetAllUseCase
+	createUseCase  create.ICustomerPropertyTypeCreateUseCase
+	getByIdUseCase get_by_id.ICustomerPropertyTypeGetByIdUseCase
+	getAllUseCase  get_all.ICustomerPropertyTypeGetAllUseCase
 }
 
 func NewCustomerPropertyTypeController(
 	createUseCase create.ICustomerPropertyTypeCreateUseCase,
-	getByIdsUseCase get_by_ids.ICustomerPropertyTypeGetByIdsUseCase,
 	getByIdUseCase get_by_id.ICustomerPropertyTypeGetByIdUseCase,
 	getAllUseCase get_all.ICustomerPropertyTypeGetAllUseCase,
 ) *CustomerPropertyTypeController {
 	return &CustomerPropertyTypeController{
-		createUseCase:   createUseCase,
-		getByIdsUseCase: getByIdsUseCase,
-		getByIdUseCase:  getByIdUseCase,
-		getAllUseCase:   getAllUseCase,
+		createUseCase:  createUseCase,
+		getByIdUseCase: getByIdUseCase,
+		getAllUseCase:  getAllUseCase,
 	}
 }
 

@@ -11,7 +11,6 @@ import (
 	create3 "github.com/mixmaru/my_contracts/core/application/customer_property_type/create"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_all"
 	get_by_id2 "github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_id"
-	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_ids"
 	create4 "github.com/mixmaru/my_contracts/core/application/customer_type/create"
 	get_by_id3 "github.com/mixmaru/my_contracts/core/application/customer_type/get_by_id"
 	"github.com/mixmaru/my_contracts/core/application/products/create"
@@ -54,7 +53,6 @@ func newRouter() *echo.Echo {
 	billController := NewBillController(billing.NewBillBillingInteractor(productRep, contractRep, billRep))
 	customerPropertyTypeController := NewCustomerPropertyTypeController(
 		create3.NewCustomerPropertyTypeCreateInteractor(customerPropertyTypeRep),
-		get_by_ids.NewCustomerPropertyTypeGetByIdsInteractor(customerPropertyTypeRep),
 		get_by_id2.NewCustomerPropertyTypeGetByIdInteractor(customerPropertyTypeRep),
 		get_all.NewCustomerPropertyTypeGetAllInteractor(customerPropertyTypeRep),
 	)
