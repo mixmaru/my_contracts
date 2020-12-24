@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type"
+	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -124,6 +125,62 @@ func TestCustomerPropertyTypeController_Create(t *testing.T) {
 				}
 				assert.Equal(t, expected, validMessages)
 			})
+		})
+	})
+}
+
+func TestCustomerPropertyTypeController_GetAll(t *testing.T) {
+	router := newRouter()
+	t.Run("全カスタマープロパティが取得できる", func(t *testing.T) {
+		t.Run("データがあれば全カスタマープロパティが取得できる", func(t *testing.T) {
+			////// 準備
+			// 既存データ削除
+			conn, err := db.GetConnection()
+			assert.NoError(t, err)
+			defer conn.Db.Close()
+			_, err = conn.Exec("DELETE FROM customer_types_customer_properties;")
+			assert.NoError(t, err)
+			_, err = conn.Exec("DELETE FROM customer_properties;")
+			assert.NoError(t, err)
+			// 既存データ挿入
+			preCreatedProperties, err := preCreateCustomerProperties()
+			assert.NoError(t, err)
+
+			////// 実行
+			body := url.Values{}
+			req := httptest.NewRequest("GET", "/customer_property_types/", strings.NewReader(body.Encode()))
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			////// 検証
+			assert.Equal(t, http.StatusOK, rec.Code)
+			// jsonパース
+			var loadedCustomerPropertyTypes []customer_property_type.CustomerPropertyTypeDto
+			err = json.Unmarshal(rec.Body.Bytes(), &loadedCustomerPropertyTypes)
+			assert.NoError(t, err)
+			assert.Equal(t, preCreatedProperties, loadedCustomerPropertyTypes)
+		})
+
+		t.Run("データがなければ空配列が返る", func(t *testing.T) {
+			////// 準備
+			// 既存データ削除
+			conn, err := db.GetConnection()
+			assert.NoError(t, err)
+			defer conn.Db.Close()
+			_, err = conn.Exec("DELETE FROM customer_types_customer_properties;")
+			assert.NoError(t, err)
+			_, err = conn.Exec("DELETE FROM customer_properties;")
+			assert.NoError(t, err)
+
+			////// 実行
+			body := url.Values{}
+			req := httptest.NewRequest("GET", "/customer_property_types/", strings.NewReader(body.Encode()))
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			////// 検証
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, "[]\n", rec.Body.String())
 		})
 	})
 }

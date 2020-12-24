@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type/create"
+	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_all"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_id"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_ids"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
@@ -11,20 +12,23 @@ import (
 )
 
 type CustomerPropertyTypeController struct {
-	createCustomerPropertyTypeUseCase   create.ICustomerPropertyTypeCreateUseCase
-	getByIdsCustomerPropertyTypeUseCase get_by_ids.ICustomerPropertyTypeGetByIdsUseCase
-	getByIdCustomerPropertyTypeUseCase  get_by_id.ICustomerPropertyTypeGetByIdUseCase
+	createUseCase   create.ICustomerPropertyTypeCreateUseCase
+	getByIdsUseCase get_by_ids.ICustomerPropertyTypeGetByIdsUseCase
+	getByIdUseCase  get_by_id.ICustomerPropertyTypeGetByIdUseCase
+	getAllUseCase   get_all.ICustomerPropertyTypeGetAllUseCase
 }
 
 func NewCustomerPropertyTypeController(
-	createCustomerPropertyTypeUseCase create.ICustomerPropertyTypeCreateUseCase,
-	getByIdsCustomerPropertyTypeUseCase get_by_ids.ICustomerPropertyTypeGetByIdsUseCase,
-	getByIdCustomerPropertyTypeUseCase get_by_id.ICustomerPropertyTypeGetByIdUseCase,
+	createUseCase create.ICustomerPropertyTypeCreateUseCase,
+	getByIdsUseCase get_by_ids.ICustomerPropertyTypeGetByIdsUseCase,
+	getByIdUseCase get_by_id.ICustomerPropertyTypeGetByIdUseCase,
+	getAllUseCase get_all.ICustomerPropertyTypeGetAllUseCase,
 ) *CustomerPropertyTypeController {
 	return &CustomerPropertyTypeController{
-		createCustomerPropertyTypeUseCase:   createCustomerPropertyTypeUseCase,
-		getByIdsCustomerPropertyTypeUseCase: getByIdsCustomerPropertyTypeUseCase,
-		getByIdCustomerPropertyTypeUseCase:  getByIdCustomerPropertyTypeUseCase,
+		createUseCase:   createUseCase,
+		getByIdsUseCase: getByIdsUseCase,
+		getByIdUseCase:  getByIdUseCase,
+		getAllUseCase:   getAllUseCase,
 	}
 }
 
@@ -41,7 +45,7 @@ func (cont *CustomerPropertyTypeController) Create(c echo.Context) error {
 	name := c.FormValue("name")
 	propertyType := c.FormValue("type")
 	request := create.NewCustomerPropertyTypeCreateUseCaseRequest(name, propertyType)
-	response, err := cont.createCustomerPropertyTypeUseCase.Handle(request)
+	response, err := cont.createUseCase.Handle(request)
 	if err != nil {
 		logger.Sugar().Errorw("カスタマープロパティタイプデータ登録に失敗。", "name", name, "type", propertyType, "err", err)
 		c.Error(err)
@@ -64,8 +68,6 @@ func (cont *CustomerPropertyTypeController) GetById(c echo.Context) error {
 		return err
 	}
 
-	aa := c.Param("id")
-	println(aa)
 	validErrs := map[string][]string{}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -79,7 +81,7 @@ func (cont *CustomerPropertyTypeController) GetById(c echo.Context) error {
 	}
 
 	request := get_by_id.NewCustomerPropertyTypeGetByIdUseCaseRequest(id)
-	response, err := cont.getByIdCustomerPropertyTypeUseCase.Handle(request)
+	response, err := cont.getByIdUseCase.Handle(request)
 	if err != nil {
 		logger.Sugar().Errorw("カスタマープロパティタイプデータ取得に失敗。", "id", id, "err", err)
 		c.Error(err)
@@ -94,4 +96,24 @@ func (cont *CustomerPropertyTypeController) GetById(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, response.CustomerPropertyTypeDto)
+}
+
+// カスタマープロパティタイプ全取得
+func (cont *CustomerPropertyTypeController) GetAll(c echo.Context) error {
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	response, err := cont.getAllUseCase.Handle()
+	if err != nil {
+		logger.Sugar().Errorw("カスタマータイプデータ取得に失敗。", "err", err)
+		c.Error(err)
+		return err
+	}
+	if len(response.CustomerPropertyTypeDtos) == 0 {
+		return c.JSON(http.StatusOK, []string{})
+	}
+
+	return c.JSON(http.StatusOK, response.CustomerPropertyTypeDtos)
 }

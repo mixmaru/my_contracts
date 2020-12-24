@@ -9,6 +9,7 @@ import (
 	"github.com/mixmaru/my_contracts/core/application/contracts/create_next_right_to_use"
 	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
 	create3 "github.com/mixmaru/my_contracts/core/application/customer_property_type/create"
+	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_all"
 	get_by_id2 "github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_id"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_ids"
 	create4 "github.com/mixmaru/my_contracts/core/application/customer_type/create"
@@ -55,6 +56,7 @@ func newRouter() *echo.Echo {
 		create3.NewCustomerPropertyTypeCreateInteractor(customerPropertyTypeRep),
 		get_by_ids.NewCustomerPropertyTypeGetByIdsInteractor(customerPropertyTypeRep),
 		get_by_id2.NewCustomerPropertyTypeGetByIdInteractor(customerPropertyTypeRep),
+		get_all.NewCustomerPropertyTypeGetAllInteractor(customerPropertyTypeRep),
 	)
 	customerTypeController := NewCustomerTypeController(
 		create4.NewCustomerTypeCreateInteractor(customerTypeRep, customerPropertyTypeRep),
@@ -73,6 +75,8 @@ func newRouter() *echo.Echo {
 	e.POST("/customer_property_types/", customerPropertyTypeController.Create)
 	// カスタマープロパティタイプ取得
 	e.GET("/customer_property_types/:id", customerPropertyTypeController.GetById)
+	// カスタマープロパティタイプ全取得
+	e.GET("/customer_property_types/", customerPropertyTypeController.GetAll)
 	// 商品登録
 	e.POST("/products/", productController.Crate)
 	// 商品情報取得
