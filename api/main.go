@@ -60,6 +60,7 @@ func newRouter() *echo.Echo {
 		create4.NewCustomerTypeCreateInteractor(customerTypeRep, customerPropertyTypeRep),
 		get_by_id3.NewCustomerTypeGetByIdInteractor(customerTypeRep, customerPropertyTypeRep),
 	)
+	customerController := NewCustomerController()
 
 	// 顧客新規登録
 	e.POST("/users/", userController.Save)
@@ -75,6 +76,8 @@ func newRouter() *echo.Echo {
 	e.GET("/customer_property_types/:id", customerPropertyTypeController.GetById)
 	// カスタマープロパティタイプ全取得
 	e.GET("/customer_property_types/", customerPropertyTypeController.GetAll)
+	// カスタマー新規登録
+	e.POST("/customer/", customerController.Create)
 	// 商品登録
 	e.POST("/products/", productController.Crate)
 	// 商品情報取得
