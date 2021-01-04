@@ -34,13 +34,13 @@ func (cont *CustomerController) Create(c echo.Context) error {
 	}
 
 	request := NewCustomerCreateUseCaseRequest(params.Name, params.CustomerTypeId, params.Properties)
-	response, validErrors, err := c.useCase.Handle(request)
+	response, err := c.useCase.Handle(request)
 	if err != nil {
 		logger.Sugar().Errorw("カスタマー新規登録に失敗。", "request", request, "err", err)
 		c.Error(err)
 		return err
 	}
-	if len(validErrors) > 0 {
+	if len(response.ValidErrors) > 0 {
 		return c.JSON(http.StatusBadRequest, validErrors)
 	}
 	return c.JSON(http.StatusCreated, response.CustomerDto)
