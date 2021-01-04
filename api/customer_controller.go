@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/mixmaru/my_contracts/core/application/customer_type/create"
+	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
 )
 
@@ -19,16 +21,29 @@ func NewCustomerController() *CustomerController {
 // customer_type_id カスタマータイプID
 // properties {"性別": "男", "年齢": 20}
 func (cont *CustomerController) Create(c echo.Context) error {
-	//logger, err := my_logger.GetLogger()
-	//if err != nil {
-	//	return err
-	//}
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
 	params := new(customerCreateParams)
 	if err := c.Bind(params); err != nil {
-		// todo: return 5xx error and write log
-		return nil
+		logger.Sugar().Errorw("パラメータ取得に失敗。", "echo", c, "err", err)
+		c.Error(err)
+		return err
 	}
-	return c.JSON(http.StatusOK, params)
+
+	request := NewCustomerCreateUseCaseRequest(params.Name, params.CustomerTypeId, params.Properties)
+	response, validErrors, err := c.useCase.Handle(request)
+	if err != nil {
+		logger.Sugar().Errorw("カスタマー新規登録に失敗。", "request", request, "err", err)
+		c.Error(err)
+		return err
+	}
+	if len(validErrors) > 0 {
+		return c.JSON(http.StatusBadRequest, validErrors)
+	}
+	return c.JSON(http.StatusCreated, response.CustomerDto)
 
 	// カスタマータイプからプロパティ名をリスト取得する
 	//propertyNames :=
@@ -69,7 +84,6 @@ func (cont *CustomerController) Create(c echo.Context) error {
 	//}
 	//
 	//return c.JSON(http.StatusCreated, response.CustomerTypeDto)
-	return nil
 }
 
 type customerCreateParams struct {
