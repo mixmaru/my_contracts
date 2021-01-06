@@ -7,4 +7,4 @@ type CustomerDto struct {
 	Properties     PropertyDto
 }
 
-type PropertyDto map[string]string
+type PropertyDto map[string]interface{}
