@@ -2,17 +2,17 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mixmaru/my_contracts/core/application/customer_type/create"
+	"github.com/mixmaru/my_contracts/core/application/customer/create"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
 )
 
 type CustomerController struct {
-	//createUseCase create.ICustomerCreateUseCase
+	createUseCase create.ICustomerCreateUseCase
 }
 
-func NewCustomerController() *CustomerController {
-	return &CustomerController{}
+func NewCustomerController(createUseCase create.ICustomerCreateUseCase) *CustomerController {
+	return &CustomerController{createUseCase: createUseCase}
 }
 
 // カスタマー新規登録
@@ -33,15 +33,15 @@ func (cont *CustomerController) Create(c echo.Context) error {
 		return err
 	}
 
-	request := NewCustomerCreateUseCaseRequest(params.Name, params.CustomerTypeId, params.Properties)
-	response, err := c.useCase.Handle(request)
+	request := create.NewCustomerCreateUseCaseRequest(params.Name, params.CustomerTypeId, params.Properties)
+	response, err := cont.createUseCase.Handle(request)
 	if err != nil {
 		logger.Sugar().Errorw("カスタマー新規登録に失敗。", "request", request, "err", err)
 		c.Error(err)
 		return err
 	}
-	if len(response.ValidErrors) > 0 {
-		return c.JSON(http.StatusBadRequest, validErrors)
+	if len(response.ValidationErrors) > 0 {
+		return c.JSON(http.StatusBadRequest, response.ValidationErrors)
 	}
 	return c.JSON(http.StatusCreated, response.CustomerDto)
 
