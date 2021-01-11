@@ -4,10 +4,10 @@ type CustomerEntity struct {
 	id             int
 	name           string
 	customerTypeId int
-	properties     map[string]interface{}
+	properties     map[int]interface{}
 }
 
-func NewCustomerEntity(name string, customerTypeId int, properties map[string]interface{}) *CustomerEntity {
+func NewCustomerEntity(name string, customerTypeId int, properties map[int]interface{}) *CustomerEntity {
 	return &CustomerEntity{
 		name:           name,
 		customerTypeId: customerTypeId,
@@ -15,13 +15,13 @@ func NewCustomerEntity(name string, customerTypeId int, properties map[string]in
 	}
 }
 
-func NewCustomerEntityWithData(id int, name string, customerTypeId int, properties map[string]interface{}) *CustomerEntity {
+func NewCustomerEntityWithData(id int, name string, customerTypeId int, properties map[int]interface{}) *CustomerEntity {
 	entity := CustomerEntity{}
 	entity.LoadData(id, name, customerTypeId, properties)
 	return &entity
 }
 
-func (c *CustomerEntity) LoadData(id int, name string, customerTypeId int, properties map[string]interface{}) {
+func (c *CustomerEntity) LoadData(id int, name string, customerTypeId int, properties map[int]interface{}) {
 	c.id = id
 	c.name = name
 	c.customerTypeId = customerTypeId
@@ -40,6 +40,6 @@ func (c *CustomerEntity) CustomerTypeId() int {
 	return c.customerTypeId
 }
 
-func (c *CustomerEntity) Properties() map[string]interface{} {
+func (c *CustomerEntity) Properties() map[int]interface{} {
 	return c.properties
 }

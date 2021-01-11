@@ -9,10 +9,10 @@ type ICustomerCreateUseCase interface {
 type CustomerCreateUseCaseRequest struct {
 	Name           string
 	CustomerTypeId int
-	Properties     map[string]interface{}
+	Properties     map[int]interface{}
 }
 
-func NewCustomerCreateUseCaseRequest(name string, customerTypeId int, properties map[string]interface{}) *CustomerCreateUseCaseRequest {
+func NewCustomerCreateUseCaseRequest(name string, customerTypeId int, properties map[int]interface{}) *CustomerCreateUseCaseRequest {
 	return &CustomerCreateUseCaseRequest{Name: name, CustomerTypeId: customerTypeId, Properties: properties}
 }
 

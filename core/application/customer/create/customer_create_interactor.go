@@ -15,7 +15,7 @@ func (c CustomerCreateInteractor) Handle(request *CustomerCreateUseCaseRequest) 
 	// バリデーションする
 
 	// entityをつくる
-	newEntity := customer.NewCustomerEntity(request.Name, request.Properties)
+	newEntity := customer.NewCustomerEntity(request.Name, request.CustomerTypeId, request.Properties)
 
 	// repositoryで保存する
 

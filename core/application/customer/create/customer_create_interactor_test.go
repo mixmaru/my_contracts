@@ -14,19 +14,21 @@ import (
 )
 
 func TestCustomerCreateInteractor_Handle(t *testing.T) {
+	////// 事前準備
+	// カスタマータイプの登録
+	customerType, err := preCreateCustomerType()
+	assert.NoError(t, err)
+
 	t.Run("リクエストを渡すとカスタマー登録ができる", func(t *testing.T) {
 		timestampStr := utils.CreateTimestampString()
-		////// 準備
-		customerType, err := preCreateCustomerType()
-		assert.NoError(t, err)
 
 		////// 実行
 		request := NewCustomerCreateUseCaseRequest(
 			"山田"+timestampStr,
 			customerType.Id,
-			map[string]interface{}{
-				"性別": "男",
-				"年齢": 20,
+			map[int]interface{}{
+				customerType.CustomerPropertyTypes[0].Id: "男",
+				customerType.CustomerPropertyTypes[1].Id: 20,
 			},
 		)
 		interactor := NewCustomerCreateInteractor()
@@ -38,8 +40,8 @@ func TestCustomerCreateInteractor_Handle(t *testing.T) {
 		assert.Equal(t, "山田"+timestampStr, response.CustomerDto.Name)
 		assert.Equal(t, customerType.Id, response.CustomerDto.CustomerTypeId)
 		expectedProperties := customer.PropertyDto{
-			"性別": "男",
-			"年齢": 20,
+			customerType.CustomerPropertyTypes[0].Id: "男",
+			customerType.CustomerPropertyTypes[1].Id: 20,
 		}
 		assert.Equal(t, expectedProperties, response.CustomerDto.Properties)
 	})
