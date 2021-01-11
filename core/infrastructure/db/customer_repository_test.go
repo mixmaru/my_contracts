@@ -21,7 +21,7 @@ func TestCustomerRepository_Create(t *testing.T) {
 			kankouchoId,
 			map[int]interface{}{
 				propertyIds[0]: "03-1111-2222",
-				propertyIds[1]: "日本",
+				propertyIds[1]: 200,
 			},
 		)
 		rep := NewCustomerRepository()
@@ -59,7 +59,7 @@ func preCreateCustomerType(timestampStr string) (customerId int, propertyIds []i
 	if err != nil {
 		return 0, nil, err
 	}
-	countryId, err := preCreateCustomerProperty("国"+timestampStr, customer.PROPERTY_TYPE_STRING)
+	countryId, err := preCreateCustomerProperty("何かしらの数値"+timestampStr, customer.PROPERTY_TYPE_NUMERIC)
 	if err != nil {
 		return 0, nil, err
 	}

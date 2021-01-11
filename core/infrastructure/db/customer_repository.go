@@ -4,6 +4,7 @@ import (
 	"github.com/mixmaru/my_contracts/core/domain/models/customer"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
+	"strconv"
 )
 
 type CustomerRepository struct {
@@ -48,10 +49,17 @@ func crateCustomerCustomerProperties(customerId int, properties map[int]interfac
 	// mapper作成
 	mappers := make([]interface{}, 0, len(properties))
 	for key, val := range properties {
+		var value string
+		switch val.(type) {
+		case string:
+			value = val.(string)
+		case int:
+			value = strconv.Itoa(val.(int))
+		}
 		mapper := customerCustomerPropertyMapper{
 			CustomerId:         customerId,
 			CustomerPropertyId: key,
-			Value:              val.(string),
+			Value:              value,
 		}
 		mappers = append(mappers, &mapper)
 	}
