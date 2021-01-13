@@ -34,11 +34,11 @@ func TestCustomerRepository_Create(t *testing.T) {
 		assert.NotZero(t, savedId)
 
 		////// 検証
-		//loadedEntity, err := rep.GetById(savedId, tran)
-		//assert.NotZero(t, loadedEntity.Id())
-		//assert.Equal(t, newCustomer.Name(), loadedEntity.Name())
-		//assert.Equal(t, newCustomer.CustomerTypeId(), loadedEntity.CustomerTypeId())
-		//assert.Equal(t, newCustomer.Properties(), loadedEntity.Properties())
+		loadedEntity, err := rep.GetById(savedId, tran)
+		assert.NotZero(t, loadedEntity.Id())
+		assert.Equal(t, newCustomer.Name(), loadedEntity.Name())
+		assert.Equal(t, newCustomer.CustomerTypeId(), loadedEntity.CustomerTypeId())
+		assert.Equal(t, newCustomer.Properties(), loadedEntity.Properties())
 
 		err = tran.Commit()
 		assert.NoError(t, err)

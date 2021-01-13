@@ -81,7 +81,75 @@ func toText(value interface{}) (string, error) {
 }
 
 func (c *CustomerRepository) GetById(id int, executor gorp.SqlExecutor) (entity *customer.CustomerEntity, err error) {
-	return nil, nil
+	query := `
+select
+       c.id,
+       c.customer_type_id,
+       c.name,
+       ccp.customer_property_id,
+       cp.type,
+       ccp.value
+from customers c
+inner join customers_customer_properties ccp on c.id = ccp.customer_id
+inner join customer_properties cp on ccp.customer_property_id = cp.id
+inner join customer_types_customer_properties ctcp on cp.id = ctcp.customer_property_id
+where c.id = $1
+order by ctcp."order"
+`
+	var mappers []*customerMapperForGet
+
+	_, err = executor.Select(&mappers, query, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "データ取得失敗. query: %+v, id: %v", query, id)
+	}
+
+	retEntity, err := generateEntity(mappers)
+	if err != nil {
+		return nil, err
+	}
+	return retEntity, nil
+}
+
+type customerMapperForGet struct {
+	Id                 int                   `db:"id"`
+	CustomerTypeId     int                   `db:"customer_type_id"`
+	Name               string                `db:"name"`
+	CustomerPropertyId int                   `db:"customer_property_id"`
+	PropertyType       customer.PropertyType `db:"type"`
+	Value              string                `db:value`
+}
+
+func generateEntity(mappers []*customerMapperForGet) (*customer.CustomerEntity, error) {
+	properties := map[int]interface{}{}
+	for _, mapper := range mappers {
+		var err error
+		properties[mapper.CustomerPropertyId], err = valueFromText(mapper.PropertyType, mapper.Value)
+		if err != nil {
+			return nil, err
+		}
+	}
+	entity := customer.NewCustomerEntityWithData(
+		mappers[0].Id,
+		mappers[0].Name,
+		mappers[0].CustomerTypeId,
+		properties,
+	)
+	return entity, nil
+}
+
+func valueFromText(propertyType customer.PropertyType, value string) (interface{}, error) {
+	switch propertyType {
+	case customer.PROPERTY_TYPE_STRING:
+		return value, nil
+	case customer.PROPERTY_TYPE_NUMERIC:
+		retValue, err := strconv.Atoi(value)
+		if err != nil {
+			return nil, errors.Wrapf(err, "intへの変換に失敗した。value: %+v", value)
+		}
+		return retValue, nil
+	default:
+		return nil, errors.Errorf("想定外のエラー")
+	}
 }
 
 type customerMapper struct {
