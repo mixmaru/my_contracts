@@ -49,12 +49,9 @@ func crateCustomerCustomerProperties(customerId int, properties map[int]interfac
 	// mapper作成
 	mappers := make([]interface{}, 0, len(properties))
 	for key, val := range properties {
-		var value string
-		switch val.(type) {
-		case string:
-			value = val.(string)
-		case int:
-			value = strconv.Itoa(val.(int))
+		value, err := toText(val)
+		if err != nil {
+			return err
 		}
 		mapper := customerCustomerPropertyMapper{
 			CustomerId:         customerId,
@@ -69,6 +66,18 @@ func crateCustomerCustomerProperties(customerId int, properties map[int]interfac
 		return errors.Wrapf(err, "customerPropertiesの保存に失敗しました。mappers: %+v", mappers)
 	}
 	return nil
+}
+
+// value(int or string方のinterface{}型)をstringに変換する
+func toText(value interface{}) (string, error) {
+	switch value.(type) {
+	case string:
+		return value.(string), nil
+	case int:
+		return strconv.Itoa(value.(int)), nil
+	default:
+		return "", errors.Errorf("string型へ変換できなかった。value.(type): %T", value)
+	}
 }
 
 func (c *CustomerRepository) GetById(id int, executor gorp.SqlExecutor) (entity *customer.CustomerEntity, err error) {
