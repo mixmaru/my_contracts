@@ -45,7 +45,29 @@ func TestCustomerRepository_Create(t *testing.T) {
 	})
 
 	t.Run("カスタマータイプで設定されていないプロパティを渡すとエラーになる", func(*testing.T) {
+		////// 実行
+		// カスタマーエンティティ作成
+		newCustomer := customer.NewCustomerEntity(
+			"厚生省"+timestampStr,
+			kankouchoId,
+			map[int]interface{}{
+				propertyIds[0]: "03-1111-2222",
+				propertyIds[1]: 200,
+				192:            "他のカスタマータイプのプロパティ",
+			},
+		)
+		rep := NewCustomerRepository()
+		conn, err := GetConnection()
+		assert.NoError(t, err)
+		tran, err := conn.Begin()
+		assert.NoError(t, err)
+		savedId, err := rep.Create(newCustomer, tran)
 
+		////// 検証
+		assert.Error(t, err)
+		assert.Zero(t, savedId)
+		err = tran.Rollback()
+		assert.NoError(t, err)
 	})
 
 	t.Run("カスタマータイプで設定されているプロパティが存在しないとそのプロパティは無視される", func(*testing.T) {

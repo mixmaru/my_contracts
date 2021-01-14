@@ -63,7 +63,7 @@ func crateCustomerCustomerProperties(customerId int, properties map[int]interfac
 	// 保存実行
 	err := executor.Insert(mappers...)
 	if err != nil {
-		return errors.Wrapf(err, "customerPropertiesの保存に失敗しました。mappers: %+v", mappers)
+		return errors.Wrapf(err, "customerPropertiesの保存に失敗しました。mappers: %+v", mappers...)
 	}
 	return nil
 }
