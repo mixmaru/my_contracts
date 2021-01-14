@@ -23,7 +23,7 @@ func (c *CustomerRepository) Create(customerEntity *customer.CustomerEntity, exe
 	}
 
 	// カスタマープロパティ登録
-	err = crateCustomerCustomerProperties(savedCustomerId, customerEntity.Properties(), executor)
+	err = crateCustomerCustomerProperties(savedCustomerId, customerEntity.CustomerTypeId(), customerEntity.Properties(), executor)
 	if err != nil {
 		return 0, err
 	}
@@ -45,7 +45,7 @@ func createCustomer(customerEntity *customer.CustomerEntity, executor gorp.SqlEx
 	return newCustomer.Id, nil
 }
 
-func crateCustomerCustomerProperties(customerId int, properties map[int]interface{}, executor gorp.SqlExecutor) error {
+func crateCustomerCustomerProperties(customerId, customerTypeId int, properties map[int]interface{}, executor gorp.SqlExecutor) error {
 	// mapper作成
 	mappers := make([]interface{}, 0, len(properties))
 	for key, val := range properties {
@@ -55,6 +55,7 @@ func crateCustomerCustomerProperties(customerId int, properties map[int]interfac
 		}
 		mapper := customerCustomerPropertyMapper{
 			CustomerId:         customerId,
+			CustomerTypeId:     customerTypeId,
 			CustomerPropertyId: key,
 			Value:              value,
 		}
@@ -161,6 +162,7 @@ type customerMapper struct {
 
 type customerCustomerPropertyMapper struct {
 	CustomerId         int    `db:"customer_id"`
+	CustomerTypeId     int    `db:"customer_type_id"`
 	CustomerPropertyId int    `db:"customer_property_id"`
 	Value              string `db:"value"`
 	CreatedAtUpdatedAtMapper

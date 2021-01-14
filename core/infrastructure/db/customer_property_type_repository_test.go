@@ -60,6 +60,8 @@ func TestCustomerPropertyTypeRepository_GetAll(t *testing.T) {
 	assert.NoError(t, err)
 	_, err = tran.Exec("LOCK TABLE customer_properties IN EXCLUSIVE MODE;")
 	assert.NoError(t, err)
+	_, err = tran.Exec("DELETE FROM customers_customer_properties;")
+	assert.NoError(t, err)
 	_, err = tran.Exec("DELETE FROM customer_types_customer_properties;")
 	assert.NoError(t, err)
 	_, err = tran.Exec("DELETE FROM customer_properties;")
