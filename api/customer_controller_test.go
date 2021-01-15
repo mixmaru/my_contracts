@@ -3,7 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/mixmaru/my_contracts/core/application/customer"
+	"github.com/mixmaru/my_contracts/core/application/customer_type"
+	"github.com/mixmaru/my_contracts/core/application/customer_type/create"
+	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/mixmaru/my_contracts/utils"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -13,15 +18,19 @@ import (
 func TestCustomerController_Create(t *testing.T) {
 	router := newRouter()
 
+	////// 準備
+	customerTypeDto, err := preCreateCustomerPropertyTypeAndCustomerType()
+	assert.NoError(t, err)
+
 	t.Run("名前とプロパティIDとプロパティ辞書を渡すと新カスタマーが登録される", func(t *testing.T) {
 		timestampstr := utils.CreateTimestampString()
 		////// 準備
 		postBody := map[string]interface{}{
 			"name":             "名前" + timestampstr,
-			"customer_type_id": 1,
-			"properties": map[string]interface{}{
-				"性別": "男",
-				"年齢": 20,
+			"customer_type_id": customerTypeDto.Id,
+			"properties": map[int]interface{}{
+				customerTypeDto.CustomerPropertyTypes[0].Id: "男",
+				customerTypeDto.CustomerPropertyTypes[1].Id: "女",
 			},
 		}
 		body, _ := json.Marshal(postBody)
@@ -35,11 +44,17 @@ func TestCustomerController_Create(t *testing.T) {
 		////// 検証
 		assert.Equal(t, http.StatusCreated, rec.Code)
 		//// jsonパース
-		// todo: check CustomerDto
-		//var registeredCustomer CustomerDto
-		//err := json.Unmarshal(rec.Body.Bytes(), &registeredCustomer)
-		//assert.NoError(t, err)
-		//assert.
+		var registeredCustomer customer.CustomerDto
+		err := json.Unmarshal(rec.Body.Bytes(), &registeredCustomer)
+		assert.NoError(t, err)
+		assert.NotZero(t, registeredCustomer.Id)
+		assert.Equal(t, "名前"+timestampstr, registeredCustomer.Name)
+		assert.Equal(t, customerTypeDto.Id, registeredCustomer.CustomerTypeId)
+		expect := customer.PropertyDto{
+			customerTypeDto.CustomerPropertyTypes[0].Id: "男",
+			customerTypeDto.CustomerPropertyTypes[1].Id: "女",
+		}
+		assert.Equal(t, expect, registeredCustomer.Properties)
 	})
 	//
 	//	t.Run("idを渡すとデータが取得できる", func(t *testing.T) {
@@ -196,4 +211,36 @@ func TestCustomerController_Create(t *testing.T) {
 	//	}
 	//	assert.Equal(t, expected, validErrors)
 	//})
+}
+
+func preCreateCustomerPropertyTypeAndCustomerType() (customer_type.CustomerTypeDto, error) {
+	timestampStr := utils.CreateTimestampString()
+	// カスタマープロパティタイプの登録
+	propertyDtos, err := preCreateCustomerProperties()
+	if err != nil {
+		return customer_type.CustomerTypeDto{}, err
+	}
+	// カスタマータイプの登録
+	propertyIds := []int{
+		propertyDtos[0].Id,
+		propertyDtos[1].Id,
+	}
+	customerTypeDto, err := preCreateCustomerType("超お得意様"+timestampStr, propertyIds)
+	if err != nil {
+		return customer_type.CustomerTypeDto{}, err
+	}
+	return customerTypeDto, nil
+}
+
+func preCreateCustomerType(name string, customerPropertyTypeIds []int) (customer_type.CustomerTypeDto, error) {
+	request := create.NewCustomerTypeCreateUseCaseRequest(name, customerPropertyTypeIds)
+	interactor := create.NewCustomerTypeCreateInteractor(db.NewCustomerTypeRepository(), db.NewCustomerPropertyTypeRepository())
+	response, err := interactor.Handle(request)
+	if err != nil {
+		return customer_type.CustomerTypeDto{}, err
+	}
+	if len(response.ValidationError) > 0 {
+		return customer_type.CustomerTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationError)
+	}
+	return response.CustomerTypeDto, nil
 }

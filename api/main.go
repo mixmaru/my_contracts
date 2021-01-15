@@ -8,6 +8,7 @@ import (
 	create2 "github.com/mixmaru/my_contracts/core/application/contracts/create"
 	"github.com/mixmaru/my_contracts/core/application/contracts/create_next_right_to_use"
 	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
+	create5 "github.com/mixmaru/my_contracts/core/application/customer/create"
 	create3 "github.com/mixmaru/my_contracts/core/application/customer_property_type/create"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_all"
 	get_by_id2 "github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_id"
@@ -60,7 +61,7 @@ func newRouter() *echo.Echo {
 		create4.NewCustomerTypeCreateInteractor(customerTypeRep, customerPropertyTypeRep),
 		get_by_id3.NewCustomerTypeGetByIdInteractor(customerTypeRep, customerPropertyTypeRep),
 	)
-	customerController := NewCustomerController()
+	customerController := NewCustomerController(create5.NewCustomerCreateInteractor(db.NewCustomerRepository()))
 
 	// 顧客新規登録
 	e.POST("/users/", userController.Save)

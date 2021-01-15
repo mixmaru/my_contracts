@@ -77,7 +77,7 @@ func toText(value interface{}) (string, error) {
 	case int:
 		return strconv.Itoa(value.(int)), nil
 	default:
-		return "", errors.Errorf("string型へ変換できなかった。value.(type): %T", value)
+		return "", errors.Errorf("string型へ変換できなかった。value: %+v, value.(type): %T", value, value)
 	}
 }
 

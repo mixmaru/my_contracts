@@ -87,9 +87,9 @@ func (cont *CustomerController) Create(c echo.Context) error {
 }
 
 type customerCreateParams struct {
-	Name           string                 `json:"name"`
-	CustomerTypeId int                    `json:"customer_type_id"`
-	Properties     map[string]interface{} `json:"properties"`
+	Name           string              `json:"name"`
+	CustomerTypeId int                 `json:"customer_type_id"`
+	Properties     map[int]interface{} `json:"properties"`
 }
 
 //
