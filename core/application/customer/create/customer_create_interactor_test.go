@@ -31,7 +31,7 @@ func TestCustomerCreateInteractor_Handle(t *testing.T) {
 				customerType.CustomerPropertyTypes[1].Id: 20,
 			},
 		)
-		interactor := NewCustomerCreateInteractor()
+		interactor := NewCustomerCreateInteractor(db.NewCustomerRepository())
 		response, err := interactor.Handle(request)
 		assert.NoError(t, err)
 
