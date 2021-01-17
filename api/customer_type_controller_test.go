@@ -20,7 +20,15 @@ import (
 func TestCustomerTypeController_Create(t *testing.T) {
 	router := newRouter()
 	// カスタマープロパティ登録
-	preCreateCustomerProperties, err := preCreateCustomerProperties()
+	timestampStr := utils.CreateTimestampString()
+	property1, err := preCreateCustomerProperty("性別"+timestampStr, "string")
+	assert.NoError(t, err)
+	property2, err := preCreateCustomerProperty("年齢"+timestampStr, "numeric")
+	assert.NoError(t, err)
+	preCreateCustomerProperties := []customer_property_type.CustomerPropertyTypeDto{
+		property1,
+		property2,
+	}
 	assert.NoError(t, err)
 
 	t.Run("名前とプロパティIDを渡すとデータが作成される", func(t *testing.T) {
@@ -205,22 +213,17 @@ func TestCustomerTypeController_Create(t *testing.T) {
 	})
 }
 
-func preCreateCustomerProperties() ([]customer_property_type.CustomerPropertyTypeDto, error) {
-	timestampStr := utils.CreateTimestampString()
-	var retDtos []customer_property_type.CustomerPropertyTypeDto
+func preCreateCustomerProperty(name string, propertyType string) (customer_property_type.CustomerPropertyTypeDto, error) {
 
-	for i := 0; i < 2; i++ {
-		interactor := create.NewCustomerPropertyTypeCreateInteractor(db.NewCustomerPropertyTypeRepository())
-		request := create.NewCustomerPropertyTypeCreateUseCaseRequest("性別"+strconv.Itoa(i)+timestampStr, "string")
-		response, err := interactor.Handle(request)
-		if err != nil {
-			return nil, err
-		}
-		if len(response.ValidationError) > 0 {
-			return nil, errors.Errorf("バリデーションエラー。%+v", response.ValidationError)
-		}
-		retDtos = append(retDtos, response.CustomerPropertyTypeDto)
+	interactor := create.NewCustomerPropertyTypeCreateInteractor(db.NewCustomerPropertyTypeRepository())
+	request := create.NewCustomerPropertyTypeCreateUseCaseRequest(name, propertyType)
+	response, err := interactor.Handle(request)
+	if err != nil {
+		return customer_property_type.CustomerPropertyTypeDto{}, err
+	}
+	if len(response.ValidationError) > 0 {
+		return customer_property_type.CustomerPropertyTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationError)
 	}
 
-	return retDtos, nil
+	return response.CustomerPropertyTypeDto, nil
 }

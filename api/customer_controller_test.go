@@ -30,7 +30,7 @@ func TestCustomerController_Create(t *testing.T) {
 			"customer_type_id": customerTypeDto.Id,
 			"properties": map[int]interface{}{
 				customerTypeDto.CustomerPropertyTypes[0].Id: "男",
-				customerTypeDto.CustomerPropertyTypes[1].Id: "女",
+				customerTypeDto.CustomerPropertyTypes[1].Id: 22,
 			},
 		}
 		body, _ := json.Marshal(postBody)
@@ -52,7 +52,7 @@ func TestCustomerController_Create(t *testing.T) {
 		assert.Equal(t, customerTypeDto.Id, registeredCustomer.CustomerTypeId)
 		expect := customer.PropertyDto{
 			customerTypeDto.CustomerPropertyTypes[0].Id: "男",
-			customerTypeDto.CustomerPropertyTypes[1].Id: "女",
+			customerTypeDto.CustomerPropertyTypes[1].Id: 22.,
 		}
 		assert.Equal(t, expect, registeredCustomer.Properties)
 	})
@@ -73,7 +73,7 @@ func TestCustomerController_Create(t *testing.T) {
 	//		assert.NoError(t, err)
 	//		assert.Equal(t, registeredCustomerType.Id, loadedCustomerType.Id)
 	//		assert.Equal(t, "法人"+timestampstr, loadedCustomerType.Name)
-	//		assert.Equal(t, preCreateCustomerProperties, loadedCustomerType.CustomerPropertyTypes)
+	//		assert.Equal(t, preCreateCustomerProperty, loadedCustomerType.CustomerPropertyTypes)
 	//	})
 	//
 	//	t.Run("idに存在しないidを渡すとnot found", func(t *testing.T) {
@@ -104,8 +104,8 @@ func TestCustomerController_Create(t *testing.T) {
 	//		////// 準備
 	//		body := url.Values{}
 	//		body.Set("name", "法人"+timestampstr) // 上部で既に登録すみ
-	//		body.Set("customer_property_ids", strconv.Itoa(preCreateCustomerProperties[0].Id))
-	//		body.Add("customer_property_ids", strconv.Itoa(preCreateCustomerProperties[1].Id))
+	//		body.Set("customer_property_ids", strconv.Itoa(preCreateCustomerProperty[0].Id))
+	//		body.Add("customer_property_ids", strconv.Itoa(preCreateCustomerProperty[1].Id))
 	//
 	//		////// 実行
 	//		req := httptest.NewRequest("POST", "/customer_types/", strings.NewReader(body.Encode()))
@@ -216,14 +216,18 @@ func TestCustomerController_Create(t *testing.T) {
 func preCreateCustomerPropertyTypeAndCustomerType() (customer_type.CustomerTypeDto, error) {
 	timestampStr := utils.CreateTimestampString()
 	// カスタマープロパティタイプの登録
-	propertyDtos, err := preCreateCustomerProperties()
+	propertyDto1, err := preCreateCustomerProperty("性別"+timestampStr, "string")
+	if err != nil {
+		return customer_type.CustomerTypeDto{}, err
+	}
+	propertyDto2, err := preCreateCustomerProperty("年齢"+timestampStr, "numeric")
 	if err != nil {
 		return customer_type.CustomerTypeDto{}, err
 	}
 	// カスタマータイプの登録
 	propertyIds := []int{
-		propertyDtos[0].Id,
-		propertyDtos[1].Id,
+		propertyDto1.Id,
+		propertyDto2.Id,
 	}
 	customerTypeDto, err := preCreateCustomerType("超お得意様"+timestampStr, propertyIds)
 	if err != nil {

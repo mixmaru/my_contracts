@@ -21,7 +21,7 @@ func TestCustomerRepository_Create(t *testing.T) {
 			kankouchoId,
 			map[int]interface{}{
 				propertyIds[0]: "03-1111-2222",
-				propertyIds[1]: 200,
+				propertyIds[1]: 200.,
 			},
 		)
 		rep := NewCustomerRepository()

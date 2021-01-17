@@ -18,6 +18,8 @@ func TestCustomerPropertyTypeGetAllInteractor_Handle(t *testing.T) {
 		conn, err := db.GetConnection()
 		assert.NoError(t, err)
 		defer conn.Db.Close()
+		_, err = conn.Exec("DELETE FROM customers_customer_properties;")
+		assert.NoError(t, err)
 		_, err = conn.Exec("DELETE FROM customer_types_customer_properties;")
 		assert.NoError(t, err)
 		_, err = conn.Exec("DELETE FROM customer_properties;")

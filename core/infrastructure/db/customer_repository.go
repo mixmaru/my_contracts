@@ -74,8 +74,8 @@ func toText(value interface{}) (string, error) {
 	switch value.(type) {
 	case string:
 		return value.(string), nil
-	case int:
-		return strconv.Itoa(value.(int)), nil
+	case float64:
+		return strconv.FormatFloat(value.(float64), 'f', -1, 64), nil
 	default:
 		return "", errors.Errorf("string型へ変換できなかった。value: %+v, value.(type): %T", value, value)
 	}
@@ -143,9 +143,9 @@ func valueFromText(propertyType customer.PropertyType, value string) (interface{
 	case customer.PROPERTY_TYPE_STRING:
 		return value, nil
 	case customer.PROPERTY_TYPE_NUMERIC:
-		retValue, err := strconv.Atoi(value)
+		retValue, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return nil, errors.Wrapf(err, "intへの変換に失敗した。value: %+v", value)
+			return nil, errors.Wrapf(err, "float64への変換に失敗した。value: %+v", value)
 		}
 		return retValue, nil
 	default:

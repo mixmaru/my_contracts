@@ -28,7 +28,7 @@ func TestCustomerCreateInteractor_Handle(t *testing.T) {
 			customerType.Id,
 			map[int]interface{}{
 				customerType.CustomerPropertyTypes[0].Id: "男",
-				customerType.CustomerPropertyTypes[1].Id: 20,
+				customerType.CustomerPropertyTypes[1].Id: 20.,
 			},
 		)
 		interactor := NewCustomerCreateInteractor(db.NewCustomerRepository())
@@ -41,7 +41,7 @@ func TestCustomerCreateInteractor_Handle(t *testing.T) {
 		assert.Equal(t, customerType.Id, response.CustomerDto.CustomerTypeId)
 		expectedProperties := customer.PropertyDto{
 			customerType.CustomerPropertyTypes[0].Id: "男",
-			customerType.CustomerPropertyTypes[1].Id: 20,
+			customerType.CustomerPropertyTypes[1].Id: 20.,
 		}
 		assert.Equal(t, expectedProperties, response.CustomerDto.Properties)
 	})

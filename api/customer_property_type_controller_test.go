@@ -138,12 +138,22 @@ func TestCustomerPropertyTypeController_GetAll(t *testing.T) {
 			conn, err := db.GetConnection()
 			assert.NoError(t, err)
 			defer conn.Db.Close()
+			_, err = conn.Exec("DELETE FROM customers_customer_properties;")
+			assert.NoError(t, err)
 			_, err = conn.Exec("DELETE FROM customer_types_customer_properties;")
 			assert.NoError(t, err)
 			_, err = conn.Exec("DELETE FROM customer_properties;")
 			assert.NoError(t, err)
 			// 既存データ挿入
-			preCreatedProperties, err := preCreateCustomerProperties()
+			timestampStr := utils.CreateTimestampString()
+			propertyDto1, err := preCreateCustomerProperty("性別"+timestampStr, "string")
+			assert.NoError(t, err)
+			propertyDto2, err := preCreateCustomerProperty("年齢"+timestampStr, "numeric")
+			assert.NoError(t, err)
+			preCreatedProperties := []customer_property_type.CustomerPropertyTypeDto{
+				propertyDto1,
+				propertyDto2,
+			}
 			assert.NoError(t, err)
 
 			////// 実行
