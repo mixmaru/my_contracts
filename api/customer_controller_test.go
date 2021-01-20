@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/mixmaru/my_contracts/core/application/customer"
+	create2 "github.com/mixmaru/my_contracts/core/application/customer/create"
 	"github.com/mixmaru/my_contracts/core/application/customer_type"
 	"github.com/mixmaru/my_contracts/core/application/customer_type/create"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
@@ -12,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -247,4 +250,55 @@ func preCreateCustomerType(name string, customerPropertyTypeIds []int) (customer
 		return customer_type.CustomerTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationError)
 	}
 	return response.CustomerTypeDto, nil
+}
+
+func TestCustomerController_GetById(t *testing.T) {
+	router := newRouter()
+
+	////// 準備
+	customerDto, err := preCreateCustomer()
+	assert.NoError(t, err)
+
+	t.Run("存在するCustomerIdを渡すとCustomerデータが帰ってくる", func(t *testing.T) {
+		req := httptest.NewRequest("GET", fmt.Sprintf("/customer/%v/", customerDto.Id), strings.NewReader(""))
+		rec := httptest.NewRecorder()
+
+		////// リクエスト実行
+		router.ServeHTTP(rec, req)
+
+		////// 検証
+		assert.Equal(t, http.StatusOK, rec.Code)
+		//// jsonパース
+		var registeredCustomer customer.CustomerDto
+		err := json.Unmarshal(rec.Body.Bytes(), &registeredCustomer)
+		assert.NoError(t, err)
+		assert.NotZero(t, registeredCustomer.Id)
+		assert.Equal(t, customerDto.Name, registeredCustomer.Name)
+		assert.Equal(t, customerDto.CustomerTypeId, registeredCustomer.CustomerTypeId)
+		assert.Equal(t, customerDto.Properties, registeredCustomer.Properties)
+	})
+}
+
+func preCreateCustomer() (customer.CustomerDto, error) {
+	// CustomerType登録
+	customerTypeDto, err := preCreateCustomerPropertyTypeAndCustomerType()
+	if err != nil {
+		return customer.CustomerDto{}, err
+	}
+	// Customer登録
+	// property作成
+	properties := map[int]interface{}{
+		customerTypeDto.CustomerPropertyTypes[0].Id: "男",
+		customerTypeDto.CustomerPropertyTypes[1].Id: 39,
+	}
+	request := create2.NewCustomerCreateUseCaseRequest("顧客名", customerTypeDto.Id, properties)
+	intaractor := create2.NewCustomerCreateInteractor(db.NewCustomerRepository())
+	response, err := intaractor.Handle(request)
+	if err != nil {
+		return customer.CustomerDto{}, err
+	}
+	if len(response.ValidationErrors) > 0 {
+		return customer.CustomerDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
+	}
+	return response.CustomerDto, nil
 }

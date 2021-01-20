@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
 	"github.com/mixmaru/my_contracts/core/application/customer/create"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
+	"strconv"
 )
 
 type CustomerController struct {
@@ -19,7 +21,7 @@ func NewCustomerController(createUseCase create.ICustomerCreateUseCase) *Custome
 // params:
 // name string カスタマー名
 // customer_type_id カスタマータイプID
-// properties {"性別": "男", "年齢": 20}
+// properties {"1": "男", "2": 20}
 func (cont *CustomerController) Create(c echo.Context) error {
 	logger, err := my_logger.GetLogger()
 	if err != nil {
@@ -90,6 +92,35 @@ type customerCreateParams struct {
 	Name           string              `json:"name"`
 	CustomerTypeId int                 `json:"customer_type_id"`
 	Properties     map[int]interface{} `json:"properties"`
+}
+
+func (cont *CustomerController) GetById(c echo.Context) error {
+	logger, err := my_logger.GetLogger()
+	if err != nil {
+		return err
+	}
+
+	customerId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		// idに変な値が渡された
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+	}
+
+	// データ取得
+	response, err := cont.getByIdUseCase.Handle(NewCustomerGetByIdUseCaseRequest(customerId))
+	if err != nil {
+		logger.Sugar().Errorw("カスタマーデータ取得に失敗。", "customerId", customerId, "err", err)
+		c.Error(err)
+		return err
+	}
+
+	// データがない
+	if response.CustomerDto.Id == 0 {
+		return c.JSON(http.StatusNotFound, echo.ErrNotFound)
+	}
+
+	// 返却データを用意
+	return c.JSON(http.StatusOK, response.CustomerDto)
 }
 
 //
