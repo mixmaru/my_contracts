@@ -16,7 +16,7 @@ func TestCustomerPropertyTypeCreateInteractor_Register(t *testing.T) {
 		response, err := interactor.Handle(request)
 		assert.NoError(t, err)
 
-		assert.Len(t, response.ValidationError, 0)
+		assert.Len(t, response.ValidationErrors, 0)
 		assert.NotZero(t, response.CustomerPropertyTypeDto.Id)
 		assert.Equal(t, "性別"+timestampstr, response.CustomerPropertyTypeDto.Name)
 		assert.Equal(t, "string", response.CustomerPropertyTypeDto.Type)
@@ -31,8 +31,8 @@ func TestCustomerPropertyTypeCreateInteractor_Register(t *testing.T) {
 				},
 			}
 
-			assert.Len(t, response.ValidationError, 1)
-			assert.Equal(t, expect, response.ValidationError)
+			assert.Len(t, response.ValidationErrors, 1)
+			assert.Equal(t, expect, response.ValidationErrors)
 			assert.Zero(t, response.CustomerPropertyTypeDto.Id)
 		})
 	})
@@ -49,8 +49,8 @@ func TestCustomerPropertyTypeCreateInteractor_Register(t *testing.T) {
 			},
 		}
 
-		assert.Len(t, response.ValidationError, 1)
-		assert.Equal(t, expect, response.ValidationError)
+		assert.Len(t, response.ValidationErrors, 1)
+		assert.Equal(t, expect, response.ValidationErrors)
 		assert.Zero(t, response.CustomerPropertyTypeDto.Id)
 	})
 
@@ -82,7 +82,7 @@ func TestCustomerPropertyTypeCreateInteractor_Register(t *testing.T) {
 			case retVal := <-retCh:
 				if retVal.error != nil {
 					errorCount++
-				} else if len(retVal.response.ValidationError) > 0 {
+				} else if len(retVal.response.ValidationErrors) > 0 {
 					validationErrorCount++
 				} else if retVal.response.CustomerPropertyTypeDto.Id != 0 {
 					successCount++

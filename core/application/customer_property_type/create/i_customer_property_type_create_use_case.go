@@ -19,9 +19,9 @@ func NewCustomerPropertyTypeCreateUseCaseRequest(name string, propertyType strin
 
 type CustomerPropertyTypeCreateUseCaseResponse struct {
 	CustomerPropertyTypeDto products2.CustomerPropertyTypeDto
-	ValidationError         map[string][]string
+	ValidationErrors        map[string][]string
 }
 
 func NewCustomerPropertyTypeCreateUseCaseResponse(customerPropertyTypeDto products2.CustomerPropertyTypeDto, validationError map[string][]string) *CustomerPropertyTypeCreateUseCaseResponse {
-	return &CustomerPropertyTypeCreateUseCaseResponse{CustomerPropertyTypeDto: customerPropertyTypeDto, ValidationError: validationError}
+	return &CustomerPropertyTypeCreateUseCaseResponse{CustomerPropertyTypeDto: customerPropertyTypeDto, ValidationErrors: validationError}
 }

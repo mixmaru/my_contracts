@@ -27,7 +27,7 @@ func TestCustomerPropertyTypeCreateInteractor_Register(t *testing.T) {
 		assert.NoError(t, err)
 
 		////// 検証
-		assert.Len(t, response.ValidationError, 0)
+		assert.Len(t, response.ValidationErrors, 0)
 		assert.NotZero(t, response.CustomerTypeDto.Id)
 		assert.Equal(t, "お得意様"+timestampstr, response.CustomerTypeDto.Name)
 		assert.Equal(t, propertyDtos, response.CustomerTypeDto.CustomerPropertyTypes)
@@ -42,8 +42,8 @@ func TestCustomerPropertyTypeCreateInteractor_Register(t *testing.T) {
 				},
 			}
 
-			assert.Len(t, response.ValidationError, 1)
-			assert.Equal(t, expect, response.ValidationError)
+			assert.Len(t, response.ValidationErrors, 1)
+			assert.Equal(t, expect, response.ValidationErrors)
 			assert.Zero(t, response.CustomerTypeDto.Id)
 		})
 
@@ -57,8 +57,8 @@ func TestCustomerPropertyTypeCreateInteractor_Register(t *testing.T) {
 				},
 			}
 
-			assert.Len(t, response.ValidationError, 1)
-			assert.Equal(t, expect, response.ValidationError)
+			assert.Len(t, response.ValidationErrors, 1)
+			assert.Equal(t, expect, response.ValidationErrors)
 			assert.Zero(t, response.CustomerTypeDto.Id)
 		})
 	})
@@ -77,8 +77,8 @@ func preInsertCustomerProperty() ([]int, []customer_property_type.CustomerProper
 		if err != nil {
 			return nil, nil, err
 		}
-		if len(response.ValidationError) > 0 {
-			return nil, nil, errors.Errorf("バリデーションエラー。%+v", response.ValidationError)
+		if len(response.ValidationErrors) > 0 {
+			return nil, nil, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
 		}
 		retInts = append(retInts, response.CustomerPropertyTypeDto.Id)
 		retDto = append(retDto, response.CustomerPropertyTypeDto)

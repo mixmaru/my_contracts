@@ -49,8 +49,8 @@ func preCreate() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	if len(response.ValidationError) > 0 {
-		return 0, errors.Errorf("バリデーションエラー。%+v", response.ValidationError)
+	if len(response.ValidationErrors) > 0 {
+		return 0, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
 	}
 	return response.CustomerPropertyTypeDto.Id, nil
 }

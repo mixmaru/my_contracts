@@ -53,8 +53,8 @@ func (cont *CustomerTypeController) Create(c echo.Context) error {
 		return err
 	}
 
-	if len(response.ValidationError) > 0 {
-		return c.JSON(http.StatusBadRequest, response.ValidationError)
+	if len(response.ValidationErrors) > 0 {
+		return c.JSON(http.StatusBadRequest, response.ValidationErrors)
 	}
 
 	return c.JSON(http.StatusCreated, response.CustomerTypeDto)

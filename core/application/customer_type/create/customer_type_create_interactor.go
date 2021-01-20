@@ -52,11 +52,11 @@ func (c CustomerTypeCreateInteractor) Handle(request *CustomerTypeCreateUseCaseR
 		}
 
 		// バリデーション
-		response.ValidationError, err = c.validation(request, tran)
+		response.ValidationErrors, err = c.validation(request, tran)
 		if err != nil {
 			return nil, err
 		}
-		if len(response.ValidationError) > 0 {
+		if len(response.ValidationErrors) > 0 {
 			return response, nil
 		}
 

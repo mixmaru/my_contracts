@@ -221,8 +221,8 @@ func preCreateCustomerProperty(name string, propertyType string) (customer_prope
 	if err != nil {
 		return customer_property_type.CustomerPropertyTypeDto{}, err
 	}
-	if len(response.ValidationError) > 0 {
-		return customer_property_type.CustomerPropertyTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationError)
+	if len(response.ValidationErrors) > 0 {
+		return customer_property_type.CustomerPropertyTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
 	}
 
 	return response.CustomerPropertyTypeDto, nil

@@ -246,8 +246,8 @@ func preCreateCustomerType(name string, customerPropertyTypeIds []int) (customer
 	if err != nil {
 		return customer_type.CustomerTypeDto{}, err
 	}
-	if len(response.ValidationError) > 0 {
-		return customer_type.CustomerTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationError)
+	if len(response.ValidationErrors) > 0 {
+		return customer_type.CustomerTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
 	}
 	return response.CustomerTypeDto, nil
 }

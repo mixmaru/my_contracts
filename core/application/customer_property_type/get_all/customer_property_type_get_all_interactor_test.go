@@ -71,8 +71,8 @@ func preCreateCustomerPropertyTypes() ([]customer_property_type.CustomerProperty
 		if err != nil {
 			return nil, err
 		}
-		if len(response.ValidationError) > 0 {
-			return nil, errors.Errorf("バリデーションエラー。%+v", response.ValidationError)
+		if len(response.ValidationErrors) > 0 {
+			return nil, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
 		}
 		retDtos = append(retDtos, response.CustomerPropertyTypeDto)
 	}

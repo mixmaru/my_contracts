@@ -73,8 +73,8 @@ func preCreateCustomerType() (customer_type.CustomerTypeDto, error) {
 	if err != nil {
 		return customer_type.CustomerTypeDto{}, err
 	}
-	if len(response.ValidationError) > 0 {
-		return customer_type.CustomerTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationError)
+	if len(response.ValidationErrors) > 0 {
+		return customer_type.CustomerTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
 	}
 	return response.CustomerTypeDto, nil
 }
@@ -86,8 +86,8 @@ func preCreateCustomerPropertyType(name string, propertyType string) (customer_p
 	if err != nil {
 		return customer_property_type.CustomerPropertyTypeDto{}, err
 	}
-	if len(response.ValidationError) > 0 {
-		return customer_property_type.CustomerPropertyTypeDto{}, errors.Errorf("validError %+v", response.ValidationError)
+	if len(response.ValidationErrors) > 0 {
+		return customer_property_type.CustomerPropertyTypeDto{}, errors.Errorf("validError %+v", response.ValidationErrors)
 	}
 	return response.CustomerPropertyTypeDto, nil
 }

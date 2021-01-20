@@ -51,12 +51,12 @@ func (i *CustomerPropertyTypeCreateInteractor) Handle(
 		}
 
 		// バリデーション
-		response.ValidationError, err = i.validation(request, tran)
+		response.ValidationErrors, err = i.validation(request, tran)
 		if err != nil {
 			return nil, err
 		}
 
-		if len(response.ValidationError) > 0 {
+		if len(response.ValidationErrors) > 0 {
 			return &response, nil
 		}
 
