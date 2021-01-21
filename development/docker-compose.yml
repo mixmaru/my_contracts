@@ -1,11 +1,62 @@
-version: '2'
+version: '3'
 services:
+  api:
+    build: ./api/
+    command: bash -c "cd /root/my_contracts/api && go build && ./api"
+    ports:
+      - "1323:1323"
+    volumes:
+      - ../:/root/my_contracts
+    environment:
+      DB_TEST_HOST: db
+      DB_TEST_NAME: my_contracts_test
+      DB_TEST_USER: postgres
+      DB_TEST_PASSWORD: password
+
+      DB_DEVELOPMENT_HOST: db
+      DB_DEVELOPMENT_NAME: my_contracts_development
+      DB_DEVELOPMENT_USER: postgres
+      DB_DEVELOPMENT_PASSWORD: password
+
+      DB_PRODUCTION_HOST: db
+      DB_PRODUCTION_NAME: my_contracts
+      DB_PRODUCTION_USER: postgres
+      DB_PRODUCTION_PASSWORD: password
+    depends_on:
+      - db
+
+  dev:
+    build: ./dev/
+    command: bash -c "tail -f /dev/null"
+    volumes:
+      - ../:/root/my_contracts
+    environment:
+      DB_TEST_HOST: db
+      DB_TEST_NAME: my_contracts_test
+      DB_TEST_USER: postgres
+      DB_TEST_PASSWORD: password
+
+      DB_DEVELOPMENT_HOST: db
+      DB_DEVELOPMENT_NAME: my_contracts_development
+      DB_DEVELOPMENT_USER: postgres
+      DB_DEVELOPMENT_PASSWORD: password
+
+      DB_PRODUCTION_HOST: db
+      DB_PRODUCTION_NAME: my_contracts
+      DB_PRODUCTION_USER: postgres
+      DB_PRODUCTION_PASSWORD: password
+    depends_on:
+      - db
+
   db:
     build: ./db/
     ports:
       - "5432:5432"
     volumes:
-      - ./db/data:/var/lib/postgresql/data:z
+      - my_contracts_postgres:/var/lib/postgresql/data
       - ./db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_PASSWORD: password
+volumes:
+  my_contracts_postgres:
+    driver: local
