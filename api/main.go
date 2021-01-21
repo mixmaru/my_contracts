@@ -8,6 +8,13 @@ import (
 	create2 "github.com/mixmaru/my_contracts/core/application/contracts/create"
 	"github.com/mixmaru/my_contracts/core/application/contracts/create_next_right_to_use"
 	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
+	create5 "github.com/mixmaru/my_contracts/core/application/customer/create"
+	get_by_id4 "github.com/mixmaru/my_contracts/core/application/customer/get_by_id"
+	create3 "github.com/mixmaru/my_contracts/core/application/customer_property_type/create"
+	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_all"
+	get_by_id2 "github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_id"
+	create4 "github.com/mixmaru/my_contracts/core/application/customer_type/create"
+	get_by_id3 "github.com/mixmaru/my_contracts/core/application/customer_type/get_by_id"
 	"github.com/mixmaru/my_contracts/core/application/products/create"
 	user_create "github.com/mixmaru/my_contracts/core/application/users/create"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
@@ -33,6 +40,9 @@ func newRouter() *echo.Echo {
 	productRep := db.NewProductRepository()
 	contractRep := db.NewContractRepository()
 	billRep := db.NewBillRepository()
+	customerPropertyTypeRep := db.NewCustomerPropertyTypeRepository()
+	customerTypeRep := db.NewCustomerTypeRepository()
+	customerRep := db.NewCustomerRepository()
 
 	// controller
 	productController := NewProductController(create.NewProductCreateInteractor(productRep))
@@ -44,11 +54,38 @@ func newRouter() *echo.Echo {
 		archive_expired_right_to_use.NewContractArchiveExpiredRightToUseInteractor(contractRep),
 	)
 	billController := NewBillController(billing.NewBillBillingInteractor(productRep, contractRep, billRep))
+	customerPropertyTypeController := NewCustomerPropertyTypeController(
+		create3.NewCustomerPropertyTypeCreateInteractor(customerPropertyTypeRep),
+		get_by_id2.NewCustomerPropertyTypeGetByIdInteractor(customerPropertyTypeRep),
+		get_all.NewCustomerPropertyTypeGetAllInteractor(customerPropertyTypeRep),
+	)
+	customerTypeController := NewCustomerTypeController(
+		create4.NewCustomerTypeCreateInteractor(customerTypeRep, customerPropertyTypeRep),
+		get_by_id3.NewCustomerTypeGetByIdInteractor(customerTypeRep, customerPropertyTypeRep),
+	)
+	customerController := NewCustomerController(
+		create5.NewCustomerCreateInteractor(customerRep),
+		get_by_id4.NewCustomerGetByIdInteractor(customerRep),
+	)
 
 	// 顧客新規登録
 	e.POST("/users/", userController.Save)
 	// 顧客情報取得
 	e.GET("/users/:id", userController.Get)
+	// カスタマータイプ新規登録
+	e.POST("/customer_types/", customerTypeController.Create)
+	// カスタマータイプ取得
+	e.GET("/customer_types/:id", customerTypeController.GetById)
+	// カスタマープロパティタイプ新規登録
+	e.POST("/customer_property_types/", customerPropertyTypeController.Create)
+	// カスタマープロパティタイプ取得
+	e.GET("/customer_property_types/:id", customerPropertyTypeController.GetById)
+	// カスタマープロパティタイプ全取得
+	e.GET("/customer_property_types/", customerPropertyTypeController.GetAll)
+	// カスタマー新規登録
+	e.POST("/customer/", customerController.Create)
+	// カスタマー取得
+	e.GET("/customer/:id/", customerController.GetById)
 	// 商品登録
 	e.POST("/products/", productController.Crate)
 	// 商品情報取得

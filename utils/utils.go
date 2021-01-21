@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -50,4 +51,13 @@ func CreateJstTime(year int, month time.Month, day, hour, min, sec, nsec int) ti
 
 func CreateJstLocation() *time.Location {
 	return time.FixedZone("Asia/Tokyo", 9*60*60)
+}
+
+/*
+現在時刻のタイムスタンプの文字列を返す。
+テストでユニーク制約によるテスト失敗を避けるためにつかう
+*/
+func CreateTimestampString() string {
+	timestamp := time.Now().UnixNano()
+	return strconv.Itoa(int(timestamp))
 }

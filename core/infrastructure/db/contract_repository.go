@@ -2,12 +2,9 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/mixmaru/my_contracts/core/domain/models/contract"
 	"github.com/pkg/errors"
 	"gopkg.in/gorp.v2"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -78,13 +75,6 @@ func (r *ContractRepository) GetByIds(ids []int, executor gorp.SqlExecutor) (con
 	// contracts取得
 	// データマッパー用意
 	var contractMappers []*ContractMapper
-	// idsをインターフェース型に変更
-	idsInterfaceType := make([]interface{}, 0, len(ids))
-	preparedStatement := make([]string, 0, len(ids))
-	for i, id := range ids {
-		idsInterfaceType = append(idsInterfaceType, id)
-		preparedStatement = append(preparedStatement, "$"+strconv.Itoa(int(i)+1))
-	}
 	// sql作成
 	contractQuery := `
 select
@@ -96,12 +86,11 @@ select
        c.created_at as created_at,
        c.updated_at as updated_at
 from contracts c
-where c.id IN (%v)
+where c.id IN (` + CrateInStatement(len(ids)) + `)
 order by c.id
 `
-	contractQuery = fmt.Sprintf(contractQuery, strings.Join(preparedStatement, ", "))
 	// sqlとデータマッパーでクエリ実行
-	_, err = executor.Select(&contractMappers, contractQuery, idsInterfaceType...)
+	_, err = executor.Select(&contractMappers, contractQuery, ConvertSliceTypeIntToInterface(ids)...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
