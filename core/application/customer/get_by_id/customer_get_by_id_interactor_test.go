@@ -3,14 +3,31 @@ package get_by_id
 import (
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
 	"github.com/mixmaru/my_contracts/test_utils"
+	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestCustomerGetByIdInteractor_Handle(t *testing.T) {
 	////// 事前準備
+	// カスタマータイプ作成
+	timestampStr := utils.CreateTimestampString()
+	customerTypeDto, err := test_utils.PreCreateCustomerPropertyTypeAndCustomerType("お得意様"+timestampStr, []test_utils.PropertyParam{
+		{
+			PropertyTypeName: "性別" + timestampStr,
+			PropertyType:     test_utils.PROPERTY_TYPE_STRING,
+		},
+		{
+			PropertyTypeName: "年齢" + timestampStr,
+			PropertyType:     test_utils.PROPERTY_TYPE_NUMERIC,
+		},
+	})
+	assert.NoError(t, err)
 	// カスタマー登録
-	customerDto, err := test_utils.PreCreateCustomer()
+	customerDto, err := test_utils.PreCreateCustomer("山田邦明", customerTypeDto.Id, map[int]interface{}{
+		customerTypeDto.CustomerPropertyTypes[0].Id: "男",
+		customerTypeDto.CustomerPropertyTypes[1].Id: 32.,
+	})
 	assert.NoError(t, err)
 	assert.NotZero(t, customerDto)
 

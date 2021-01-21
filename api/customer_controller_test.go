@@ -5,12 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mixmaru/my_contracts/core/application/customer"
-	create2 "github.com/mixmaru/my_contracts/core/application/customer/create"
-	"github.com/mixmaru/my_contracts/core/application/customer_type"
-	"github.com/mixmaru/my_contracts/core/application/customer_type/create"
-	"github.com/mixmaru/my_contracts/core/infrastructure/db"
+	"github.com/mixmaru/my_contracts/test_utils"
 	"github.com/mixmaru/my_contracts/utils"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -20,9 +16,19 @@ import (
 
 func TestCustomerController_Create(t *testing.T) {
 	router := newRouter()
+	timestampStr := utils.CreateTimestampString()
 
 	////// 準備
-	customerTypeDto, err := preCreateCustomerPropertyTypeAndCustomerType()
+	customerTypeDto, err := test_utils.PreCreateCustomerPropertyTypeAndCustomerType("超お得意様"+timestampStr, []test_utils.PropertyParam{
+		{
+			PropertyTypeName: "性別" + timestampStr,
+			PropertyType:     test_utils.PROPERTY_TYPE_STRING,
+		},
+		{
+			PropertyTypeName: "年齢" + timestampStr,
+			PropertyType:     test_utils.PROPERTY_TYPE_NUMERIC,
+		},
+	})
 	assert.NoError(t, err)
 
 	t.Run("名前とプロパティIDとプロパティ辞書を渡すと新カスタマーが登録される", func(t *testing.T) {
@@ -216,47 +222,27 @@ func TestCustomerController_Create(t *testing.T) {
 	//})
 }
 
-func preCreateCustomerPropertyTypeAndCustomerType() (customer_type.CustomerTypeDto, error) {
-	timestampStr := utils.CreateTimestampString()
-	// カスタマープロパティタイプの登録
-	propertyDto1, err := preCreateCustomerProperty("性別"+timestampStr, "string")
-	if err != nil {
-		return customer_type.CustomerTypeDto{}, err
-	}
-	propertyDto2, err := preCreateCustomerProperty("年齢"+timestampStr, "numeric")
-	if err != nil {
-		return customer_type.CustomerTypeDto{}, err
-	}
-	// カスタマータイプの登録
-	propertyIds := []int{
-		propertyDto1.Id,
-		propertyDto2.Id,
-	}
-	customerTypeDto, err := preCreateCustomerType("超お得意様"+timestampStr, propertyIds)
-	if err != nil {
-		return customer_type.CustomerTypeDto{}, err
-	}
-	return customerTypeDto, nil
-}
-
-func preCreateCustomerType(name string, customerPropertyTypeIds []int) (customer_type.CustomerTypeDto, error) {
-	request := create.NewCustomerTypeCreateUseCaseRequest(name, customerPropertyTypeIds)
-	interactor := create.NewCustomerTypeCreateInteractor(db.NewCustomerTypeRepository(), db.NewCustomerPropertyTypeRepository())
-	response, err := interactor.Handle(request)
-	if err != nil {
-		return customer_type.CustomerTypeDto{}, err
-	}
-	if len(response.ValidationErrors) > 0 {
-		return customer_type.CustomerTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
-	}
-	return response.CustomerTypeDto, nil
-}
-
 func TestCustomerController_GetById(t *testing.T) {
 	router := newRouter()
 
 	////// 準備
-	customerDto, err := preCreateCustomer()
+	timestampStr := utils.CreateTimestampString()
+	customerTypeDto, err := test_utils.PreCreateCustomerPropertyTypeAndCustomerType("超お得意様"+timestampStr, []test_utils.PropertyParam{
+		{
+			PropertyTypeName: "性別" + timestampStr,
+			PropertyType:     test_utils.PROPERTY_TYPE_STRING,
+		},
+		{
+			PropertyTypeName: "年齢" + timestampStr,
+			PropertyType:     test_utils.PROPERTY_TYPE_NUMERIC,
+		},
+	})
+	assert.NoError(t, err)
+
+	customerDto, err := test_utils.PreCreateCustomer("顧客名", customerTypeDto.Id, map[int]interface{}{
+		customerTypeDto.CustomerPropertyTypes[0].Id: "女",
+		customerTypeDto.CustomerPropertyTypes[1].Id: 22.,
+	})
 	assert.NoError(t, err)
 
 	t.Run("存在するCustomerIdを渡すとCustomerデータが帰ってくる", func(t *testing.T) {
@@ -277,28 +263,4 @@ func TestCustomerController_GetById(t *testing.T) {
 		assert.Equal(t, customerDto.CustomerTypeId, registeredCustomer.CustomerTypeId)
 		assert.Equal(t, customerDto.Properties, registeredCustomer.Properties)
 	})
-}
-
-func preCreateCustomer() (customer.CustomerDto, error) {
-	// CustomerType登録
-	customerTypeDto, err := preCreateCustomerPropertyTypeAndCustomerType()
-	if err != nil {
-		return customer.CustomerDto{}, err
-	}
-	// Customer登録
-	// property作成
-	properties := map[int]interface{}{
-		customerTypeDto.CustomerPropertyTypes[0].Id: "男",
-		customerTypeDto.CustomerPropertyTypes[1].Id: 39,
-	}
-	request := create2.NewCustomerCreateUseCaseRequest("顧客名", customerTypeDto.Id, properties)
-	intaractor := create2.NewCustomerCreateInteractor(db.NewCustomerRepository())
-	response, err := intaractor.Handle(request)
-	if err != nil {
-		return customer.CustomerDto{}, err
-	}
-	if len(response.ValidationErrors) > 0 {
-		return customer.CustomerDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
-	}
-	return response.CustomerDto, nil
 }

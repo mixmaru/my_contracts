@@ -8,43 +8,8 @@ import (
 	"github.com/mixmaru/my_contracts/core/application/customer_type"
 	create3 "github.com/mixmaru/my_contracts/core/application/customer_type/create"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
-	"github.com/mixmaru/my_contracts/utils"
 	"github.com/pkg/errors"
 )
-
-func PreCreateCustomer() (customer.CustomerDto, error) {
-	timestampStr := utils.CreateTimestampString()
-	propertyDto1, err := PreCreateCustomerPropertyType("性別"+timestampStr, "string")
-	if err != nil {
-		return customer.CustomerDto{}, err
-	}
-	propertyDto2, err := PreCreateCustomerPropertyType("年齢"+timestampStr, "numeric")
-	if err != nil {
-		return customer.CustomerDto{}, err
-	}
-	customerTypeDto, err := PreCreateCustomerType("顧客タイプ"+timestampStr, []int{propertyDto1.Id, propertyDto2.Id})
-	if err != nil {
-		return customer.CustomerDto{}, err
-	}
-
-	request := create.NewCustomerCreateUseCaseRequest(
-		"顧客名"+timestampStr,
-		customerTypeDto.Id,
-		map[int]interface{}{
-			propertyDto1.Id: "女",
-			propertyDto2.Id: 25.,
-		},
-	)
-	interactor := create.NewCustomerCreateInteractor(db.NewCustomerRepository())
-	response, err := interactor.Handle(request)
-	if err != nil {
-		return customer.CustomerDto{}, err
-	}
-	if len(response.ValidationErrors) > 0 {
-		return customer.CustomerDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
-	}
-	return response.CustomerDto, nil
-}
 
 func PreCreateCustomerPropertyType(propertyName string, propertyType string) (customer_property_type.CustomerPropertyTypeDto, error) {
 	request := create2.NewCustomerPropertyTypeCreateUseCaseRequest(propertyName, propertyType)
@@ -70,4 +35,48 @@ func PreCreateCustomerType(customerTypeName string, propertyTypeIds []int) (cust
 		return customer_type.CustomerTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
 	}
 	return response.CustomerTypeDto, nil
+}
+
+type PropertyType string
+
+const PROPERTY_TYPE_STRING PropertyType = "string"
+const PROPERTY_TYPE_NUMERIC PropertyType = "numeric"
+
+type PropertyParam struct {
+	PropertyTypeName string
+	PropertyType     PropertyType
+}
+
+func PreCreateCustomerPropertyTypeAndCustomerType(
+	customerTypeName string,
+	customerPropertyTypes []PropertyParam,
+) (customer_type.CustomerTypeDto, error) {
+	// カスタマープロパティタイプの登録
+	propertyIds := []int{}
+	for _, propertyType := range customerPropertyTypes {
+		propertyDto, err := PreCreateCustomerPropertyType(propertyType.PropertyTypeName, string(propertyType.PropertyType))
+		if err != nil {
+			return customer_type.CustomerTypeDto{}, err
+		}
+		propertyIds = append(propertyIds, propertyDto.Id)
+	}
+	// カスタマータイプの登録
+	customerTypeDto, err := PreCreateCustomerType(customerTypeName, propertyIds)
+	if err != nil {
+		return customer_type.CustomerTypeDto{}, err
+	}
+	return customerTypeDto, nil
+}
+
+func PreCreateCustomer(name string, customerTypeId int, properties map[int]interface{}) (customer.CustomerDto, error) {
+	request := create.NewCustomerCreateUseCaseRequest(name, customerTypeId, properties)
+	intaractor := create.NewCustomerCreateInteractor(db.NewCustomerRepository())
+	response, err := intaractor.Handle(request)
+	if err != nil {
+		return customer.CustomerDto{}, err
+	}
+	if len(response.ValidationErrors) > 0 {
+		return customer.CustomerDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
+	}
+	return response.CustomerDto, nil
 }

@@ -3,7 +3,7 @@ package get_by_id
 import "github.com/mixmaru/my_contracts/core/application/customer"
 
 type ICustomerGetByIdUseCase interface {
-	Handle(CustomerGetByIdUseCaseRequest) (CustomerGetByIdResponse, error)
+	Handle(*CustomerGetByIdUseCaseRequest) (*CustomerGetByIdResponse, error)
 }
 
 type CustomerGetByIdUseCaseRequest struct {

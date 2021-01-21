@@ -3,11 +3,9 @@ package main
 import (
 	"encoding/json"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type"
-	"github.com/mixmaru/my_contracts/core/application/customer_property_type/create"
 	"github.com/mixmaru/my_contracts/core/application/customer_type"
-	"github.com/mixmaru/my_contracts/core/infrastructure/db"
+	"github.com/mixmaru/my_contracts/test_utils"
 	"github.com/mixmaru/my_contracts/utils"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -21,9 +19,9 @@ func TestCustomerTypeController_Create(t *testing.T) {
 	router := newRouter()
 	// カスタマープロパティ登録
 	timestampStr := utils.CreateTimestampString()
-	property1, err := preCreateCustomerProperty("性別"+timestampStr, "string")
+	property1, err := test_utils.PreCreateCustomerPropertyType("性別"+timestampStr, "string")
 	assert.NoError(t, err)
-	property2, err := preCreateCustomerProperty("年齢"+timestampStr, "numeric")
+	property2, err := test_utils.PreCreateCustomerPropertyType("年齢"+timestampStr, "numeric")
 	assert.NoError(t, err)
 	preCreateCustomerProperties := []customer_property_type.CustomerPropertyTypeDto{
 		property1,
@@ -211,19 +209,4 @@ func TestCustomerTypeController_Create(t *testing.T) {
 		}
 		assert.Equal(t, expected, validErrors)
 	})
-}
-
-func preCreateCustomerProperty(name string, propertyType string) (customer_property_type.CustomerPropertyTypeDto, error) {
-
-	interactor := create.NewCustomerPropertyTypeCreateInteractor(db.NewCustomerPropertyTypeRepository())
-	request := create.NewCustomerPropertyTypeCreateUseCaseRequest(name, propertyType)
-	response, err := interactor.Handle(request)
-	if err != nil {
-		return customer_property_type.CustomerPropertyTypeDto{}, err
-	}
-	if len(response.ValidationErrors) > 0 {
-		return customer_property_type.CustomerPropertyTypeDto{}, errors.Errorf("バリデーションエラー。%+v", response.ValidationErrors)
-	}
-
-	return response.CustomerPropertyTypeDto, nil
 }

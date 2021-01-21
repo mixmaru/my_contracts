@@ -2,19 +2,20 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
 	"github.com/mixmaru/my_contracts/core/application/customer/create"
+	"github.com/mixmaru/my_contracts/core/application/customer/get_by_id"
 	"github.com/mixmaru/my_contracts/utils/my_logger"
 	"net/http"
 	"strconv"
 )
 
 type CustomerController struct {
-	createUseCase create.ICustomerCreateUseCase
+	createUseCase  create.ICustomerCreateUseCase
+	getByIdUseCase get_by_id.ICustomerGetByIdUseCase
 }
 
-func NewCustomerController(createUseCase create.ICustomerCreateUseCase) *CustomerController {
-	return &CustomerController{createUseCase: createUseCase}
+func NewCustomerController(createUseCase create.ICustomerCreateUseCase, getByIdUseCase get_by_id.ICustomerGetByIdUseCase) *CustomerController {
+	return &CustomerController{createUseCase: createUseCase, getByIdUseCase: getByIdUseCase}
 }
 
 // カスタマー新規登録
@@ -107,7 +108,7 @@ func (cont *CustomerController) GetById(c echo.Context) error {
 	}
 
 	// データ取得
-	response, err := cont.getByIdUseCase.Handle(NewCustomerGetByIdUseCaseRequest(customerId))
+	response, err := cont.getByIdUseCase.Handle(get_by_id.NewCustomerGetByIdUseCaseRequest(customerId))
 	if err != nil {
 		logger.Sugar().Errorw("カスタマーデータ取得に失敗。", "customerId", customerId, "err", err)
 		c.Error(err)

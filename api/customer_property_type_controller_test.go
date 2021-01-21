@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
+	"github.com/mixmaru/my_contracts/test_utils"
 	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -146,9 +147,9 @@ func TestCustomerPropertyTypeController_GetAll(t *testing.T) {
 			assert.NoError(t, err)
 			// 既存データ挿入
 			timestampStr := utils.CreateTimestampString()
-			propertyDto1, err := preCreateCustomerProperty("性別"+timestampStr, "string")
+			propertyDto1, err := test_utils.PreCreateCustomerPropertyType("性別"+timestampStr, "string")
 			assert.NoError(t, err)
-			propertyDto2, err := preCreateCustomerProperty("年齢"+timestampStr, "numeric")
+			propertyDto2, err := test_utils.PreCreateCustomerPropertyType("年齢"+timestampStr, "numeric")
 			assert.NoError(t, err)
 			preCreatedProperties := []customer_property_type.CustomerPropertyTypeDto{
 				propertyDto1,

@@ -9,6 +9,7 @@ import (
 	"github.com/mixmaru/my_contracts/core/application/contracts/create_next_right_to_use"
 	"github.com/mixmaru/my_contracts/core/application/contracts/get_by_id"
 	create5 "github.com/mixmaru/my_contracts/core/application/customer/create"
+	get_by_id4 "github.com/mixmaru/my_contracts/core/application/customer/get_by_id"
 	create3 "github.com/mixmaru/my_contracts/core/application/customer_property_type/create"
 	"github.com/mixmaru/my_contracts/core/application/customer_property_type/get_all"
 	get_by_id2 "github.com/mixmaru/my_contracts/core/application/customer_property_type/get_by_id"
@@ -41,6 +42,7 @@ func newRouter() *echo.Echo {
 	billRep := db.NewBillRepository()
 	customerPropertyTypeRep := db.NewCustomerPropertyTypeRepository()
 	customerTypeRep := db.NewCustomerTypeRepository()
+	customerRep := db.NewCustomerRepository()
 
 	// controller
 	productController := NewProductController(create.NewProductCreateInteractor(productRep))
@@ -61,7 +63,10 @@ func newRouter() *echo.Echo {
 		create4.NewCustomerTypeCreateInteractor(customerTypeRep, customerPropertyTypeRep),
 		get_by_id3.NewCustomerTypeGetByIdInteractor(customerTypeRep, customerPropertyTypeRep),
 	)
-	customerController := NewCustomerController(create5.NewCustomerCreateInteractor(db.NewCustomerRepository()))
+	customerController := NewCustomerController(
+		create5.NewCustomerCreateInteractor(customerRep),
+		get_by_id4.NewCustomerGetByIdInteractor(customerRep),
+	)
 
 	// 顧客新規登録
 	e.POST("/users/", userController.Save)
@@ -80,7 +85,7 @@ func newRouter() *echo.Echo {
 	// カスタマー新規登録
 	e.POST("/customer/", customerController.Create)
 	// カスタマー取得
-	e.GET("/customer/:id", customerController.GetById)
+	e.GET("/customer/:id/", customerController.GetById)
 	// 商品登録
 	e.POST("/products/", productController.Crate)
 	// 商品情報取得
