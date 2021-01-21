@@ -13,21 +13,21 @@ func NewCustomerGetByIdInteractor(customerRepository customer.ICustomerRepositor
 	return &CustomerGetByIdInteractor{customerRepository: customerRepository}
 }
 
-func (c CustomerGetByIdInteractor) Handle(request CustomerGetByIdUseCaseRequest) (CustomerGetByIdResponse, error) {
+func (c CustomerGetByIdInteractor) Handle(request *CustomerGetByIdUseCaseRequest) (*CustomerGetByIdResponse, error) {
 	response := CustomerGetByIdResponse{}
 
 	////// idを使ってリポジトリからデータを取得
 	conn, err := db.GetConnection()
 	if err != nil {
-		return CustomerGetByIdResponse{}, err
+		return nil, err
 	}
 	defer conn.Db.Close()
 	entity, err := c.customerRepository.GetById(request.CustomerId, conn)
 	if err != nil {
-		return CustomerGetByIdResponse{}, err
+		return nil, err
 	}
 
 	///// dtoにつめる
 	response.CustomerDto = customer.NewCustomerDtoFromEntity(entity)
-	return response, nil
+	return &response, nil
 }
