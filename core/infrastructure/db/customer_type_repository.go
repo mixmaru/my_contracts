@@ -45,7 +45,15 @@ func (r *CustomerTypeRepository) Create(customerTypeEntity *customer.CustomerTyp
 }
 
 func (r *CustomerTypeRepository) GetById(id int, executor gorp.SqlExecutor) (entity *customer.CustomerTypeEntity, err error) {
-	query := createGettingQuery("customer_types.id = $1")
+	return r.getById(id, executor, false)
+}
+
+func (r *CustomerTypeRepository) GetByIdForUpdate(id int, executor gorp.SqlExecutor) (entity *customer.CustomerTypeEntity, err error) {
+	return r.getById(id, executor, true)
+}
+
+func (r *CustomerTypeRepository) getById(id int, executor gorp.SqlExecutor, forUpdate bool) (entity *customer.CustomerTypeEntity, err error) {
+	query := createGettingQuery("customer_types.id = $1", forUpdate)
 	mappers := []*CustomerTypeForLoadMapper{}
 	if _, err := executor.Select(&mappers, query, id); err != nil {
 		return nil, errors.Wrapf(err, "dbからデータの取得に失敗しました。query: %v, id: %v, mappers: %+v", query, id, mappers)
@@ -58,7 +66,7 @@ func (r *CustomerTypeRepository) GetById(id int, executor gorp.SqlExecutor) (ent
 	return retEntity, nil
 }
 
-func createGettingQuery(whereQuery string) string {
+func createGettingQuery(whereQuery string, forUpdate bool) string {
 	baseQuery := `
 SELECT
     id,
@@ -67,8 +75,11 @@ SELECT
 FROM customer_types
 INNER JOIN customer_types_customer_properties on customer_types.id = customer_types_customer_properties.customer_type_id
 WHERE %s
-ORDER BY customer_types_customer_properties.order;
+ORDER BY customer_types_customer_properties.order
 `
+	if forUpdate {
+		baseQuery += "FOR UPDATE\n"
+	}
 	query := fmt.Sprintf(baseQuery, whereQuery)
 	return query
 }
@@ -84,7 +95,7 @@ func convertToEntity(mappers []*CustomerTypeForLoadMapper) *customer.CustomerTyp
 }
 
 func (r *CustomerTypeRepository) GetByName(name string, executor gorp.SqlExecutor) (entity *customer.CustomerTypeEntity, err error) {
-	query := createGettingQuery("customer_types.name = $1")
+	query := createGettingQuery("customer_types.name = $1", false)
 
 	var mappers []*CustomerTypeForLoadMapper
 	if _, err := executor.Select(&mappers, query, name); err != nil {
