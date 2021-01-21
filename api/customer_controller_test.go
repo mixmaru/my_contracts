@@ -65,6 +65,45 @@ func TestCustomerController_Create(t *testing.T) {
 		}
 		assert.Equal(t, expect, registeredCustomer.Properties)
 	})
+
+	t.Run("存在しないカスタマータイプIDを渡すとバリデーションエラーになる", func(t *testing.T) {
+		timestampstr := utils.CreateTimestampString()
+		////// 準備
+		postBody := map[string]interface{}{
+			"name":             "名前" + timestampstr,
+			"customer_type_id": -100,
+			"properties": map[int]interface{}{
+				customerTypeDto.CustomerPropertyTypes[0].Id: "男",
+				customerTypeDto.CustomerPropertyTypes[1].Id: 22,
+			},
+		}
+		body, _ := json.Marshal(postBody)
+		req := httptest.NewRequest("POST", "/customer/", bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+
+		////// リクエスト実行
+		router.ServeHTTP(rec, req)
+
+		////// 検証
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		// jsonパース
+		var validationErrors map[string][]string
+		err := json.Unmarshal(rec.Body.Bytes(), &validationErrors)
+		assert.NoError(t, err)
+		expectedValidationErrors := map[string][]string{
+			"customer_type_id": []string{"存在しないIDです"},
+		}
+		assert.Equal(t, expectedValidationErrors, validationErrors)
+	})
+
+	t.Run("渡したカスタマータイムに付属するプロパティIDではないIDを渡すとバリデーションエラーになる", func(t *testing.T) {
+
+	})
+
+	t.Run("存在しないプロパティIDを渡すとバリデーションエラーになる", func(t *testing.T) {
+
+	})
 	//
 	//	t.Run("idを渡すとデータが取得できる", func(t *testing.T) {
 	//		////// 準備
