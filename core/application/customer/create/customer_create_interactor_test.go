@@ -45,6 +45,30 @@ func TestCustomerCreateInteractor_Handle(t *testing.T) {
 		}
 		assert.Equal(t, expectedProperties, response.CustomerDto.Properties)
 	})
+
+	t.Run("存在しないカスタマータイプIDを渡すとバリデーションエラーになる", func(t *testing.T) {
+		timestampStr := utils.CreateTimestampString()
+
+		////// 実行
+		request := NewCustomerCreateUseCaseRequest(
+			"山田"+timestampStr,
+			-100,
+			map[int]interface{}{
+				customerType.CustomerPropertyTypes[0].Id: "男",
+				customerType.CustomerPropertyTypes[1].Id: 20.,
+			},
+		)
+		interactor := NewCustomerCreateInteractor(db.NewCustomerRepository())
+		response, err := interactor.Handle(request)
+		assert.NoError(t, err)
+
+		////// 検証
+		expected := map[string][]string{
+			"customer_type_id": []string{"存在しないIDです"},
+		}
+		assert.Equal(t, expected, response.ValidationErrors)
+		assert.Zero(t, response.CustomerDto)
+	})
 }
 
 func preCreateCustomerType() (customer_type.CustomerTypeDto, error) {
