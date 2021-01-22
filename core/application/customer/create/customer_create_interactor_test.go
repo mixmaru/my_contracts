@@ -31,7 +31,7 @@ func TestCustomerCreateInteractor_Handle(t *testing.T) {
 				customerType.CustomerPropertyTypes[1].Id: 20.,
 			},
 		)
-		interactor := NewCustomerCreateInteractor(db.NewCustomerRepository())
+		interactor := NewCustomerCreateInteractor(db.NewCustomerRepository(), db.NewCustomerTypeRepository())
 		response, err := interactor.Handle(request)
 		assert.NoError(t, err)
 
@@ -58,7 +58,7 @@ func TestCustomerCreateInteractor_Handle(t *testing.T) {
 				customerType.CustomerPropertyTypes[1].Id: 20.,
 			},
 		)
-		interactor := NewCustomerCreateInteractor(db.NewCustomerRepository())
+		interactor := NewCustomerCreateInteractor(db.NewCustomerRepository(), db.NewCustomerTypeRepository())
 		response, err := interactor.Handle(request)
 		assert.NoError(t, err)
 
