@@ -64,7 +64,7 @@ func newRouter() *echo.Echo {
 		get_by_id3.NewCustomerTypeGetByIdInteractor(customerTypeRep, customerPropertyTypeRep),
 	)
 	customerController := NewCustomerController(
-		create5.NewCustomerCreateInteractor(customerRep),
+		create5.NewCustomerCreateInteractor(customerRep, customerTypeRep),
 		get_by_id4.NewCustomerGetByIdInteractor(customerRep),
 	)
 

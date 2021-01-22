@@ -70,7 +70,7 @@ func PreCreateCustomerPropertyTypeAndCustomerType(
 
 func PreCreateCustomer(name string, customerTypeId int, properties map[int]interface{}) (customer.CustomerDto, error) {
 	request := create.NewCustomerCreateUseCaseRequest(name, customerTypeId, properties)
-	intaractor := create.NewCustomerCreateInteractor(db.NewCustomerRepository())
+	intaractor := create.NewCustomerCreateInteractor(db.NewCustomerRepository(), db.NewCustomerTypeRepository())
 	response, err := intaractor.Handle(request)
 	if err != nil {
 		return customer.CustomerDto{}, err
