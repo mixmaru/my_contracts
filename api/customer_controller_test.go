@@ -98,7 +98,51 @@ func TestCustomerController_Create(t *testing.T) {
 	})
 
 	t.Run("渡したカスタマータイムに付属するプロパティIDではないIDを渡すとバリデーションエラーになる", func(t *testing.T) {
+		timestampstr := utils.CreateTimestampString()
+		////// 準備
+		// 別のカスタマータイプを登録する
+		anotherCustomerTypeDto, err := test_utils.PreCreateCustomerPropertyTypeAndCustomerType(
+			"別カスタマータイプ"+timestampStr,
+			[]test_utils.PropertyParam{
+				{
+					PropertyTypeName: "別カスタマータイプ用プロパティ" + timestampStr,
+					PropertyType:     test_utils.PROPERTY_TYPE_STRING,
+				},
+			})
+		assert.NoError(t, err)
+		// 別のカスタマータイプのプロパティを指定してリクエストしてみる
+		postBody := map[string]interface{}{
+			"name":             "名前" + timestampstr,
+			"customer_type_id": customerTypeDto.Id,
+			"properties": map[int]interface{}{
+				customerTypeDto.CustomerPropertyTypes[0].Id:        "男",
+				customerTypeDto.CustomerPropertyTypes[1].Id:        22,
+				anotherCustomerTypeDto.CustomerPropertyTypes[0].Id: "別カスタマープロパティの値",
+			},
+		}
+		body, _ := json.Marshal(postBody)
+		req := httptest.NewRequest("POST", "/customer/", bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
 
+		////// リクエスト実行
+		router.ServeHTTP(rec, req)
+
+		////// 検証
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+		var validationErrors map[string][]string
+		err = json.Unmarshal(rec.Body.Bytes(), &validationErrors)
+		assert.NoError(t, err)
+		expectedValidationErrors := map[string][]string{
+			"properties": []string{
+				fmt.Sprintf(
+					"id: %v はcustomer_type_id: %v のプロパティタイプではありません",
+					anotherCustomerTypeDto.CustomerPropertyTypes[0].Id,
+					customerTypeDto.Id,
+				)},
+		}
+		assert.Equal(t, expectedValidationErrors, validationErrors)
 	})
 
 	t.Run("存在しないプロパティIDを渡すとバリデーションエラーになる", func(t *testing.T) {
