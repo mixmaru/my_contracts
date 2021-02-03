@@ -1,7 +1,12 @@
 package create
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
+
 	customer_app "github.com/mixmaru/my_contracts/core/application/customer"
+	"github.com/mixmaru/my_contracts/core/application/customer_property_type"
 	"github.com/mixmaru/my_contracts/core/application/customer_type"
 	"github.com/mixmaru/my_contracts/core/domain/models/customer"
 	"github.com/mixmaru/my_contracts/core/infrastructure/db"
@@ -9,8 +14,9 @@ import (
 )
 
 type CustomerCreateInteractor struct {
-	customerRepository     customer_app.ICustomerRepository
-	customerTypeRepository customer_type.ICustomerTypeRepository
+	customerRepository             customer_app.ICustomerRepository
+	customerTypeRepository         customer_type.ICustomerTypeRepository
+	customerPropertyTypeRepository customer_property_type.ICustomerPropertyTypeRepository
 }
 
 func NewCustomerCreateInteractor(customerRepository customer_app.ICustomerRepository, customerTypeRepository customer_type.ICustomerTypeRepository) *CustomerCreateInteractor {
@@ -31,15 +37,7 @@ func (c *CustomerCreateInteractor) Handle(request *CustomerCreateUseCaseRequest)
 	}
 
 	// バリデーションする
-	customerTypeIdValidErrors, err := c.validateCustomerTypeId(request.CustomerTypeId, tran)
-	if err != nil {
-		return nil, err
-	}
-	if len(customerTypeIdValidErrors) > 0 {
-		response.ValidationErrors = map[string][]string{
-			"customer_type_id": customerTypeIdValidErrors,
-		}
-	}
+	response.ValidationErrors, err = c.validation(request, tran)
 	if len(response.ValidationErrors) > 0 {
 		return &response, nil
 	}
@@ -69,6 +67,38 @@ func (c *CustomerCreateInteractor) Handle(request *CustomerCreateUseCaseRequest)
 	// dtoに詰める
 	response.CustomerDto = customer_app.NewCustomerDtoFromEntity(savedEntity)
 	return &response, nil
+}
+
+func (c *CustomerCreateInteractor) validation(request *CustomerCreateUseCaseRequest, executor gorp.SqlExecutor) (map[string][]string, error) {
+	validationErrors := map[string][]string{}
+
+	// 取得してみる
+	customerTypeEntity, err := c.customerTypeRepository.GetByIdForUpdate(request.CustomerTypeId, executor)
+	if err != nil {
+		return nil, err
+	}
+	if customerTypeEntity == nil {
+		validationErrors["customer_type_id"] = []string{"存在しないIDです"}
+	}
+
+	// propertiesバリデーション
+	// リクエストされたpropertyTypeIdにcustomerTypeに存在しないIDがないかどうかチェック
+	badPropertyTypeIds := []string{}
+REQUEST_PROPERTY_ROOP:
+	for propertyTypeId := range request.Properties {
+		for _, existedId := range customerTypeEntity.CustomerPropertyTypeIds() {
+			if propertyTypeId == existedId {
+				continue REQUEST_PROPERTY_ROOP
+			}
+		}
+		badPropertyTypeIds = append(badPropertyTypeIds, strconv.Itoa(propertyTypeId))
+	}
+	// あればバリデーションエラー
+	if len(badPropertyTypeIds) > 0 {
+		validationErrors["customer_property_type"] = []string{fmt.Sprintf("%vは存在しないIDです", strings.Join(badPropertyTypeIds, ", "))}
+	}
+
+	return validationErrors, nil
 }
 
 func (c *CustomerCreateInteractor) validateCustomerTypeId(customerTypeId int, executor gorp.SqlExecutor) ([]string, error) {
