@@ -64,7 +64,7 @@ func TestCustomerCreateInteractor_Handle(t *testing.T) {
 
 		////// 検証
 		expected := map[string][]string{
-			"customer_type_id": []string{"存在しないIDです"},
+			"customer_type_id": {"存在しないIDです"},
 		}
 		assert.Equal(t, expected, response.ValidationErrors)
 		assert.Zero(t, response.CustomerDto)
