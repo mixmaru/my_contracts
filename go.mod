@@ -3,6 +3,7 @@ module github.com/mixmaru/my_contracts
 go 1.14
 
 require (
+	github.com/go-delve/delve v1.6.0 // indirect
 	github.com/golang/mock v1.4.3
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/lib/pq v1.5.2
