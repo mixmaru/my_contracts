@@ -135,7 +135,7 @@ func TestCustomerController_Create(t *testing.T) {
 		err = json.Unmarshal(rec.Body.Bytes(), &validationErrors)
 		assert.NoError(t, err)
 		expectedValidationErrors := map[string][]string{
-			"properties": []string{
+			"properties": {
 				fmt.Sprintf(
 					"id: %v はcustomer_type_id: %v のプロパティタイプではありません",
 					anotherCustomerTypeDto.CustomerPropertyTypes[0].Id,

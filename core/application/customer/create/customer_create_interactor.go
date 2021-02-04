@@ -86,7 +86,7 @@ func (c *CustomerCreateInteractor) validation(request *CustomerCreateUseCaseRequ
 		// propertiesバリデーション
 		// リクエストされたpropertyTypeIdにcustomerTypeに存在しないIDがないかどうかチェック
 		badPropertyTypeIds := []string{}
-        REQUEST_PROPERTY_ROOP:
+	REQUEST_PROPERTY_ROOP:
 		for propertyTypeId := range request.Properties {
 			for _, existedId := range customerTypeEntity.CustomerPropertyTypeIds() {
 				if propertyTypeId == existedId {
@@ -97,7 +97,13 @@ func (c *CustomerCreateInteractor) validation(request *CustomerCreateUseCaseRequ
 		}
 		// あればバリデーションエラー
 		if len(badPropertyTypeIds) > 0 {
-			validationErrors["customer_property_type"] = []string{fmt.Sprintf("%vは存在しないIDです", strings.Join(badPropertyTypeIds, ", "))}
+			validationErrors["properties"] = []string{
+				fmt.Sprintf(
+					"id: %v はcustomer_type_id: %v のプロパティタイプではありません",
+					strings.Join(badPropertyTypeIds, ", "),
+					customerTypeEntity.Id(),
+				),
+			}
 		}
 	}
 
