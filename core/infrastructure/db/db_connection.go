@@ -29,7 +29,11 @@ func GetConnection() (*gorp.DbMap, error) {
 	}
 
 	// construct a gorp DbMap
-	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
+	dbmap := &gorp.DbMap{
+		Db:              db,
+		Dialect:         gorp.PostgresDialect{},
+		ExpandSliceArgs: true,
+	}
 
 	// add a table, setting the table name to 'posts' and
 	// specifying that the Id property is an auto incrementing PK
