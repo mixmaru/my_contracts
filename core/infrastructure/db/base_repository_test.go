@@ -1,10 +1,14 @@
 package db
 
 import (
+	"database/sql"
+	"testing"
+
 	"github.com/mixmaru/my_contracts/core/domain/models/product"
 	"github.com/mixmaru/my_contracts/core/domain/models/user"
+	"github.com/mixmaru/my_contracts/utils"
 	"github.com/stretchr/testify/assert"
-	"testing"
+	"gopkg.in/gorp.v2"
 )
 
 func TestBaseRepository_selectOne(t *testing.T) {
@@ -66,4 +70,28 @@ SELECT
 		assert.Error(t, err, "aaa")
 		assert.True(t, noRow)
 	})
+}
+
+func TestTest(t *testing.T) {
+	//query := "select id from customers where id in (:ids);"
+	//query := "select id from customers where id in ($1);"
+	query := "select id from customers where id in (?);"
+
+	executeMode, err := utils.GetExecuteMode()
+    assert.NoError(t, err)
+
+	connectionStr, err := getConnectionString(executeMode)
+    assert.NoError(t, err)
+
+	db, err := sql.Open("postgres", connectionStr)
+	dbmap := &gorp.DbMap{
+		Db:              db, // コネクション
+		Dialect:         gorp.PostgresDialect{},
+		ExpandSliceArgs: true,
+	}
+    mapper := []int{}
+	//_, err = dbmap.Select(&mapper, query, map[string]interface{}{"ids": []int{3,4,7}})
+	_, err = dbmap.Select(&mapper, query, []int{3,4,7})
+    assert.NoError(t, err)
+    assert.Equal(t, []int{3,4,7}, mapper)
 }

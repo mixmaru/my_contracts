@@ -11,5 +11,6 @@ require (
 	github.com/shopspring/decimal v1.2.0
 	github.com/stretchr/testify v1.5.1
 	go.uber.org/zap v1.15.0
+	golang.org/x/tools/gopls v0.6.9 // indirect
 	gopkg.in/gorp.v2 v2.2.0
 )
