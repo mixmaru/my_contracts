@@ -1,4 +1,5 @@
 FROM golang:1.14.2
+RUN apt update && apt -y upgrade
 
 # デバッガ
 RUN go get github.com/go-delve/delve/cmd/dlv
